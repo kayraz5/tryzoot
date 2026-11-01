@@ -140,7 +140,7 @@ const open = ref(false)
 		<!-- What's happening at the focus time -->
 		<div class="status">
 			<i class="bi" :class="doing.icon" aria-hidden="true"></i>
-			<span class="min-w-0 text-truncate"><b>{{ doing.text }}</b><span v-if="doing.sub" class="muted"> {{ doing.sub }}</span></span>
+			<span class="min-w-0 text-truncate"><b>{{ doing.text }}</b><span v-if="doing.sub" class="muted doing-sub">{{ doing.sub }}</span></span>
 			<button v-if="!following && nowInWindow" type="button" class="link" @click="scrubMs = null">Back to now</button>
 			<span v-else-if="following && nowInWindow" class="hint">Drag the bar to look ahead</span>
 		</div>
@@ -184,6 +184,7 @@ const open = ref(false)
 .sub > span { white-space: nowrap; }
 .sub > span + span { color: var(--zt-muted); }
 .sub b { font-weight: 800; color: var(--zt-ink); }
+.doing-sub { margin-left: 8px; }
 .sep { color: var(--zt-muted); margin: 0 4px; }
 .wx {
 	display: inline-flex; align-items: center; gap: 8px; flex: none; white-space: nowrap;
