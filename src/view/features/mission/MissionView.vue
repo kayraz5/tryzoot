@@ -14,6 +14,7 @@ import TimeToGate from './TimeToGate.vue'
 import LayoverCard from './LayoverCard.vue'
 import StopGallery from '../../common/StopGallery.vue'
 import PlacePicker from './PlacePicker.vue'
+import ScheduleEditor from './ScheduleEditor.vue'
 import OpenToCompanySheet from '../quests/OpenToCompanySheet.vue'
 
 const route = useRoute()
@@ -54,6 +55,7 @@ async function focusCurrent() {
   setTimeout(() => { if (flash.value === next.seq) flash.value = null }, 1600)
 }
 const companyOpen = ref(false) // "Open to company" sheet (group quests)
+const editingSchedule = ref(false) // stop cards swap for the compact order + stay-time editor
 const style = computed(() => STYLES[m.value?.style] || STYLES.budget)
 // Live "leave by" from where the traveller is; refreshed every 30 s of the app clock.
 const clockStep = computed(() => Math.floor(tick.value / 30000))
@@ -102,7 +104,7 @@ function onPick(place) {
   const { mode, leg } = picker.value
   run(() => (mode === 'swap' ? store.swapStop(leg, place) : store.addStop(place, leg?.place_id ?? null)))
 }
-watch(() => m.value?.id, () => { editing.value = null; picker.value = null })
+watch(() => m.value?.id, () => { editing.value = null; picker.value = null; editingSchedule.value = false })
 
 const replans = [
   { mode: 'behind', label: "I'm behind", icon: 'bi-hourglass-bottom' },
@@ -142,9 +144,10 @@ const replans = [
           <span><i class="bi bi-patch-check"></i> {{ store.stampedCount }}/{{ store.visitLegs.length }} stamped</span>
         </div>
         <div class="mt-2">
-          <RouterLink :to="`/mission/${m.id}/schedule`" class="btn btn-sm btn-soft">
-            <i class="bi bi-calendar3"></i> Edit schedule
-          </RouterLink>
+          <button v-if="pendingVisits.length" type="button" class="btn btn-sm btn-soft" :class="{ active: editingSchedule }"
+            :aria-expanded="editingSchedule" @click="editingSchedule = !editingSchedule">
+            <i class="bi" :class="editingSchedule ? 'bi-check-lg' : 'bi-arrow-down-up'"></i> {{ editingSchedule ? 'Done editing' : 'Edit order & times' }}
+          </button>
         </div>
       </header>
 
@@ -159,7 +162,9 @@ const replans = [
         <button class="btn btn-sm" :disabled="store.status === 'planning'" @click="store.replan('rain')">Indoor rewrite</button>
       </div>
 
-      <ol class="timeline list-unstyled">
+      <ScheduleEditor v-if="editingSchedule" class="mb-3" @done="editingSchedule = false" />
+
+      <ol v-else class="timeline list-unstyled">
         <li class="tl-start">
           <div class="dot start"><i class="bi bi-airplane-fill"></i></div>
           <div class="small"><b class="mono">{{ formatTime(Date.parse(m.start_iso) + m.buffers.exit_min * 60000) }}</b> Leave {{ m.origin.label }}<span v-if="m.buffers.exit_min" class="text-muted"> (after {{ m.buffers.exit_min }} min immigration)</span></div>
