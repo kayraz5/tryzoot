@@ -8,6 +8,8 @@ import {
 
 // "Can I leave Changi?" for the traveller's passport, on the profile page.
 // Asks /api/entry-rule (live ICA list + Passport Index); falls back to the saved snapshot.
+// `embedded`: drawn inside the plan page's entry dropdown, which has its own card and title
+defineProps({ embedded: { type: Boolean, default: false } })
 const passport = usePassportStore()
 
 const countries = [...new Set(['SG', ...Object.keys(snapshot.index.rules)])]
@@ -56,8 +58,8 @@ const checkedOn = computed(() => result.value && new Date(result.value.checkedOn
 </script>
 
 <template>
-  <section class="zt-card p-3 mt-3 entry">
-    <div class="small fw-800 mb-2"><i class="bi bi-passport"></i> Can I leave Changi?</div>
+  <section class="entry" :class="embedded ? '' : 'zt-card p-3 mt-3'">
+    <div v-if="!embedded" class="small fw-800 mb-2"><i class="bi bi-passport"></i> Can I leave Changi?</div>
     <label class="tiny text-muted d-block mb-1" for="entry-country">Passport country</label>
     <select id="entry-country" class="form-select form-select-sm mb-2" :value="selected" @change="choose($event.target.value)">
       <option value="" disabled>Choose your passport</option>
