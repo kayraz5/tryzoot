@@ -7,7 +7,10 @@ import { useUserStore } from '../../model/stores/user.js'
  * Heavy 3D views are lazy chunks so the landing page stays fast on phones.
  */
 const routes = [
-  { path: '/', name: 'landing', component: () => import('../../view/features/landing/LandingView.vue') },
+  // The landing page is "The Layover Flight": one continuous scroll-driven world
+  // (src/view/features/story/). The previous LandingView.vue is kept on disk and
+  // unreferenced, so reverting is a one-line change back to it.
+  { path: '/', name: 'landing', component: () => import('../../view/features/story/StoryView.vue') },
   { path: '/auth', name: 'auth', component: () => import('../../view/features/auth/AuthView.vue') },
   { path: '/onboard', name: 'onboard', component: () => import('../../view/features/auth/OnboardView.vue'), meta: { auth: true } },
   { path: '/plan', name: 'plan', component: () => import('../../view/features/plan/PlanView.vue'), meta: { auth: true, onboarded: true, nav: true } },
