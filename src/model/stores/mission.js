@@ -75,6 +75,7 @@ export const useMissionStore = defineStore('mission', {
       const ctx = this.baseCtx({
         tripId: trip.id,
         origin: trip.origin,
+        returnTo: trip.returnTo,
         startMs: Date.parse(trip.start_at),
         mustReturnMs: Date.parse(trip.must_return_at),
         cleared: trip.cleared,
@@ -162,6 +163,7 @@ export const useMissionStore = defineStore('mission', {
       const ctx = this.baseCtx({
         tripId: m.trip_id,
         origin: m.origin,
+        returnTo: m.return_to,
         startMs: Date.parse(m.start_iso),
         mustReturnMs: Date.parse(m.must_return_iso),
         ...prefs,
@@ -261,6 +263,26 @@ export const useMissionStore = defineStore('mission', {
     },
 
     /**
+     * Drag-and-drop: put a pending stop at position `to` among the pending stops. The traveller
+     * chose this order, so `manual_order` stops stamp() from re-sorting it by proximity
+     * (a replan builds a fresh mission without the flag).
+     */
+    moveStopTo(leg, to) {
+      return this.editLegs((legs, m) => {
+        if (leg.fixed) return lockedMessage(leg)
+        const slots = []
+        legs.forEach((l, i) => { if (l.kind === 'visit' && l.status === 'pending') slots.push(i) })
+        const pending = slots.map((i) => legs[i])
+        const from = pending.findIndex((l) => l.place_id === leg.place_id)
+        if (from < 0) return STALE
+        if (from === to) return null
+        pending.splice(Math.max(0, Math.min(pending.length - 1, to)), 0, ...pending.splice(from, 1))
+        slots.forEach((i, k) => { legs[i] = pending[k] })
+        m.manual_order = true
+      })
+    },
+
+    /**
      * Resequence the remaining FREE pending stops (not fixed to a social-quest meetup time) by
      * nearest-neighbor from here(): whichever stop is physically closest goes next, then closest
      * from there, and so on — called automatically after every stamp() so the plan keeps following
@@ -324,7 +346,8 @@ export const useMissionStore = defineStore('mission', {
         await this.persist(this.mission)
         // Now that you're at `place`, the rest of the plan may no longer be the shortest way
         // round — send whichever remaining stop is closest from here next.
-        if (l) await this.reorderByProximity()
+        // Skipped when they arranged the order themselves.
+        if (l && !this.mission.manual_order) await this.reorderByProximity()
       }
       ui.celebrate({ place, xp: leg.xp, chopEarned, area: place.area })
       // Stamped together with someone from my quest? Co-op stamp notice after the celebration.

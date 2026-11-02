@@ -5,6 +5,7 @@ import { placeStampUrl } from '../../../model/services/stampArt.js'
 import QuestCoopChip from '../quests/QuestCoopChip.vue'
 import QuestChatButton from '../quests/QuestChatButton.vue' // "Chat with Mei" (only while in a social quest)
 import QuestGoSolo from '../quests/QuestGoSolo.vue'         // "Go solo" link (only after joining someone's quest)
+import TransitSteps from './TransitSteps.vue'               // MRT/bus step-by-step for the current leg
 
 /**
  * Next-stop card ("center console") shown at the bottom of the map.
@@ -12,6 +13,16 @@ import QuestGoSolo from '../quests/QuestGoSolo.vue'         // "Go solo" link (o
  * Purely presentational: the map view computes mission/GPS values (it needs them
  * for drawing too) and passes them in as props. Actions are emitted as events, so
  * the map view remains the single owner of navigation and map state.
+ *
+ * Two things in the markup that are not obvious from reading it:
+ *
+ * The close button is the only way to dismiss the card. MapView hides the old
+ * nav-bar toggle while the card is open, so without it there is no route back
+ * to the floating flag button.
+ *
+ * `check.message` is suppressed for code 'far', because that message reads
+ * "868 m away. Get within 80 m" and simply restates the distance already shown
+ * above it. Every other code — GPS trouble, in range — still comes through.
  */
 const props = defineProps({
   mission: { type: Object, default: null },       // the active mission, or null if none
@@ -21,6 +32,9 @@ const props = defineProps({
   distance: { type: Number, default: null },       // metres to `next`
   lateBy: { type: Number, default: null },         // minutes behind plan (negative = early)
   guidance: { type: Object, default: null },       // { icon, text }
+  steps: { type: Array, default: () => [] },       // transit steps for this leg (empty when walking/taxi)
+  stepIndex: { type: Number, default: 0 },         // which of `steps` the traveller is on
+  busAlt: { type: Object, default: null },         // a bus that replaces a taxi leg, if any
   check: { type: Object, default: null },          // { ok, message } — can you stamp right now?
   stamping: { type: Boolean, default: false },     // a stamp request is in flight
   stampedCount: { type: Number, default: 0 },
@@ -38,17 +52,12 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
 
 <template>
   <div id="CenterInfo" class="rounded-4">
-    <!-- This is the only way to hide the card now that the old nav-bar toggle button
-         is gone while the card's open (see MapView.vue) — without it there'd be no way
-         back to the floating flag button. -->
     <button type="button" class="card-close" aria-label="Hide next-stop card" @click="$emit('close')">
       <i class="bi bi-x-lg" aria-hidden="true"></i>
     </button>
 
-    <!-- me-4 keeps it clear of the close button above -->
-    <QuestCoopChip class="me-4" />
+    <QuestCoopChip class="card-chip" />
 
-    <!-- No quest yet -->
     <div v-if="!mission" class="row align-items-center">
       <div class="col-12">
         <div class="stop-meta">No active quest</div>
@@ -58,7 +67,6 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
       </div>
     </div>
 
-    <!-- Every stop done and back home -->
     <div v-else-if="!next" class="row align-items-center">
       <div class="col-12">
         <div class="stop-meta">Quest complete &middot; {{ stampedCount }}/{{ totalVisits }} stamped</div>
@@ -68,7 +76,6 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
       </div>
     </div>
 
-    <!-- Heading to a stop (or home) -->
     <div v-else class="row align-items-center">
       <div class="col-7 col-sm-8">
         <div class="stop-meta">
@@ -83,7 +90,7 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
           <span v-else-if="lateBy > 0" class="behind">{{ lateBy }} min behind plan</span>
           <span v-else class="ontime">on time</span>
         </div>
-        <div v-if="guidance" class="stop-guide"><i class="bi" :class="guidance.icon"></i> {{ guidance.text }}</div>
+        <div v-if="guidance && !steps.length" class="stop-guide"><i class="bi" :class="guidance.icon"></i> {{ guidance.text }}</div>
         <!-- "868 m away. Get within 80 m" repeats the distance above; GPS / in-range messages still show. -->
         <div v-if="check?.code !== 'far'" class="stop-near">{{ check?.message }}</div>
       </div>
@@ -98,10 +105,13 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
         </button>
       </div>
 
+      <!-- Train/bus legs: what to do now, then every step, full width under the stop. -->
+      <div v-if="steps.length || busAlt" class="col-12">
+        <TransitSteps :steps="steps" :index="stepIndex" :bus-alt="busAlt" />
+      </div>
+
       <div class="col-12">
-        <!-- Social quest: the main button. Renders nothing when not in a quest. -->
         <QuestChatButton class="mt-2" />
-        <!-- Small text links in the corners: Go solo (in a quest) · Map style · Need help? -->
         <div class="card-links">
           <QuestGoSolo />
           <button id="ChangeMap" type="button" class="card-link" @click="$emit('change-map-style')">Map style</button>
@@ -133,27 +143,44 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
   box-shadow: var(--zt-shadow);
   padding: clamp(12px, 4vw, 18px) clamp(14px, 4.6vw, 20px);
   container-type: inline-size;
+
+  /* The close button's footprint, published so anything that has to stay clear
+     of it reserves exactly the right room. Declared here but never *used* here:
+     cqw resolves against the using element's container, which for a descendant
+     is this card — an element cannot query itself. */
+  --close-size: clamp(34px, 8cqw, 42px);
+  --close-inset: clamp(6px, 1.6cqw, 10px);
 }
 
+/* Scales with the card like everything else here. Pinned at 26px it was a
+   thumbnail on a 570px card, and under the 44px thumb target on a phone.
+   The disc is opaque rather than `none` because the stamp dial's top-right arc
+   runs under this corner: a bare glyph sat on the dashed ring and vanished. It
+   is the card's own black, so it is invisible wherever nothing is behind it. */
 .card-close {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 26px;
-  height: 26px;
+  top: var(--close-inset);
+  right: var(--close-inset);
+  z-index: 2;
+  width: var(--close-size);
+  height: var(--close-size);
   border-radius: 50%;
   border: none;
-  background: none;
+  background: var(--zt-black);
   color: var(--zt-yellow-pale);
-  opacity: 0.6;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
+  font-size: clamp(0.85rem, 2.8cqw, 1.1rem);
   cursor: pointer;
 }
-.card-close:hover,
-.card-close:active { opacity: 1; }
+/* Dimmed on the glyph, not the button, so the disc stays fully opaque. */
+.card-close .bi { opacity: 0.7; }
+.card-close:hover .bi,
+.card-close:active .bi { opacity: 1; }
+
+/* Keeps the quest chip clear of the close button now that it scales. */
+.card-chip { margin-right: calc(var(--close-size) + var(--close-inset)); }
 
 .stop-meta {
   color: var(--zt-yellow-pale);

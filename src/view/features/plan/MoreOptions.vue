@@ -30,9 +30,9 @@ const chevron = computed(() => (props.wide ? (open.value ? 'bi-chevron-up' : 'bi
 		<MoreOptionsFields v-if="wide && open" class="px-3 pb-3" />
 	</section>
 
-	<div v-if="!wide && open" class="sheet-scrim" @click.self="open = false">
-		<div class="sheet zt-card" role="dialog" aria-modal="true" aria-labelledby="opts-h">
-			<div class="grabber"></div>
+	<div v-if="!wide && open" class="zt-sheet-backdrop" @click.self="open = false">
+		<div class="zt-sheet zt-card" role="dialog" aria-modal="true" aria-labelledby="opts-h">
+			<div class="zt-grabber"></div>
 			<div class="d-flex justify-content-between align-items-center mb-2">
 				<h2 id="opts-h" class="plan-step-h sheet-h">More options</h2>
 				<button type="button" class="btn-close" aria-label="Close" @click="open = false"></button>
@@ -46,11 +46,5 @@ const chevron = computed(() => (props.wide ? (open.value ? 'bi-chevron-up' : 'bi
 <style scoped>
 .options { padding: 0; overflow: hidden; }
 .options-row { display: flex; align-items: center; width: 100%; padding: 14px 16px; border: 0; background: none; color: var(--zt-ink); }
-.sheet-scrim {
-	position: fixed; inset: 0; z-index: 1400; display: grid; place-items: end center;
-	background: rgba(17, 17, 17, 0.45); padding: 16px;
-}
-.sheet { width: min(560px, 100%); padding: 12px 16px 16px; border-radius: 24px 24px 18px 18px; max-height: 85vh; overflow-y: auto; }
 .sheet-h { font-size: 1.6rem; }
-.grabber { width: 44px; height: 5px; border-radius: 999px; background: var(--zt-soft-line); margin: 0 auto 10px; }
 </style>
