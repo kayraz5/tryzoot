@@ -5,10 +5,12 @@
  * loadBusData()            -> Promise<data | null>
  * nearbyStops(p, radiusM)  -> [{ code, name, road, lat, lng, services, d }] closest first (needs data loaded)
  * findDirectBus(from, to)  -> Promise<{ coords, parts, minutes, distance_m } | null>
- *   One bus, no changes: walk to a stop, ride, walk on. Same `parts` shape as mrtRoute.js.
+ *   One bus, no changes: walk to a stop, ride, walk on. Same `parts` shape as mrt.js.
+ * getBusArrivals(code)     -> Promise<[{ no, mins: [3, 11], load }] | null>  live, via /api/bus-arrival
  */
-import { distanceM, walkMinutes } from './travel.js'
-import { walkLeg } from './mrtRoute.js'
+import { distanceM } from '../distance.js'
+import { walkMinutes } from '../travel.js'
+import { walkLeg } from './walk.js'
 import { decodePolyline } from './polyline.js'
 
 const STOP_RADIUS_M = 450      // how far we'll ask someone to walk to or from a stop
@@ -133,4 +135,14 @@ export async function findDirectBus(from, to) {
   ]
   const coords = parts.flatMap((p) => p.coords)
   return { coords, parts, minutes: best.minutes, distance_m: null }
+}
+
+export async function getBusArrivals(code) {
+  try {
+    const res = await fetch(`/api/bus-arrival?code=${encodeURIComponent(code)}`)
+    if (!res.ok) return null
+    return (await res.json()).services
+  } catch {
+    return null
+  }
 }

@@ -1,12 +1,12 @@
 /**
- * Turn a route's `parts` (mrtRoute.js, busRoute.js, /api/transit) into plain-language steps
+ * Turn a route's `parts` (mrt.js, bus.js, onemap.js) into plain-language steps
  * for someone who has never used Singapore transport:
  *   { icon, colour, badge, title, detail, minutes }
  * e.g. "Take the Green line (EW) towards Tuas Link" · "9 stops · get off at City Hall".
  * Also: which part the traveller is on now, from their position.
  */
-import { LINES, BUS_HEX, WALK_HEX } from '../data/transitLines.js'
-import { projectOnRoute } from './routeGeometry.js'
+import { LINES, BUS_HEX, WALK_HEX } from '../../data/transitLines.js'
+import { projectOnRoute } from '../routeGeometry.js'
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
 const mins = (m) => (m ? ` · ${m} min` : '')
@@ -69,13 +69,14 @@ function rideStep(part, i, parts) {
     }
   }
   const line = lineInfo(part.line)
-  const direction = part.towards ? `towards ${part.towards}` : part.nextStop ? `(next stop ${part.nextStop})` : ''
+  // Platform signs show the terminus; on the Circle loop there is none, so say which way round.
+  const direction = part.towards ? `towards ${part.towards}` : part.loop || ''
   return {
-    icon: 'bi-train-front-fill',
+    icon: part.loop ? (part.loop === 'clockwise' ? 'bi-arrow-clockwise' : 'bi-arrow-counterclockwise') : 'bi-train-front-fill',
     colour: line.hex,
     badge: part.line,
     title: `${changing ? `Change at ${part.from?.name} to` : 'Take'} the ${line.colour} line ${direction}`.trim(),
-    detail: `${plural(part.stops, 'stop')} · get off at ${part.to?.name}`
+    detail: [part.nextStop && part.nextStop !== part.to?.name && `Next stop ${part.nextStop}`, plural(part.stops, 'stop'), `get off at ${part.to?.name}`].filter(Boolean).join(' · ')
   }
 }
 

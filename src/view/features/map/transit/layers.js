@@ -1,8 +1,7 @@
-import mrtLines from '../../../model/data/mrtLines.sg.json'
-import network from '../../../model/data/mrtNetwork.sg.json'
-import { LINES, BUS_HEX } from '../../../model/data/transitLines.js'
-import { loadBusData, nearbyStops } from '../../../model/services/busRoute.js'
-import { partColour } from '../../../model/services/transitSteps.js'
+import mrtLines from '../../../../model/data/mrtLines.sg.json'
+import network from '../../../../model/data/mrtNetwork.sg.json'
+import { LINES, BUS_HEX } from '../../../../model/data/transitLines.js'
+import { loadBusData, nearbyStops, partColour } from '../../../../model/services/transit/index.js'
 
 /**
  * Public transport on the map, so a first-time visitor can see where the trains and buses are:
