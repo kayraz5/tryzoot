@@ -75,6 +75,7 @@ export const useMissionStore = defineStore('mission', {
       const ctx = this.baseCtx({
         tripId: trip.id,
         origin: trip.origin,
+        returnTo: trip.returnTo,
         startMs: Date.parse(trip.start_at),
         mustReturnMs: Date.parse(trip.must_return_at),
         cleared: trip.cleared,
@@ -162,6 +163,7 @@ export const useMissionStore = defineStore('mission', {
       const ctx = this.baseCtx({
         tripId: m.trip_id,
         origin: m.origin,
+        returnTo: m.return_to,
         startMs: Date.parse(m.start_iso),
         mustReturnMs: Date.parse(m.must_return_iso),
         ...prefs,
@@ -327,6 +329,8 @@ export const useMissionStore = defineStore('mission', {
         if (l) await this.reorderByProximity()
       }
       ui.celebrate({ place, xp: leg.xp, chopEarned, area: place.area })
+      // Stamped together with someone from my quest? Co-op stamp notice after the celebration.
+      usePartyStore().checkCoop()
       return stamp
     },
 

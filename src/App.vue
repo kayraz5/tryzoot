@@ -1,12 +1,13 @@
 <script setup>
 import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import AppNav from './view/components/AppNav.vue'
-import ToastHost from './view/components/ToastHost.vue'
-import StampCelebration from './view/components/StampCelebration.vue'
-import RainOverlay from './view/components/RainOverlay.vue'
-import SkyEffects from './view/components/SkyEffects.vue'
-import CenterDialog from './view/components/CenterDialog.vue'
+import AppNav from './view/app/AppNav.vue'
+import ToastHost from './view/app/ToastHost.vue'
+import StampCelebration from './view/features/passport/StampCelebration.vue'
+import RainOverlay from './view/common/weather/RainOverlay.vue'
+import SkyEffects from './view/common/weather/SkyEffects.vue'
+import CenterDialog from './view/app/CenterDialog.vue'
+import QuestChatHost from './view/features/quests/QuestChatHost.vue'
 import { useUserStore } from './model/stores/user.js'
 import { usePassportStore } from './model/stores/passport.js'
 import { useUiStore } from './model/stores/ui.js'
@@ -30,4 +31,5 @@ watch(() => user.userId, (id) => passport.load(id), { immediate: true })
   <ToastHost />
   <StampCelebration />
   <CenterDialog />
+  <QuestChatHost v-if="user.isAuthed" />
 </template>
