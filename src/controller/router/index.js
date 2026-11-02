@@ -12,9 +12,6 @@ const routes = [
   { path: '/onboard', name: 'onboard', component: () => import('../../view/features/auth/OnboardView.vue'), meta: { auth: true } },
   { path: '/plan', name: 'plan', component: () => import('../../view/features/plan/PlanView.vue'), meta: { auth: true, onboarded: true, nav: true } },
   { path: '/mission', name: 'mission-active', component: () => import('../../view/features/mission/MissionView.vue'), meta: { auth: true, nav: true } },
-  // Focused timeline editor: durations/order, with the bottom nav hidden so it
-  // doesn't compete with the controls.
-  { path: '/mission/:id/schedule', name: 'mission-schedule', component: () => import('../../view/features/mission/ScheduleView.vue'), meta: { auth: true, nav: false } },
   { path: '/mission/:id', name: 'mission', component: () => import('../../view/features/mission/MissionView.vue'), meta: { auth: true, nav: true } },
   { path: '/map', name: 'map', component: () => import('../../view/features/map/MapView.vue'), meta: { auth: true, fullscreen: true } },
   // Dressing room for the 3D traveller (src/view/features/character/traveller.js). No auth so it's

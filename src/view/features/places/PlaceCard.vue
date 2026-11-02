@@ -50,7 +50,7 @@ const hoursUnknown = computed(() => props.place.hours_verified === false)
 				<PlaceArt v-else :place="place" :height="150" :rounded="false" />
 				<span v-if="hoursUnknown" class="badge-open unknown">Hours not confirmed</span>
 				<span v-else class="badge-open" :class="{ closed: !openNow }">{{ openNow ? 'Open now' : 'Closed now' }}</span>
-				<span v-if="photo?.credit" class="credit" :title="`${photo.credit}${photo.license ? ' · ' + photo.license : ''}`">© {{ photo.credit }}</span>
+				<span v-if="photo?.credit" class="credit text-truncate" :title="`${photo.credit}${photo.license ? ' · ' + photo.license : ''}`">© {{ photo.credit }}</span>
 			</div>
 			<div class="body">
 				<h3 class="name">{{ place.name }}</h3>
@@ -82,9 +82,9 @@ const hoursUnknown = computed(() => props.place.hours_verified === false)
 	font-size: 0.68rem; font-weight: 800; background: var(--zt-yellow); color: #111; border: 2px solid #111;
 }
 .badge-open.closed { background: #fff; color: #555; border-color: #555; }
-.badge-open.unknown { background: #fff1d6; color: #7c2d12; border-color: #b45309; }
+.badge-open.unknown { background: var(--zt-warn-bg); color: #7c2d12; border-color: #b45309; }
 .credit {
-	position: absolute; right: 6px; bottom: 6px; max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+	position: absolute; right: 6px; bottom: 6px; max-width: 70%;
 	font-size: 0.58rem; color: #fff; background: rgba(0, 0, 0, 0.45); padding: 1px 6px; border-radius: 6px;
 }
 .body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }

@@ -135,7 +135,7 @@ function rowStyle(i) {
 	<section v-if="m && ret" ref="rootEl" class="zt-card p-3 editor" aria-label="Edit order and stay times">
 		<div class="d-flex justify-content-between align-items-start gap-2">
 			<div>
-				<div class="eyebrow">Spare before the airport</div>
+				<div class="zt-label">Spare before the airport</div>
 				<div class="spare" :class="spareTone">{{ formatDuration(spareMin) }}</div>
 				<div class="tiny text-muted">Back by <b class="mono">{{ formatTime(ret.arrive_iso) }}</b> · latest <b class="mono">{{ formatTime(ret.arrive_by) }}</b></div>
 			</div>
@@ -190,7 +190,6 @@ function rowStyle(i) {
 
 <style scoped>
 .editor { scroll-margin-top: 12px; }
-.eyebrow { font-size: 0.68rem; color: var(--zt-muted); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
 .spare { font-family: var(--zt-font-head); font-size: 2rem; font-weight: 700; line-height: 1.05; }
 .spare.warn { color: var(--zt-orange); }
 .spare.danger { color: var(--zt-pink); }

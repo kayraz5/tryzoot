@@ -114,8 +114,8 @@ const checkedOn = computed(() => result.value && new Date(result.value.checkedOn
 <style scoped>
 .verdict { display: flex; gap: 8px; align-items: flex-start; font-weight: 800; margin-bottom: 8px; padding: 10px 12px; border-radius: 14px; border: 2px solid var(--zt-line); }
 .verdict i { font-size: 1.1rem; line-height: 1.2; }
-.verdict.ok { background: #d7f5dd; color: #11461c; }
+.verdict.ok { background: var(--zt-ok-bg); color: #11461c; }
 .verdict.maybe { background: var(--zt-yellow-pale); color: #111; }
-.verdict.stop { background: #ffd9de; color: #5b0d18; }
+.verdict.stop { background: var(--zt-stop-bg); color: #5b0d18; }
 .entry a { font-weight: 700; }
 </style>
