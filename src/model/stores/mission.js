@@ -9,6 +9,7 @@ import { now } from '../services/clock.js'
 import { geo, hasFix } from '../services/geo.js'
 import { SIDEQUESTS } from '../data/sidequests.js'
 import { useUiStore } from './ui.js'
+import { useTripStore } from './trip.js'
 import { useUserStore } from './user.js'
 import { usePassportStore } from './passport.js'
 import { usePartyStore } from './party.js'
@@ -366,6 +367,29 @@ export const useMissionStore = defineStore('mission', {
       await this.persist(this.mission)
     },
 
+    /**
+     * "Finish early": skip every stop still ahead and head back now. The return leg is re-timed
+     * from here so the map guides them home; checking in at the airport completes the quest as usual.
+     * Joined quests are left properly first, so the host's group isn't left waiting.
+     */
+    async finishEarly() {
+      if (!this.mission) return false
+      for (const partyId of Object.keys(this.mission.joined || {})) {
+        try { await this.leaveQuest(partyId) } catch (err) { console.warn('[mission] leave on finish early:', err.message) }
+      }
+      await loadCatalog()
+      const draft = JSON.parse(JSON.stringify(this.mission))
+      const skipped = draft.legs.filter((l) => l.kind === 'visit' && l.status === 'pending')
+      skipped.forEach((l) => { l.status = 'skipped' })
+      draft.ended_early = true
+      const departMs = Date.parse(draft.start_iso) + draft.buffers.exit_min * 60000
+      const start = now() >= departMs ? { point: this.here(), ms: now() } : { point: draft.origin, ms: departMs }
+      // Heading straight back is always allowed, even if it's already late: no refusal here.
+      const { mission } = retimeMission(draft, { start, catalogById: placeById.value })
+      await this.persist(mission)
+      return skipped.length
+    },
+
     /** Back at the gate before arrive_by → on-time XP bonus. */
     async completeReturn() {
       const ret = this.returnLeg
@@ -375,6 +399,8 @@ export const useMissionStore = defineStore('mission', {
       ret.stamped_at = new Date(now()).toISOString()
       this.mission.completed = true
       await this.persist(this.mission)
+      // This layover is over: the next visit to the plan page starts a fresh one.
+      useTripStore().startNewLayover()
       if (onTime) {
         const user = useUserStore()
         const db = await getDb()
