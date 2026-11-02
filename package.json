@@ -11,7 +11,8 @@
     "sync:places": "node scripts/sync-places.mjs",
     "sync:mrt-lines": "node scripts/sync-mrt-lines.mjs",
     "test:unit": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "video:faststart": "node scripts/faststart-video.mjs src/assets/videos/landing_page_video.mp4 public/story/flight.mp4"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
