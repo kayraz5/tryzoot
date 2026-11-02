@@ -279,7 +279,6 @@ a { text-underline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
->>>>>>>>> Temporary merge branch 2
 
 /* Shared look for the map HUD chips (Singapore, weather, GPS button, countdown) */
 .zt-hud-chip {
