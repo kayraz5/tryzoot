@@ -7,14 +7,14 @@ import { useUserStore } from '../../model/stores/user.js'
  * Heavy 3D views are lazy chunks so the landing page stays fast on phones.
  */
 const routes = [
-  { path: '/', name: 'landing', component: () => import('../../view/features/landing/LandingView.vue') },
+  // The landing page is "The Layover Flight": one continuous scroll-driven world
+  // (src/view/features/story/). The previous LandingView.vue is kept on disk and
+  // unreferenced, so reverting is a one-line change back to it.
+  { path: '/', name: 'landing', component: () => import('../../view/features/story/StoryView.vue') },
   { path: '/auth', name: 'auth', component: () => import('../../view/features/auth/AuthView.vue') },
   { path: '/onboard', name: 'onboard', component: () => import('../../view/features/auth/OnboardView.vue'), meta: { auth: true } },
   { path: '/plan', name: 'plan', component: () => import('../../view/features/plan/PlanView.vue'), meta: { auth: true, onboarded: true, nav: true } },
   { path: '/mission', name: 'mission-active', component: () => import('../../view/features/mission/MissionView.vue'), meta: { auth: true, nav: true } },
-  // Focused timeline editor: durations/order, with the bottom nav hidden so it
-  // doesn't compete with the controls.
-  { path: '/mission/:id/schedule', name: 'mission-schedule', component: () => import('../../view/features/mission/ScheduleView.vue'), meta: { auth: true, nav: false } },
   { path: '/mission/:id', name: 'mission', component: () => import('../../view/features/mission/MissionView.vue'), meta: { auth: true, nav: true } },
   { path: '/map', name: 'map', component: () => import('../../view/features/map/MapView.vue'), meta: { auth: true, fullscreen: true } },
   // Dressing room for the 3D traveller (src/view/features/character/traveller.js). No auth so it's
