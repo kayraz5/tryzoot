@@ -6,15 +6,17 @@
  *
  * getMrtRoute(from, to) -> Promise<{ coords: [[lng,lat]…], parts, minutes, distance_m } | null>
  * Returns null (never throws) if any piece can't be resolved — the walk legs go through
- * routing.js's own provider-chain getWalkRoute(), and the ride itself fails closed if a
+ * walk.js (routing.js's provider chain, or an indoor hop), and the ride itself fails closed if a
  * hub doesn't land near its line's geometry. The Sentosa Express has no real-geometry
  * source (see scripts/sync-mrt-lines.mjs), so its short monorail hops are drawn station to station.
  * Callers keep showing the last-known-good route on a null, same contract as
  * getWalkRoute()/getDriveRoute() — see refreshPlanned()/refreshLiveRoute() in MapView.vue.
  */
-import mrtLines from '../data/mrtLines.sg.json'
-import { HUBS, transit, distanceM, rideMinutes } from './travel.js'
-import { getWalkRoute } from './routing.js'
+import mrtLines from '../../data/mrtLines.sg.json'
+import { distanceM } from '../distance.js'
+import { transit } from '../travel.js'
+import { HUBS, rideMinutes } from './network.js'
+import { walkLeg } from './walk.js'
 
 const MAX_HUB_TO_TRACK_M = 300 // a hub coordinate that lands further than this from its own line's geometry is treated as a data mismatch, not a route
 
@@ -65,27 +67,11 @@ function exitNear(hub, p) {
   return best ? { lat: best.lat, lng: best.lng, exit: best.name } : { lat: hub.lat, lng: hub.lng, exit: null }
 }
 
-const INDOOR_HOP_M = 300 // terminal ↔ station, platform ↔ exit: indoors, where street routers can't go
-
-/**
- * Walking geometry between two points. Street routers can't see inside Changi's terminals
- * or stations, so for a short hop they either fail or detour around the outside (3 km for
- * T3 → Changi Airport MRT). There, and only there, a direct connector is the honest line.
- */
-export async function walkLeg(a, b) {
-  const route = await getWalkRoute(a, b)
-  const straight = distanceM(a, b)
-  if (straight <= INDOOR_HOP_M && (!route || route.distance_m > straight * 4 + 200)) {
-    return { coords: [[a.lng, a.lat], [b.lng, b.lat]], distance_m: straight }
-  }
-  return route
-}
-
 const stop = (id) => ({ id, name: HUBS[id].name, code: HUBS[id].code, lat: HUBS[id].lat, lng: HUBS[id].lng })
 
 /**
  * Also returns `parts`: one entry per thing the traveller does, in order, for the map
- * (each part drawn in its own style) and the step-by-step card (transitSteps.js):
+ * (each part drawn in its own style) and the step-by-step card (steps.js):
  *   { mode: 'walk', coords, minutes, to: { name, kind: 'station'|'place', exit? } }
  *   { mode: 'mrt', coords, minutes, line, from, to, stops, towards, nextStop }
  */
@@ -124,6 +110,7 @@ export async function getMrtRoute(from, to) {
       to: stop(run.to),
       stops: run.stops,
       towards: run.towards && HUBS[run.towards].name,
+      loop: run.loop,
       nextStop: HUBS[run.nextStop].name
     })
   }

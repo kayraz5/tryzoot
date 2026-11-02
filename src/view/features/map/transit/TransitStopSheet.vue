@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { LINES } from '../../../model/data/transitLines.js'
-import { getBusArrivals } from '../../../model/services/transitRoute.js'
+import { LINES } from '../../../../model/data/transitLines.js'
+import { getBusArrivals } from '../../../../model/services/transit/index.js'
 
 /**
  * What you see after tapping a station or bus stop on the map.
