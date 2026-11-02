@@ -20,7 +20,10 @@
   --zt-soft-line: #e9dfb4;    /* hairlines inside cards */
   --zt-shadow-color: #111111;
   --zt-glass: #ffffff;        /* HUD chips: solid, not blurred */
+  /* Ink for yellow surfaces. These two do NOT flip: the yellows are brand
+     colours that stay put in dark mode, so what sits on them must too. */
   --zt-on-yellow: #111111;
+  --zt-muted-on-yellow: #5f5947;
 
   --zt-bw: 2.5px;
   --zt-shadow: 4px 4px 0 var(--zt-shadow-color);
