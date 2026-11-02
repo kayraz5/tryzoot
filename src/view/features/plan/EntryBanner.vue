@@ -53,10 +53,10 @@ function toggle() {
 
 <style scoped>
 .entry-drop { border: var(--zt-bw) solid var(--zt-line); border-radius: 16px; font-size: 0.86rem; color: #111; overflow: hidden; }
-.entry-drop.warn { background: #fff1d6; }
+.entry-drop.warn { background: var(--zt-warn-bg); }
 .entry-drop.warn .entry-toggle > .bi { color: #b45309; }
 .entry-drop.info { background: var(--zt-yellow-pale); }
-.entry-drop.ok { background: #d7f5dd; }
+.entry-drop.ok { background: var(--zt-ok-bg); }
 .entry-drop.ok .entry-toggle > .bi { color: #15803d; }
 .entry-head { display: flex; align-items: center; gap: 4px; padding-right: 10px; }
 .entry-toggle {

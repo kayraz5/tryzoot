@@ -180,7 +180,7 @@ const replans = [
           <template v-if="isDone(leg)">
             <li v-if="showDone" class="tl-done">
               <div class="dot done"><i class="bi" :class="leg.status === 'stamped' ? 'bi-patch-check-fill' : 'bi-skip-forward-fill'"></i></div>
-              <div class="done-row small">
+              <div class="min-w-0 text-truncate small">
                 <RouterLink :to="`/place/${leg.place_id}`" class="text-reset fw-800">{{ leg.name }}</RouterLink>
                 <span class="text-muted"> · {{ leg.status === 'stamped' ? `Stamped ${leg.stamped_at ? formatTime(leg.stamped_at) : ''}` : 'Skipped' }}</span>
               </div>
@@ -313,7 +313,6 @@ const replans = [
 .tl-done-toggle, .tl-done { display: flex; align-items: center; min-height: 34px; padding-bottom: 6px; }
 .tl-done { opacity: 0.6; }
 .dot.done { width: 28px; height: 28px; left: 5px; top: 3px; font-size: 0.8rem; background: var(--zt-card); color: var(--zt-muted); border-color: var(--zt-muted); }
-.done-row { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stop-card { box-shadow: var(--zt-shadow-sm); }
 .stop-card.joined { border-color: var(--zt-pink); }
 .why { color: var(--zt-muted); }
