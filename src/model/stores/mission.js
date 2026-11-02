@@ -27,7 +27,8 @@ export const useMissionStore = defineStore('mission', {
     status: 'idle', // idle | planning | ready | error
     statusText: '',
     refusal: null,
-    lastSource: null
+    lastSource: null,
+    previousPlan: null // the plan before "New itinerary", so it can be brought back
   }),
   getters: {
     legs: (s) => s.mission?.legs || [],
@@ -143,7 +144,7 @@ export const useMissionStore = defineStore('mission', {
      * Mid-walk replan: keeps stamped legs, replaces only future legs.
      * mode: 'behind' | 'less-walking' | 'swap' | 'rain'
      */
-    async replan(mode) {
+    async replan(mode, { avoid = [], quiet = false } = {}) {
       const m = this.mission
       if (!m) return
       const joined = upcomingJoined(m.legs)
@@ -155,6 +156,7 @@ export const useMissionStore = defineStore('mission', {
       const exclude = new Set(m.legs.filter((l) => l.kind === 'visit' && l.status !== 'pending').map((l) => l.place_id))
       const prefs = { ...m.prefs }
       let forceIndoor = false
+      avoid.forEach((id) => exclude.add(id))
       if (mode === 'swap' && this.nextLeg?.kind === 'visit') exclude.add(this.nextLeg.place_id)
       if (mode === 'less-walking') { prefs.maxWalk = 8; prefs.energy = 'low' }
       if (mode === 'rain') forceIndoor = true
@@ -171,20 +173,53 @@ export const useMissionStore = defineStore('mission', {
         style: m.style,
         forceIndoor,
         excludeIds: exclude,
-        start: { point: this.here(), ms: now() },
+        // Not left yet (e.g. planned days ahead)? Rewrite from the start, not from here and now.
+        start: now() >= departOf(m) ? { point: this.here(), ms: now() } : { point: m.origin, ms: departOf(m) },
         keepVisits: keptVisits(m, placeById.value),
         meta: { id: m.id }
       })
       const r = await buildMission(ctx, { onStatus: (t) => (this.statusText = t) })
       this.status = 'ready'
       if (!r.ok) {
-        useUiStore().toast(r.reason, 'warning', 5000)
+        if (!quiet) useUiStore().toast(r.reason, 'warning', 5000)
         return false
       }
       r.mission.prefs = { ...r.mission.prefs, ...prefs }
       r.mission.replans = (m.replans || 0) + 1
       await this.persist(r.mission)
       useUiStore().toast(labelFor(mode) + ': future stops rewritten.', 'success')
+      return true
+    },
+
+    /**
+     * "New itinerary": rewrite the stops ahead with different places (stamped ones stay). The
+     * offline planner is deterministic, so the current stops are avoided to get a real change;
+     * if that leaves too little to choose from, only every other one is avoided.
+     * The old plan is kept in `previousPlan` so it can be brought back.
+     */
+    async regenerate() {
+      const m = this.mission
+      if (!m) return false
+      const before = JSON.parse(JSON.stringify(m))
+      const ahead = m.legs.filter((l) => l.kind === 'visit' && l.status === 'pending' && !l.fixed).map((l) => l.place_id)
+      let ok = await this.replan('fresh', { avoid: ahead, quiet: ahead.length > 1 })
+      if (!ok && ahead.length > 1) ok = await this.replan('fresh', { avoid: ahead.filter((_, i) => i % 2 === 0) })
+      if (ok) this.previousPlan = before
+      return ok
+    },
+
+    /** Undo "New itinerary", unless something was stamped since (that progress would be lost). */
+    async restorePreviousPlan() {
+      const prev = this.previousPlan
+      this.previousPlan = null
+      if (!prev || prev.id !== this.mission?.id) return false
+      const stamped = (x) => x.legs.filter((l) => l.status === 'stamped').length
+      if (stamped(prev) !== stamped(this.mission)) {
+        useUiStore().toast('You stamped a stop since then, so the old plan can’t come back.', 'warning', 4000)
+        return false
+      }
+      await this.persist(prev)
+      useUiStore().toast('Previous plan is back.', 'success')
       return true
     },
 
@@ -203,7 +238,7 @@ export const useMissionStore = defineStore('mission', {
         useUiStore().toast(error, 'warning', 4000)
         return false
       }
-      const departMs = Date.parse(m.start_iso) + m.buffers.exit_min * 60000
+      const departMs = departOf(m)
       const start = now() >= departMs ? { point: this.here(), ms: now() } : { point: m.origin, ms: departMs }
       const { mission, problems } = retimeMission(draft, { start, catalogById: placeById.value })
       if (problems.length) {
@@ -382,7 +417,7 @@ export const useMissionStore = defineStore('mission', {
       const skipped = draft.legs.filter((l) => l.kind === 'visit' && l.status === 'pending')
       skipped.forEach((l) => { l.status = 'skipped' })
       draft.ended_early = true
-      const departMs = Date.parse(draft.start_iso) + draft.buffers.exit_min * 60000
+      const departMs = departOf(draft)
       const start = now() >= departMs ? { point: this.here(), ms: now() } : { point: draft.origin, ms: departMs }
       // Heading straight back is always allowed, even if it's already late: no refusal here.
       const { mission } = retimeMission(draft, { start, catalogById: placeById.value })
@@ -626,5 +661,8 @@ function retime(m, idx, fromMs, fromPoint, opts) {
 }
 
 function labelFor(mode) {
-  return { behind: "I'm behind", 'less-walking': 'Less walking', swap: 'Stop swapped', rain: 'Rain plan' }[mode] || 'Replanned'
+  return { behind: "I'm behind", 'less-walking': 'Less walking', swap: 'Stop swapped', rain: 'Rain plan', fresh: 'New itinerary' }[mode] || 'Replanned'
 }
+
+/** When the traveller leaves the airport: the trip start plus the immigration buffer. */
+const departOf = (m) => Date.parse(m.start_iso) + m.buffers.exit_min * 60000
