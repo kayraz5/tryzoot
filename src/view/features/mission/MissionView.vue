@@ -14,6 +14,7 @@ import TimeToGate from './TimeToGate.vue'
 import LayoverCard from './LayoverCard.vue'
 import StopGallery from '../../common/StopGallery.vue'
 import PlacePicker from './PlacePicker.vue'
+import ScheduleEditor from './ScheduleEditor.vue'
 import OpenToCompanySheet from '../quests/OpenToCompanySheet.vue'
 
 const route = useRoute()
@@ -54,6 +55,7 @@ async function focusCurrent() {
   setTimeout(() => { if (flash.value === next.seq) flash.value = null }, 1600)
 }
 const companyOpen = ref(false) // "Open to company" sheet (group quests)
+const editingSchedule = ref(false) // stop cards swap for the compact order + stay-time editor
 const style = computed(() => STYLES[m.value?.style] || STYLES.budget)
 // Live "leave by" from where the traveller is; refreshed every 30 s of the app clock.
 const clockStep = computed(() => Math.floor(tick.value / 30000))
@@ -102,7 +104,7 @@ function onPick(place) {
   const { mode, leg } = picker.value
   run(() => (mode === 'swap' ? store.swapStop(leg, place) : store.addStop(place, leg?.place_id ?? null)))
 }
-watch(() => m.value?.id, () => { editing.value = null; picker.value = null })
+watch(() => m.value?.id, () => { editing.value = null; picker.value = null; editingSchedule.value = false })
 
 const replans = [
   { mode: 'behind', label: "I'm behind", icon: 'bi-hourglass-bottom' },
@@ -142,9 +144,10 @@ const replans = [
           <span><i class="bi bi-patch-check"></i> {{ store.stampedCount }}/{{ store.visitLegs.length }} stamped</span>
         </div>
         <div class="mt-2">
-          <RouterLink :to="`/mission/${m.id}/schedule`" class="btn btn-sm btn-soft">
-            <i class="bi bi-calendar3"></i> Edit schedule
-          </RouterLink>
+          <button v-if="pendingVisits.length" type="button" class="btn btn-sm btn-soft" :class="{ active: editingSchedule }"
+            :aria-expanded="editingSchedule" @click="editingSchedule = !editingSchedule">
+            <i class="bi" :class="editingSchedule ? 'bi-check-lg' : 'bi-arrow-down-up'"></i> {{ editingSchedule ? 'Done editing' : 'Edit order & times' }}
+          </button>
         </div>
       </header>
 
@@ -159,7 +162,9 @@ const replans = [
         <button class="btn btn-sm" :disabled="store.status === 'planning'" @click="store.replan('rain')">Indoor rewrite</button>
       </div>
 
-      <ol class="timeline list-unstyled">
+      <ScheduleEditor v-if="editingSchedule" class="mb-3" @done="editingSchedule = false" />
+
+      <ol v-else class="timeline list-unstyled">
         <li class="tl-start">
           <div class="dot start"><i class="bi bi-airplane-fill"></i></div>
           <div class="small"><b class="mono">{{ formatTime(Date.parse(m.start_iso) + m.buffers.exit_min * 60000) }}</b> Leave {{ m.origin.label }}<span v-if="m.buffers.exit_min" class="text-muted"> (after {{ m.buffers.exit_min }} min immigration)</span></div>
@@ -175,7 +180,7 @@ const replans = [
           <template v-if="isDone(leg)">
             <li v-if="showDone" class="tl-done">
               <div class="dot done"><i class="bi" :class="leg.status === 'stamped' ? 'bi-patch-check-fill' : 'bi-skip-forward-fill'"></i></div>
-              <div class="done-row small">
+              <div class="min-w-0 text-truncate small">
                 <RouterLink :to="`/place/${leg.place_id}`" class="text-reset fw-800">{{ leg.name }}</RouterLink>
                 <span class="text-muted"> · {{ leg.status === 'stamped' ? `Stamped ${leg.stamped_at ? formatTime(leg.stamped_at) : ''}` : 'Skipped' }}</span>
               </div>
@@ -308,7 +313,6 @@ const replans = [
 .tl-done-toggle, .tl-done { display: flex; align-items: center; min-height: 34px; padding-bottom: 6px; }
 .tl-done { opacity: 0.6; }
 .dot.done { width: 28px; height: 28px; left: 5px; top: 3px; font-size: 0.8rem; background: var(--zt-card); color: var(--zt-muted); border-color: var(--zt-muted); }
-.done-row { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stop-card { box-shadow: var(--zt-shadow-sm); }
 .stop-card.joined { border-color: var(--zt-pink); }
 .why { color: var(--zt-muted); }
