@@ -103,11 +103,10 @@ import { formatTime } from '../../../model/services/hours.js'
 import { getWalkRoute, getDriveRoute } from '../../../model/services/routing.js'
 // Same contract for public-transport legs: OneMap (bus + MRT) when the server has keys, else
 // our own MRT (walk + real track + walk) or direct-bus route. Each comes back as `parts`.
-import { getTransitRoute } from '../../../model/services/transitRoute.js'
-import { findDirectBus } from '../../../model/services/busRoute.js'
-import { transitSteps, currentPartIndex, transferPoints } from '../../../model/services/transitSteps.js'
-import { addTransitLayers, syncBusStops, setTransitTheme, setTransitVisible, setTransferPoints, routeFeatures, TAPPABLE_LAYERS } from './transitLayers.js'
-import TransitStopSheet from './TransitStopSheet.vue'
+import { getTransitRoute, currentPartIndex, transferPoints } from '../../../model/services/transit/index.js'
+import { setTransitTheme, setTransferPoints, routeFeatures } from './transit/layers.js'
+import { useTransit } from './transit/useTransit.js'
+import TransitStopSheet from './transit/TransitStopSheet.vue'
 // Trim a resolved route to the traveller's current position so the drawn line
 // starts exactly at the character (no straight "tail" from a stale route origin).
 import { trimRouteAtPosition } from '../../../model/services/routeGeometry.js'
@@ -166,7 +165,6 @@ const ROUTE_DEVIATION_M = 20
 // the traveller is clearly somewhere else, or every so often in case a quicker one appears.
 const TRANSIT_DEVIATION_M = 150
 const TRANSIT_REFRESH_MS = 30000
-const BUS_STOPS_RELOAD_M = 400 // reload nearby bus stops after the camera moves this far
 
 /** Demo-Walk keyboard controls: key → bearing offset relative to the map's north. */
 const KEY_DIRECTIONS = {
@@ -262,13 +260,6 @@ const wasdEnabled = ref(true)           // keyboard movement during Demo-Walk
 // the legs after it. Both are produced by refreshLiveRoute/refreshPlannedRoutes.
 const liveRoute = ref(null)             // { coords, parts?, from, to }
 const plannedSegments = ref([])         // [{ coords, mode, parts?, active }]
-
-// Public transport: network layers on/off, the stop the traveller tapped, and a bus
-// alternative to show when a leg would otherwise be a taxi.
-const transitVisible = ref(true)
-const selectedStop = ref(null)          // { kind: 'station'|'bus', name, … } from a tap
-const busAlt = ref(null)                // { service, stop, minutes } or null
-let busStopsAt = null                   // map centre bus stops were last loaded around
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 4. Stores & derived mission state
@@ -422,9 +413,7 @@ function createMap() {
 
 /** First style load: add quest layers and start rendering. */
 function onMapLoad() {
-  addTransitLayers(map, mapTheme.value === 'theme')
-  map.on('click', onTransitTap)
-  map.on('moveend', loadBusStopsInView)
+  attachTransit(map, mapTheme.value === 'theme')
   addQuestLayers(map)
   player = createPlayerMarker()
   // The map opens with buildings hidden and 3D off. Both are user choices in the
@@ -1228,49 +1217,9 @@ function openAirportHelp() {
   airportOpen.value = true
 }
 
-// ── Public transport ──────────────────────────────────────────────────────
-
-/** Plain-language steps for the leg being travelled (only for bus/MRT legs). */
-const liveParts = computed(() => (liveRoute.value?.to === next.value ? liveRoute.value?.parts : null) || null)
-const liveSteps = computed(() => transitSteps(liveParts.value))
-/** Which step the traveller is on, from where they are along the route. */
-const liveStepIndex = computed(() => currentPartIndex(liveParts.value, here.value))
-
-/** Tap on a station or bus stop: open its sheet (lines, or live bus arrivals). */
-function onTransitTap(event) {
-  if (!transitVisible.value) return
-  const { x, y } = event.point
-  const layers = TAPPABLE_LAYERS.filter((id) => map.getLayer(id))
-  const hit = map.queryRenderedFeatures([[x - 14, y - 14], [x + 14, y + 14]], { layers })[0]
-  if (!hit) return
-  const [lng, lat] = hit.geometry.coordinates
-  selectedStop.value = { ...hit.properties, lat, lng }
-}
-
-/** Bus stops only show at street zoom, so load the ones around wherever the camera is. */
-function loadBusStopsInView() {
-  if (!map || map.getZoom() < 14.5) return
-  const { lat, lng } = map.getCenter()
-  if (busStopsAt && distanceM(busStopsAt, { lat, lng }) < BUS_STOPS_RELOAD_M) return
-  busStopsAt = { lat, lng }
-  syncBusStops(map, busStopsAt)
-}
-
-/** When a leg is a taxi (no train nearby), look for a single bus that does the job. */
-async function refreshBusAlternative() {
-  busAlt.value = null
-  const target = next.value
-  if (!target || !here.value || liveTravel.value?.mode !== 'taxi') return
-  const route = await findDirectBus({ ...here.value }, target).catch(() => null)
-  const bus = route?.parts.find((p) => p.mode === 'bus')
-  if (bus && next.value === target) busAlt.value = { service: bus.service, stop: bus.from.name, minutes: route.minutes }
-}
-watch(() => [next.value, liveTravel.value?.mode], refreshBusAlternative)
-
-watch(transitVisible, (visible) => {
-  if (map) setTransitVisible(map, visible)
-  if (!visible) selectedStop.value = null
-})
+// ── Public transport (state and handlers in transit/useTransit.js) ──────────
+const { transitVisible, selectedStop, busAlt, liveSteps, liveStepIndex, attachTransit } =
+  useTransit({ getMap: () => map, liveRoute, next, here, liveTravel })
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 11. Demo-Walk (fake GPS you move with WASD / taps)
