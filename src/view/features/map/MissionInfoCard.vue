@@ -5,7 +5,7 @@ import { placeStampUrl } from '../../../model/services/stampArt.js'
 import QuestCoopChip from '../quests/QuestCoopChip.vue'
 import QuestChatButton from '../quests/QuestChatButton.vue' // "Chat with Mei" (only while in a social quest)
 import QuestGoSolo from '../quests/QuestGoSolo.vue'         // "Go solo" link (only after joining someone's quest)
-import TransitSteps from './TransitSteps.vue'               // MRT/bus step-by-step for the current leg
+import TransitSteps from './transit/TransitSteps.vue'               // MRT/bus step-by-step for the current leg
 
 /**
  * Next-stop card ("center console") shown at the bottom of the map.
