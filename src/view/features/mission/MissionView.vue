@@ -108,6 +108,13 @@ function onPick(place) {
 }
 watch(() => m.value?.id, () => { editing.value = null; picker.value = null; editingSchedule.value = false })
 
+// "New itinerary": different stops for the rest of the plan (the old one can be brought back).
+async function regenerate() {
+  editing.value = null
+  picker.value = null
+  if (await store.regenerate()) focusCurrent()
+}
+
 // Checked in back at the airport: a summary card and a fresh layover instead of the edit tools.
 const completed = computed(() => Boolean(m.value?.completed))
 const home = computed(() => (m.value?.return_to || m.value?.origin)?.label || 'the airport')
@@ -169,11 +176,21 @@ const replans = [
           <span><i class="bi bi-geo-alt"></i> From {{ m.origin.label }}</span>
           <span><i class="bi bi-patch-check"></i> {{ store.stampedCount }}/{{ store.visitLegs.length }} stamped</span>
         </div>
-        <div class="mt-2">
+        <div class="mt-2 d-flex flex-wrap gap-2">
           <button v-if="pendingVisits.length" type="button" class="btn btn-sm btn-soft" :class="{ active: editingSchedule }"
             :aria-expanded="editingSchedule" @click="editingSchedule = !editingSchedule">
             <i class="bi" :class="editingSchedule ? 'bi-check-lg' : 'bi-arrow-down-up'"></i> {{ editingSchedule ? 'Done editing' : 'Edit order & times' }}
           </button>
+          <button v-if="pendingVisits.length && !editingSchedule" type="button" class="btn btn-sm btn-soft"
+            :disabled="store.status === 'planning'" @click="regenerate">
+            <i class="bi" :class="store.status === 'planning' ? 'bi-hourglass-split' : 'bi-shuffle'"></i>
+            {{ store.status === 'planning' ? 'Finding new stops…' : 'New itinerary' }}
+          </button>
+        </div>
+        <div v-if="store.previousPlan" class="undo-strip mt-2" role="status">
+          <span class="small">New stops picked. Liked the old plan better?</span>
+          <button type="button" class="btn btn-sm btn-link p-0 fw-800" @click="store.restorePreviousPlan()">Bring it back</button>
+          <button type="button" class="btn-close btn-sm ms-auto" aria-label="Keep the new plan" @click="store.previousPlan = null"></button>
         </div>
       </header>
 
@@ -374,6 +391,8 @@ const replans = [
 .why { color: var(--zt-muted); }
 .hours-note { color: #b45309; }
 [data-bs-theme='dark'] .hours-note { color: var(--zt-yellow); }
+.undo-strip { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 2px solid var(--zt-line); border-radius: 14px; background: var(--zt-yellow-pale); color: #111; }
+.undo-strip .btn-link { color: #111; white-space: nowrap; }
 .done-card { background: var(--zt-yellow-pale); color: #111; }
 .done-icon { font-size: 2rem; color: #b45309; }
 .finish { border-top: 2px dashed var(--zt-soft-line); padding-top: 12px; }
