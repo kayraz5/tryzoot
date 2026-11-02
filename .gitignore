@@ -44,3 +44,7 @@ playwright-report/
 # env
 .env
 .vercel
+
+# scroll-craft build workspace: the verification screenshots under lab/ are
+# regenerable and large.
+scrollcraft/builds/*/lab/
