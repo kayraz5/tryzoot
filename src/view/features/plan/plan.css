@@ -11,7 +11,17 @@
 	padding: 10px 14px; border: var(--zt-bw) solid var(--zt-line); border-radius: 14px;
 	background: var(--zt-card); color: var(--zt-ink); font-size: 0.85rem;
 }
-.plan-field-btn:hover:not(:disabled) { background: var(--zt-yellow-pale); }
+/* The hover surface is a brand yellow, identical in both themes, so dark mode's
+   ink (#fff4c2 — this exact background) and its muted khaki vanish on it.
+   Rebinding the two ink tokens on the button fixes its own text and everything
+   inside that reads them, including LayoverSummary's scoped label colours.
+   --zt-line is deliberately untouched: it paints this button's own border,
+   which still sits against the dark card behind it. */
+.plan-field-btn:hover:not(:disabled) {
+	background: var(--zt-yellow-pale);
+	--zt-ink: var(--zt-on-yellow);
+	--zt-muted: var(--zt-muted-on-yellow);
+}
 .plan-step-h { font-family: var(--zt-font-display); text-transform: uppercase; letter-spacing: 0.02em; line-height: 0.95; font-weight: 400; font-size: 2rem; margin: 0; }
 /* Picked state shared by interest tiles and style cards */
 .plan-pick {

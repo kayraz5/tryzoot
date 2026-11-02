@@ -140,7 +140,7 @@ const open = ref(false)
 		<!-- What's happening at the focus time -->
 		<div class="status">
 			<i class="bi" :class="doing.icon" aria-hidden="true"></i>
-			<span class="min-w-0 text-truncate"><b>{{ doing.text }}</b><span v-if="doing.sub" class="muted"> {{ doing.sub }}</span></span>
+			<span class="min-w-0 text-truncate"><b>{{ doing.text }}</b><span v-if="doing.sub" class="text-muted doing-sub">{{ doing.sub }}</span></span>
 			<button v-if="!following && nowInWindow" type="button" class="link" @click="scrubMs = null">Back to now</button>
 			<span v-else-if="following && nowInWindow" class="hint">Drag the bar to look ahead</span>
 		</div>
@@ -153,7 +153,7 @@ const open = ref(false)
 		<ul v-show="open" id="layover-rows" class="rows">
 			<li v-for="s in segs" :key="s.key" class="row-line" :class="{ focus: focusSeg?.key === s.key }">
 				<i class="swatch" :class="s.key" aria-hidden="true"></i>
-				<span class="name">{{ s.label }}</span>
+				<span class="min-w-0 text-truncate">{{ s.label }}</span>
 				<span class="when mono">{{ formatTime(s.from) }} – {{ formatTime(s.to) }}</span>
 				<span class="dur mono">{{ formatDuration(s.min) }}</span>
 			</li>
@@ -163,8 +163,6 @@ const open = ref(false)
 
 <style scoped>
 .layover { padding: 18px 18px 6px; }
-.min-w-0 { min-width: 0; }
-.muted { color: var(--zt-muted); font-weight: 500; }
 
 /* Summary */
 .head {
@@ -184,6 +182,7 @@ const open = ref(false)
 .sub > span { white-space: nowrap; }
 .sub > span + span { color: var(--zt-muted); }
 .sub b { font-weight: 800; color: var(--zt-ink); }
+.doing-sub { margin-left: 8px; }
 .sep { color: var(--zt-muted); margin: 0 4px; }
 .wx {
 	display: inline-flex; align-items: center; gap: 8px; flex: none; white-space: nowrap;
@@ -250,7 +249,6 @@ const open = ref(false)
 }
 .row-line.focus { background: var(--zt-yellow-pale); color: #111; font-weight: 800; }
 [data-bs-theme='dark'] .row-line.focus { background: rgba(255, 204, 0, 0.12); color: var(--zt-yellow); }
-.name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .when { color: var(--zt-muted); }
 .row-line.focus .when { color: inherit; }
 .dur { text-align: right; color: var(--zt-muted); }
