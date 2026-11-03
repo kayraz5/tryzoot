@@ -27,7 +27,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 
-import './story.css'
+import '../components/story/story.css'
 
 const router = useRouter()
 
@@ -242,7 +242,7 @@ onMounted(async () => {
 
 	await loadEngineStyles()
 	// Attaches window.ScrollCraft as a side effect; it exports nothing.
-	await import('./engine/scrollcraft.js')
+	await import('../components/story/engine/scrollcraft.js')
 
 	cacheElements()
 	dom.stage.style.setProperty('--zt-sky', SCENES[0].skyColour)
