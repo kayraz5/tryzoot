@@ -314,7 +314,7 @@ onBeforeUnmount(() => {
 					<img class="zt-wordmark" src="/brand/zoot-wordmark.png" alt="Zoot" width="581" height="282" />
 					<h1 class="zt-h1">Eight hours in Singapore,<br />why waste time?</h1>
 					<p class="zt-lede">Zoot helps you plan the day backwards from your boarding time, then walks you through it stop by stop, ensuring you reach back on time.</p>
-					<button class="zt-cta" type="button" data-testid="cta-start" @click="router.push('/plan')">Start a layover</button>
+					<button class="zt-cta" type="button" @click="router.push('/plan')">Start a layover</button>
 				</div>
 
 				<div v-bind="beatAttrs('terminal')">
@@ -344,7 +344,7 @@ onBeforeUnmount(() => {
 							<span class="zt-pass__key">Layover</span>
 							<b class="zt-pass__value">Singapore · 8h</b>
 						</div>
-						<button class="zt-cta zt-cta--pass" type="button" @click="router.push('/plan')">Start a layover</button>
+						<button class="zt-cta zt-cta--pass" type="button" @click="router.push('/plan')">Plan my layover</button>
 					</div>
 				</div>
 			</div>

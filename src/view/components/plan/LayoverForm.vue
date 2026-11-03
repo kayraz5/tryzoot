@@ -146,7 +146,7 @@ function submit() {
 						:aria-checked="arrivalTerminal === t.id" :aria-label="`Arrive at ${t.label}`" @click="pickArrival(t.id)">{{ t.tile }}</button>
 				</div>
 			</div>
-			<input id="lay-arrival" ref="first" v-model="arrival" type="datetime-local" class="form-control" :max="maxLocal" required />
+			<input id="lay-arrival" ref="first" aria-label="Lands at Changi" v-model="arrival" type="datetime-local" class="form-control" :max="maxLocal" required />
 		</div>
 
 		<div class="leg mt-2">
@@ -157,7 +157,7 @@ function submit() {
 						:aria-checked="departureTerminal === t.id" :aria-label="`Depart from ${t.label}`" @click="pickDeparture(t.id)">{{ t.tile }}</button>
 				</div>
 			</div>
-			<input id="lay-departure" v-model="departure" type="datetime-local" class="form-control" :min="departureMin" :max="maxLocal" required />
+			<input id="lay-departure" aria-label="Next flight leaves" v-model="departure" type="datetime-local" class="form-control" :min="departureMin" :max="maxLocal" required />
 		</div>
 
 		<p class="tiny mt-2 mb-0 help" :class="error ? 'text-danger fw-800' : 'text-muted'" aria-live="polite">

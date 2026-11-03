@@ -2,7 +2,7 @@ import { distanceM } from './distance.js'
 import { HUBS, rideMinutes, rideRuns, lineColours } from './transit/network.js'
 
 // Re-exported: most of the app reaches for these through travel.js.
-export { distanceM, HUBS }
+export { distanceM, HUBS, rideMinutes }
 
 /**
  * Travel-time model. Groq never produces minutes; this file does.
