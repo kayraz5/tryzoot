@@ -62,6 +62,7 @@ function goToPassport() {
           <p v-else-if="celebration.area && areaCount < CHOP_TARGET" class="small text-muted mb-3">{{ areaCount }} / {{ CHOP_TARGET }} places toward the {{ celebration.area }} chop</p>
         </template>
         <div class="d-flex gap-2 justify-content-center">
+          <button v-if="celebration.returned" class="btn btn-soft" @click="close(); router.push('/plan')"><i class="bi bi-plus-lg"></i> New layover</button>
           <button v-if="!celebration.returned" class="btn btn-soft" @click="goToPassport"><i class="bi bi-journal-bookmark-fill"></i> {{ celebration.chopEarned ? 'See chop' : 'See in passport' }}</button>
           <button class="btn btn-primary px-4" @click="close" autofocus>Nice!</button>
         </div>
