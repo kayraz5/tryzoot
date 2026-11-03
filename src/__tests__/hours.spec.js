@@ -8,7 +8,7 @@ import {
   isOpenDuringVisit,
   toSgLocalInput,
 } from '../model/services/hours.js'
-import { hm } from '../view/features/plan/planUi.js'
+import { hm } from '../view/components/plan/planUi.js'
 import { sameSgDay } from '../model/services/checkin.js'
 import { forAll, int } from './helpers/gen.js'
 import { at, DAY, T, useCleanSlate } from './helpers/index.js'

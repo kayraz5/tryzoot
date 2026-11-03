@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { HUBS, nearestHub, transit, travel } from '../model/services/travel.js'
-import { transitSteps, transferPoints, currentPartIndex } from '../model/services/transitSteps.js'
-import { decodePolyline } from '../model/services/polyline.js'
+import { hubByCode, rideDirection } from '../model/services/transit/network.js'
+import { transitSteps, transferPoints, currentPartIndex } from '../model/services/transit/steps.js'
+import { decodePolyline } from '../model/services/transit/polyline.js'
 
 const CHANGI = { lat: 1.3574, lng: 103.9884 }
 const ORCHARD = { lat: 1.304, lng: 103.832 }
@@ -88,7 +89,7 @@ describe('findDirectBus', () => {
       const [a, b] = String(url).split('/').pop().split('?')[0].split(';').map((p) => p.split(',').map(Number))
       return { ok: true, json: async () => ({ routes: [{ geometry: { coordinates: [a, b] }, distance: 100, legs: [{ steps: [] }] }] }) }
     }))
-    const { findDirectBus } = await import('../model/services/busRoute.js')
+    const { findDirectBus } = await import('../model/services/transit/bus.js')
     const route = await findDirectBus({ lat: 1.2965, lng: 103.8542 }, { lat: 1.3042, lng: 103.8352, name: 'Orchard' })
     const bus = route.parts.find((p) => p.mode === 'bus')
     expect(bus.service).toBe('7')
@@ -96,5 +97,33 @@ describe('findDirectBus', () => {
     expect(bus.to.code).toBe('09047')
     expect(bus.stops).toBe(2)
     expect(transitSteps(route.parts)[1].title).toBe('Take bus 7 towards Orchard Stn')
+  })
+})
+
+describe('which way to ride', () => {
+  const dir = (line, from, next) => {
+    const d = rideDirection(line, hubByCode(from), hubByCode(next))
+    return d.loop || (d.towards && HUBS[d.towards].name)
+  }
+
+  it('names the terminus on lines with two ends', () => {
+    expect(dir('EW', 'EW4', 'EW5')).toBe('Tuas Link') // Tanah Merah → Bedok, heading west
+    expect(dir('EW', 'EW5', 'EW4')).toBe('Pasir Ris')
+  })
+
+  it('says clockwise or anti-clockwise round the Circle loop', () => {
+    expect(dir('CC', 'CC19', 'CC17')).toBe('clockwise') // Botanic Gardens → Caldecott: west to north
+    expect(dir('CC', 'CC17', 'CC19')).toBe('anti-clockwise')
+    expect(dir('CC', 'CC24', 'CC25')).toBe('anti-clockwise') // Kent Ridge → Haw Par Villa: down the west side
+  })
+
+  it('uses the spur end, not a loop direction, off the ring', () => {
+    expect(dir('CC', 'CC3', 'CC2')).toBe('Dhoby Ghaut')
+  })
+
+  it('reads the direction into the step', () => {
+    const [step] = transitSteps([{ mode: 'mrt', line: 'CC', loop: 'clockwise', nextStop: 'Caldecott', stops: 9, from: { name: 'Botanic Gardens' }, to: { name: 'Paya Lebar' } }])
+    expect(step.title).toBe('Take the Orange line clockwise')
+    expect(step.detail).toBe('Next stop Caldecott · 9 stops · get off at Paya Lebar')
   })
 })

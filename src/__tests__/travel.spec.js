@@ -42,13 +42,13 @@ describe('rideMinutes', () => {
   })
 
   it('adds four minutes when a ride transfers between lines', () => {
-    const branchHop = rideMinutes('changi_airport', 'tanah_merah')
+    const branch = rideMinutes('changi_airport', 'tanah_merah')
     const continuation = rideMinutes('tanah_merah', 'city_hall')
     const transfer = rideMinutes('changi_airport', 'city_hall')
 
-    expect(branchHop.lines).toEqual(['CG'])
+    expect(branch.lines).toEqual(['CG'])
     expect(continuation.lines).toEqual(['EW'])
-    expect(transfer.minutes).toBe(branchHop.minutes + continuation.minutes + 4)
+    expect(transfer.minutes).toBe(branch.minutes + continuation.minutes + 4)
     expect(transfer.lines).toEqual(['CG', 'EW'])
   })
 })
