@@ -10,7 +10,6 @@ import PlaceCard from '../components/places/PlaceCard.vue'
 
 /**
  * Explore: scroll through every place in the catalog. Search plus a few filters,
- * no accounts or progress needed (the passport's City Codex tracks what you've stamped).
  */
 onMounted(loadCatalog)
 
@@ -121,30 +120,109 @@ function clearAll() {
 </template>
 
 <style scoped>
-.title { font-size: clamp(2.2rem, 8vw, 3rem); }
+.title {
+  font-size: clamp(2.2rem, 8vw, 3rem);
+}
 
 .filters {
-	position: sticky; top: 0; z-index: 10; margin: 0 -16px 16px; padding: 10px 16px 12px;
-	background: var(--zt-bg); border-bottom: 1px solid var(--zt-soft-line);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin: 0 -16px 16px;
+  padding: 10px 16px 12px;
+  background: var(--zt-bg);
+  border-bottom: 1px solid var(--zt-soft-line);
 }
-.search { position: relative; }
-.search .bi { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--zt-muted); pointer-events: none; }
-.search .form-control { padding-left: 38px; }
+
+.search {
+  position: relative;
+}
+
+.search .bi {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--zt-muted);
+  pointer-events: none;
+}
+
+.search .form-control {
+  padding-left: 38px;
+}
+
 /* One scrolling row of chips on phones, wrapping on wide screens */
-.chips { display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
-.chips::-webkit-scrollbar { display: none; }
-.chips .zt-chip { white-space: nowrap; flex: none; }
+.chips {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chips .zt-chip {
+  white-space: nowrap;
+  flex: none;
+}
+
 /* Touch screens keep :hover after a tap, which made a chip look selected after turning it off. */
 @media (hover: none) {
-	.chips .zt-chip:hover:not(.active) { background: var(--zt-card); color: var(--zt-ink); }
+  .chips .zt-chip:hover:not(.active) {
+    background: var(--zt-card);
+    color: var(--zt-ink);
+  }
 }
-.sep { width: 1px; flex: none; background: var(--zt-soft-line); margin: 4px 2px; }
-@media (min-width: 992px) { .chips { flex-wrap: wrap; overflow: visible; } }
-.area { width: auto; max-width: 60%; }
 
-.grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
-@media (min-width: 576px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 992px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-.more { display: flex; justify-content: center; margin: 20px 0 8px; }
-.empty { max-width: 420px; margin: 24px auto; }
+.sep {
+  width: 1px;
+  flex: none;
+  background: var(--zt-soft-line);
+  margin: 4px 2px;
+}
+
+@media (min-width: 992px) {
+  .chips {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}
+
+.area {
+  width: auto;
+  max-width: 60%;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 576px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 992px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.more {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0 8px;
+}
+
+.empty {
+  max-width: 420px;
+  margin: 24px auto;
+}
 </style>

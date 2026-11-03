@@ -41,8 +41,18 @@ async function choose(id) {
 </template>
 
 <style scoped>
-.style-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-.is-wide .style-grid { grid-template-columns: repeat(4, 1fr); }
-b { text-transform: uppercase; font-size: 0.78rem; }
-.sub { font-weight: 600; color: inherit; opacity: 0.8; }
+.style-grid { 
+	display: grid; 
+	grid-template-columns: repeat(2, 1fr); 
+	gap: 10px; }
+.is-wide .style-grid { 
+	grid-template-columns: repeat(4, 1fr); 
+}
+b { 
+	text-transform: uppercase; 
+	font-size: 0.78rem; }
+.sub { 
+	font-weight: 600; 
+	color: inherit; 
+	opacity: 0.8; }
 </style>

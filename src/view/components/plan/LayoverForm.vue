@@ -25,7 +25,7 @@ const trip = useTripStore()
 const ui = useUiStore()
 const d = trip.draft
 
-/** Passengers land and fly out of T1–T4 (Jewel is the landside mall next to T1). */
+/** Passengers land and fly out of T1-T4. */
 const TERMINALS = ['changi-t1', 'changi-t2', 'changi-t3', 'changi-t4']
 	.map((id) => ORIGINS.find((o) => o.id === id))
 	.map((o) => ({ ...o, tile: o.short.replace('Changi ', '') }))
@@ -50,7 +50,7 @@ function pickDeparture(id) {
 	departureTouched.value = true
 }
 
-// ── "Use my location": snap to the nearest terminal (or Jewel) and treat them as landed ──
+// "Use my location": snap to the nearest terminal (or Jewel) and treat them as landed 
 const locating = ref(false)
 const located = ref('') // "Near T3" once found
 function useLocation() {
@@ -146,7 +146,7 @@ function submit() {
 						:aria-checked="arrivalTerminal === t.id" :aria-label="`Arrive at ${t.label}`" @click="pickArrival(t.id)">{{ t.tile }}</button>
 				</div>
 			</div>
-			<input id="lay-arrival" ref="first" v-model="arrival" type="datetime-local" class="form-control" :max="maxLocal" required />
+			<input id="lay-arrival" ref="first" aria-label="Lands at Changi" v-model="arrival" type="datetime-local" class="form-control" :max="maxLocal" required />
 		</div>
 
 		<div class="leg mt-2">
@@ -157,7 +157,7 @@ function submit() {
 						:aria-checked="departureTerminal === t.id" :aria-label="`Depart from ${t.label}`" @click="pickDeparture(t.id)">{{ t.tile }}</button>
 				</div>
 			</div>
-			<input id="lay-departure" v-model="departure" type="datetime-local" class="form-control" :min="departureMin" :max="maxLocal" required />
+			<input id="lay-departure" aria-label="Next flight leaves" v-model="departure" type="datetime-local" class="form-control" :min="departureMin" :max="maxLocal" required />
 		</div>
 
 		<p class="tiny mt-2 mb-0 help" :class="error ? 'text-danger fw-800' : 'text-muted'" aria-live="polite">
@@ -175,25 +175,80 @@ function submit() {
 		</button>
 	</form>
 </template>
-
 <style scoped>
-.quick { display: flex; gap: 8px; flex-wrap: wrap; }
-.quick-chip {
-	display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px;
-	border: 2px dashed var(--zt-line); background: var(--zt-card); color: var(--zt-ink); font-weight: 800; font-size: 0.78rem;
+.quick {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
-.quick-chip.on { border-style: solid; background: var(--zt-yellow); color: #111; }
-.quick-chip:disabled { opacity: 0.7; }
+
+.quick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 2px dashed var(--zt-line);
+  background: var(--zt-card);
+  color: var(--zt-ink);
+  font-weight: 800;
+  font-size: 0.78rem;
+}
+
+.quick-chip.on {
+  border-style: solid;
+  background: var(--zt-yellow);
+  color: #111;
+}
+
+.quick-chip:disabled {
+  opacity: 0.7;
+}
 
 /* Label + terminal picker share a line; the time input sits under them. */
-.leg-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
-.leg .form-control { width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; }
-.seg { display: inline-flex; border: 2px solid var(--zt-line); border-radius: 10px; overflow: hidden; flex: none; }
-.seg button {
-	border: 0; border-left: 2px solid var(--zt-line); background: var(--zt-card); color: var(--zt-ink);
-	font-weight: 900; font-size: 0.78rem; padding: 4px 10px;
+.leg-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
 }
-.seg button:first-child { border-left: 0; }
-.seg button.active { background: var(--zt-yellow); color: #111; }
-.help { min-height: 2.4em; }
+
+.leg .form-control {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.seg {
+  display: inline-flex;
+  border: 2px solid var(--zt-line);
+  border-radius: 10px;
+  overflow: hidden;
+  flex: none;
+}
+
+.seg button {
+  border: 0;
+  border-left: 2px solid var(--zt-line);
+  background: var(--zt-card);
+  color: var(--zt-ink);
+  font-weight: 900;
+  font-size: 0.78rem;
+  padding: 4px 10px;
+}
+
+.seg button:first-child {
+  border-left: 0;
+}
+
+.seg button.active {
+  background: var(--zt-yellow);
+  color: #111;
+}
+
+.help {
+  min-height: 2.4em;
+}
 </style>

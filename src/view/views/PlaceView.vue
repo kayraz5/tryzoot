@@ -143,12 +143,51 @@ function readBookmarks() {
 </template>
 
 <style scoped>
-.title { font-size: 2.4rem; }
-.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px 16px; font-size: 0.86rem; font-weight: 500; }
-.facts div { display: flex; gap: 10px; align-items: center; }
-.facts i { width: 30px; height: 30px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--zt-yellow); color: #111; border: 2px solid var(--zt-line); font-size: 0.9rem; }
-.stamped-badge { width: 52px; height: 52px; flex: none; border-radius: 50%; display: grid; place-items: center; font-size: 1.5rem; background: #111; color: var(--zt-yellow); border: var(--zt-bw) solid var(--zt-line); transform: rotate(-10deg); box-shadow: var(--zt-shadow-sm); overflow: hidden; }
-.stamped-badge.art { background: #fffbea; padding: 2px; }
-.stamped-badge .stamp-art { width: 100%; height: 100%; object-fit: contain; }
-blockquote { font-weight: 500; box-shadow: var(--zt-shadow-sm); }
+.title { 
+  font-size: 2.4rem; }
+.facts { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+  gap: 10px 16px; 
+  font-size: 0.86rem; 
+  font-weight: 500; }
+.facts div { 
+  display: flex; 
+  gap: 10px; 
+  align-items: center; }
+.facts i { 
+  width: 30px; 
+  height: 30px; 
+  flex: none; 
+  border-radius: 50%; 
+  display: grid; 
+  place-items: center; 
+  background: var(--zt-yellow); 
+  color: #111; 
+  border: 2px solid var(--zt-line); 
+  font-size: 0.9rem; }
+.stamped-badge { 
+  width: 52px; 
+  height: 52px; 
+  flex: none; 
+  border-radius: 50%; 
+  display: grid; 
+  place-items: center; 
+  font-size: 1.5rem; 
+  background: #111; 
+  color: var(--zt-yellow); 
+  border: var(--zt-bw) solid var(--zt-line); 
+  transform: rotate(-10deg); 
+  box-shadow: var(--zt-shadow-sm); 
+  overflow: hidden; }
+.stamped-badge.art { 
+  background: #fffbea; 
+  padding: 2px; }
+.stamped-badge .stamp-art { 
+  width: 100%; 
+  Height: 100%; 
+  object-fit: contain; }
+blockquote { 
+  Font-weight: 500; 
+  box-shadow: var(--zt-shadow-sm); }
 </style>

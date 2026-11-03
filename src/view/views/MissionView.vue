@@ -1,20 +1,20 @@
+<!-- EDITOR: KAYRA -->
+
 <script setup>
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMissionStore } from '../../model/stores/mission.js'
 import { useUiStore } from '../../model/stores/ui.js'
-import { usePartyStore } from '../../model/stores/party.js'
-import { useTripStore } from '../../model/stores/trip.js'
-import { loadCatalog, placeById } from '../../model/services/catalog.js'
+import { loadCatalog } from '../../model/services/catalog.js'
 import { formatTime } from '../../model/services/hours.js'
 import { rainLookup } from '../../model/services/weather.js'
 import { RAIN_LIMIT } from '../../model/services/planner.js'
 import { tick } from '../../model/services/clock.js'
-import { STYLES } from '../../model/data/origins.js'
-import TimeToGate from '../components/mission/TimeToGate.vue'
 import LayoverCard from '../components/mission/LayoverCard.vue'
-import StopGallery from '../common/StopGallery.vue'
-import PlacePicker from '../components/mission/PlacePicker.vue'
+import MissionHeader from '../components/mission/MissionHeader.vue'
+import QuestDoneCard from '../components/mission/QuestDoneCard.vue'
+import StopCard from '../components/mission/StopCard.vue'
+import ReplanCard from '../components/mission/ReplanCard.vue'
 import ScheduleEditor from '../components/mission/ScheduleEditor.vue'
 import OpenToCompanySheet from '../components/quests/OpenToCompanySheet.vue'
 
@@ -22,8 +22,6 @@ const route = useRoute()
 const router = useRouter()
 const store = useMissionStore()
 const ui = useUiStore()
-const party = usePartyStore()
-const trip = useTripStore()
 
 async function load() {
   await loadCatalog()
@@ -58,7 +56,7 @@ async function focusCurrent() {
 }
 const companyOpen = ref(false) // "Open to company" sheet (group quests)
 const editingSchedule = ref(false) // stop cards swap for the compact order + stay-time editor
-const style = computed(() => STYLES[m.value?.style] || STYLES.budget)
+
 // Live "leave by" from where the traveller is; refreshed every 30 s of the app clock.
 const clockStep = computed(() => Math.floor(tick.value / 30000))
 const leaveBy = computed(() => (clockStep.value, m.value ? store.leaveBy() : null))
@@ -66,85 +64,24 @@ const leaveBy = computed(() => (clockStep.value, m.value ? store.leaveBy() : nul
 const modeIcon = { walk: 'bi-person-walking', mrt: 'bi-train-front', taxi: 'bi-taxi-front' }
 const modePill = { walk: '', mrt: 'ink', taxi: 'pale' }
 
-/** Outdoor legs whose visit hour is forecast > 60% rain (or forced rain from /dev). */
+// Weather checker
 const wetLegs = computed(() => {
   if (!m.value) return []
   const rainAt = rainLookup(ui.weather, ui.forceRain)
   return m.value.legs.filter((l) => l.kind === 'visit' && l.status === 'pending' && l.indoor === false && rainAt(Date.parse(l.arrive_iso)) > RAIN_LIMIT)
 })
 
-// Hand edits: one stop's edit panel open at a time, and one place picker (swap / add).
-const editing = ref(null) // place_id of the leg whose edit panel is open (seq changes on every edit)
-const picker = ref(null) // { key, mode: 'swap' | 'add', leg, near, title }
-const busy = ref(false)
-const pendingVisits = computed(() => store.visitLegs.filter((l) => l.status === 'pending'))
-const missionPlaceIds = computed(() => new Set(m.value?.legs.map((l) => l.place_id) || []))
-
-function toggleEdit(leg) {
-  editing.value = editing.value === leg.place_id ? null : leg.place_id
-  picker.value = null
-}
-function openSwap(leg) {
-  picker.value = { key: leg.place_id, mode: 'swap', leg, near: leg, title: `Swap ${leg.name} for…` }
-}
-function openAdd(leg) {
-  const near = leg || pendingVisits.value.at(-1) || m.value.origin
-  picker.value = { key: leg ? leg.place_id : 'end', mode: 'add', leg, near, title: leg ? `Add a stop after ${leg.name}` : 'Add a stop before heading back' }
-}
-async function run(action) {
-  busy.value = true
-  try {
-    const ok = await action()
-    if (ok) { picker.value = null; editing.value = null }
-  } catch (err) {
-    ui.toast(err.message, 'danger')
-  } finally {
-    busy.value = false
-  }
-}
-function onPick(place) {
-  const { mode, leg } = picker.value
-  run(() => (mode === 'swap' ? store.swapStop(leg, place) : store.addStop(place, leg?.place_id ?? null)))
-}
-watch(() => m.value?.id, () => { editing.value = null; picker.value = null; editingSchedule.value = false })
+// Editing schedule
+const editing = ref(null)
+const editKey = (leg) => (leg.kind === 'return' ? 'end' : leg.place_id)
+const toggleEdit = (leg) => (editing.value = editing.value === editKey(leg) ? null : editKey(leg))
+watch(() => m.value?.id, () => { editing.value = null; editingSchedule.value = false })
 
 // "New itinerary": different stops for the rest of the plan (the old one can be brought back).
 async function regenerate() {
   editing.value = null
-  picker.value = null
   if (await store.regenerate()) focusCurrent()
 }
-
-// Checked in back at the airport: a summary card and a fresh layover instead of the edit tools.
-const completed = computed(() => Boolean(m.value?.completed))
-const home = computed(() => (m.value?.return_to || m.value?.origin)?.label || 'the airport')
-function newLayover() {
-  trip.startNewLayover()
-  router.push('/plan')
-}
-
-// "Finish early": skip every stop left and route home (asks first, inline).
-const confirmFinish = ref(false)
-async function finishEarly() {
-  confirmFinish.value = false
-  busy.value = true
-  try {
-    const skipped = await store.finishEarly()
-    ui.toast(`${skipped} stop${skipped === 1 ? '' : 's'} skipped. Head back to ${home.value}, then tap "I'm back" on the map.`, 'success', 5000)
-    focusCurrent()
-  } catch (err) {
-    ui.toast(err.message, 'danger')
-  } finally {
-    busy.value = false
-  }
-}
-
-const replans = [
-  { mode: 'behind', label: "I'm behind", icon: 'bi-hourglass-bottom' },
-  { mode: 'less-walking', label: 'Less walking', icon: 'bi-train-front' },
-  { mode: 'swap', label: 'Swap next stop', icon: 'bi-arrow-left-right' },
-  { mode: 'rain', label: 'Rain plan', icon: 'bi-umbrella' }
-]
 </script>
 
 <template>
@@ -160,55 +97,9 @@ const replans = [
     </div>
 
     <template v-else>
-      <!-- Pills + countdown share the top row so the title gets the full width. -->
-      <header class="mhead mb-3">
-        <div class="mhead-top">
-          <div class="pills">
-            <span class="zt-pill"><i class="bi" :class="style.icon"></i> {{ style.label }}</span>
-            <span v-if="m.source === 'groq'" class="zt-pill ink" :title="m.groq_model"><i class="bi bi-stars"></i> Groq</span>
-            <span v-else class="zt-pill paper" :title="m.fallback_reason || ''"><i class="bi bi-cpu"></i> Offline</span>
-            <span v-if="m.replans" class="zt-pill pale">Replanned ×{{ m.replans }}</span>
-          </div>
-          <TimeToGate :must-return-ms="store.mustReturnMs" :start-ms="Date.parse(m.start_iso)" />
-        </div>
-        <h1 class="title">{{ m.title }}</h1>
-        <div class="meta">
-          <span><i class="bi bi-geo-alt"></i> From {{ m.origin.label }}</span>
-          <span><i class="bi bi-patch-check"></i> {{ store.stampedCount }}/{{ store.visitLegs.length }} stamped</span>
-        </div>
-        <div class="mt-2 d-flex flex-wrap gap-2">
-          <button v-if="pendingVisits.length" type="button" class="btn btn-sm btn-soft" :class="{ active: editingSchedule }"
-            :aria-expanded="editingSchedule" @click="editingSchedule = !editingSchedule">
-            <i class="bi" :class="editingSchedule ? 'bi-check-lg' : 'bi-arrow-down-up'"></i> {{ editingSchedule ? 'Done editing' : 'Edit order & times' }}
-          </button>
-          <button v-if="pendingVisits.length && !editingSchedule" type="button" class="btn btn-sm btn-soft"
-            :disabled="store.status === 'planning'" @click="regenerate">
-            <i class="bi" :class="store.status === 'planning' ? 'bi-hourglass-split' : 'bi-shuffle'"></i>
-            {{ store.status === 'planning' ? 'Finding new stops…' : 'New itinerary' }}
-          </button>
-        </div>
-        <div v-if="store.previousPlan" class="undo-strip mt-2" role="status">
-          <span class="small">New stops picked. Liked the old plan better?</span>
-          <button type="button" class="btn btn-sm btn-link p-0 fw-800" @click="store.restorePreviousPlan()">Bring it back</button>
-          <button type="button" class="btn-close btn-sm ms-auto" aria-label="Keep the new plan" @click="store.previousPlan = null"></button>
-        </div>
-      </header>
+      <MissionHeader v-model:editing-schedule="editingSchedule" @regenerate="regenerate" />
 
-      <section v-if="completed" class="zt-card p-3 mb-3 done-card">
-        <div class="d-flex align-items-center gap-3">
-          <i class="bi bi-trophy-fill done-icon" aria-hidden="true"></i>
-          <div class="flex-grow-1">
-            <div class="zt-label">Quest complete</div>
-            <div class="fw-800">
-              {{ store.stampedCount }} of {{ store.visitLegs.length }} stops stamped<span v-if="m.ended_early"> · finished early</span>
-            </div>
-          </div>
-        </div>
-        <div class="d-flex gap-2 mt-3">
-          <button type="button" class="btn btn-primary flex-grow-1" @click="newLayover"><i class="bi bi-plus-lg"></i> Plan a new layover</button>
-          <RouterLink to="/passport" class="btn btn-soft"><i class="bi bi-journal-bookmark-fill"></i> Passport</RouterLink>
-        </div>
-      </section>
+      <QuestDoneCard v-if="m.completed" />
 
       <LayoverCard :mission="m" :leave-by-ms="leaveBy?.ms ?? null" class="mb-3" />
 
@@ -228,12 +119,14 @@ const replans = [
           <div class="dot start"><i class="bi bi-airplane-fill"></i></div>
           <div class="small"><b class="mono">{{ formatTime(Date.parse(m.start_iso) + m.buffers.exit_min * 60000) }}</b> Leave {{ m.origin.label }}<span v-if="m.buffers.exit_min" class="text-muted"> (after {{ m.buffers.exit_min }} min immigration)</span></div>
         </li>
+
         <li v-if="doneCount" class="tl-done-toggle">
           <div class="dot done"><i class="bi bi-check-lg"></i></div>
           <button type="button" class="btn btn-link btn-sm p-0 text-reset fw-800" :aria-expanded="showDone" @click="showDone = !showDone">
             {{ doneCount }} completed stop{{ doneCount === 1 ? '' : 's' }} · <span class="text-decoration-underline">{{ showDone ? 'Hide' : 'Show' }}</span>
           </button>
         </li>
+
         <template v-for="leg in m.legs" :key="leg.seq + leg.place_id">
           <!-- Done: a compact greyed line, only when expanded -->
           <template v-if="isDone(leg)">
@@ -245,109 +138,32 @@ const replans = [
               </div>
             </li>
           </template>
+
           <template v-else>
           <li class="tl-travel">
             <span class="zt-pill" :class="modePill[leg.travel_mode]"><i class="bi" :class="modeIcon[leg.travel_mode]"></i> {{ leg.travel_min }} min</span>
             <span class="tiny text-muted ms-2">{{ leg.travel_detail }}</span>
           </li>
+
           <li :id="`leg-${leg.seq}`" :class="['tl-stop', leg.kind, leg.status, { next: store.nextLeg === leg, flash: flash === leg.seq }]">
             <div class="dot">
               <i v-if="leg.kind === 'return'" class="bi bi-house-door-fill"></i>
               <i v-else-if="leg.status === 'stamped'" class="bi bi-patch-check-fill"></i>
               <span v-else>{{ leg.seq }}</span>
             </div>
-            <div class="zt-card p-3 stop-card" :class="{ joined: leg.fixed }" :tabindex="store.nextLeg === leg ? -1 : undefined">
-              <StopGallery v-if="leg.kind === 'visit' && placeById.get(leg.place_id)" :place="placeById.get(leg.place_id)" class="mb-3" />
-              <div class="d-flex justify-content-between gap-2">
-                <div class="flex-grow-1">
-                  <div class="tiny text-muted fw-800 mono">
-                    {{ formatTime(leg.arrive_iso) }}<template v-if="leg.kind === 'visit'">–{{ formatTime(leg.depart_iso) }} · stay {{ leg.stay_min }} min</template>
-                    <template v-else> · must arrive by {{ formatTime(leg.arrive_by) }}</template>
-                  </div>
-                  <h2 class="h6 mb-1">
-                    <RouterLink v-if="leg.kind === 'visit'" :to="`/place/${leg.place_id}`" class="text-reset">{{ leg.name }}</RouterLink>
-                    <span v-else>{{ leg.name }}</span>
-                  </h2>
-                </div>
-                <div class="text-end">
-                  <span class="zt-pill pink text-nowrap">+{{ leg.xp }} XP</span>
-                  <div v-if="leg.kind === 'visit'" class="tiny mt-1" :class="leg.indoor ? 'text-muted' : 'fw-800'">
-                    <i class="bi" :class="leg.indoor ? 'bi-house' : 'bi-sun'"></i> {{ leg.indoor ? 'Indoor' : 'Outdoor' }}
-                  </div>
-                </div>
-              </div>
-              <p class="small mb-2 why">{{ leg.why }}</p>
-              <p v-if="leg.kind === 'visit' && placeById.get(leg.place_id)?.hours_verified === false" class="tiny fw-800 mb-2 hours-note">
-                <i class="bi bi-exclamation-circle"></i> Opening hours not confirmed, check before going
-              </p>
-              <div v-if="leg.sidequest" class="zt-pill pale mb-2"><i class="bi bi-gem"></i> Sidequest</div>
-              <template v-if="leg.fixed && leg.status === 'pending'">
-                <div class="d-flex gap-2 flex-wrap align-items-center">
-                  <RouterLink :to="`/map?focus=${leg.seq}`" class="btn btn-sm btn-soft"><i class="bi bi-geo"></i> On map</RouterLink>
-                  <button type="button" class="btn btn-sm btn-primary" @click="party.openChat(leg.party_id)"><i class="bi bi-chat-dots-fill"></i> Chat</button>
-                  <RouterLink :to="`/quests/${leg.party_id}`" class="btn btn-sm btn-soft"><i class="bi bi-people-fill"></i> Quest</RouterLink>
-                  <span class="tiny text-muted"><i class="bi bi-lock-fill"></i> Fixed time with {{ leg.with_host }}</span>
-                </div>
-              </template>
-              <template v-else-if="leg.kind === 'visit' && leg.status === 'pending'">
-                <div class="d-flex gap-2 flex-wrap">
-                  <RouterLink :to="`/map?focus=${leg.seq}`" class="btn btn-sm btn-soft"><i class="bi bi-geo"></i> On map</RouterLink>
-                  <button class="btn btn-sm btn-soft" :class="{ active: editing === leg.place_id }" :aria-expanded="editing === leg.place_id" @click="toggleEdit(leg)">
-                    <i class="bi bi-pencil"></i> Change stop
-                  </button>
-                  <button class="btn btn-sm btn-link text-muted" @click="store.skip(leg)">Skip</button>
-                </div>
-                <div v-if="editing === leg.place_id" class="edit-panel mt-3">
-                  <div class="tiny fw-800 mb-2">Change this stop</div>
-                  <div class="d-flex gap-2 flex-wrap">
-                    <button class="btn btn-sm btn-soft" :disabled="busy" @click="openSwap(leg)"><i class="bi bi-arrow-left-right"></i> Swap</button>
-                    <button class="btn btn-sm btn-soft" :disabled="busy" @click="openAdd(leg)"><i class="bi bi-plus-lg"></i> Add after</button>
-                    <button class="btn btn-sm btn-link text-danger ms-auto" :disabled="busy" @click="run(() => store.removeStop(leg))"><i class="bi bi-trash"></i> Remove</button>
-                  </div>
-                  <PlacePicker v-if="picker && picker.key === leg.place_id" :title="picker.title" :near="picker.near"
-                    :exclude="missionPlaceIds" :busy="busy" @pick="onPick" @close="picker = null" />
-                </div>
-              </template>
-              <div v-else-if="leg.status === 'stamped'" class="tiny text-success fw-800"><i class="bi bi-check2-circle"></i> Stamped {{ leg.stamped_at ? formatTime(leg.stamped_at) : '' }}</div>
-              <div v-else-if="leg.status === 'skipped'" class="tiny text-muted fw-800">Skipped</div>
-              <template v-if="leg.kind === 'return' && leg.status === 'pending'">
-                <button v-if="!(picker && picker.key === 'end')" class="btn btn-sm btn-soft" :disabled="busy" @click="openAdd(null)">
-                  <i class="bi bi-plus-lg"></i> Add a stop before heading back
-                </button>
-                <PlacePicker v-else :title="picker.title" :near="picker.near" :exclude="missionPlaceIds" :busy="busy"
-                  @pick="onPick" @close="picker = null" />
-              </template>
-            </div>
+
+            <StopCard :leg="leg" :open="editing === editKey(leg)" :tabindex="store.nextLeg === leg ? -1 : undefined"
+              @toggle="toggleEdit(leg)" @close="editing = null" />
+
           </li>
+
           </template>
         </template>
       </ol>
 
-      <section v-if="!completed" class="zt-card p-3 mb-3">
-        <div class="small fw-800 mb-2"><i class="bi bi-arrow-repeat"></i> Plans change. Rewrite the rest:</div>
-        <div class="d-flex flex-wrap gap-2">
-          <button v-for="r in replans" :key="r.mode" class="btn btn-soft btn-sm" :disabled="store.status === 'planning'" @click="store.replan(r.mode)">
-            <i class="bi" :class="r.icon"></i> {{ r.label }}
-          </button>
-        </div>
-        <p class="tiny text-muted mb-0 mt-2">Stamped stops stay. Only future legs are replaced, from where you are now.</p>
-        <div v-if="pendingVisits.length" class="finish mt-3">
-          <button v-if="!confirmFinish" type="button" class="btn btn-sm btn-link text-danger p-0" @click="confirmFinish = true">
-            <i class="bi bi-flag-fill"></i> Finish early and head back
-          </button>
-          <template v-else>
-            <div class="small fw-800 mb-2">
-              Skip the {{ pendingVisits.length }} stop{{ pendingVisits.length === 1 ? '' : 's' }} left and head back to {{ home }} now?
-            </div>
-            <div class="d-flex gap-2">
-              <button type="button" class="btn btn-sm btn-primary" :disabled="busy" @click="finishEarly">Head back now</button>
-              <button type="button" class="btn btn-sm btn-soft" @click="confirmFinish = false">Keep exploring</button>
-            </div>
-          </template>
-        </div>
-      </section>
+      <ReplanCard v-if="!m.completed" @finished="focusCurrent" />
 
-      <div v-if="!completed" class="play-bar d-flex gap-2">
+      <div v-if="!m.completed" class="play-bar d-flex gap-2">
         <button class="btn btn-soft btn-lg company-btn" @click="companyOpen = true" aria-label="Open to company">
           <i class="bi bi-people-fill"></i><span class="d-none d-sm-inline"> Open to company</span>
         </button>
@@ -357,48 +173,156 @@ const replans = [
     </template>
   </main>
 </template>
-
 <style scoped>
-.mhead-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.pills { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
-.pills .zt-pill { white-space: nowrap; }
-.title { font-size: clamp(1.6rem, 6.5vw, 2.3rem); line-height: 1.05; margin: 12px 0 6px; text-wrap: balance; }
-.meta { display: flex; flex-wrap: wrap; column-gap: 14px; row-gap: 2px; font-size: 0.84rem; color: var(--zt-muted); }
-.meta > span { white-space: nowrap; }
-.meta .bi { margin-right: 3px; }
-.timeline { position: relative; margin: 0 0 16px; }
-.timeline::before { content: ''; position: absolute; left: 18px; top: 8px; bottom: 8px; border-left: 3px dotted var(--zt-line); }
-.timeline li { position: relative; padding-left: 52px; }
-.tl-start { padding-bottom: 8px; display: flex; align-items: center; min-height: 40px; }
-.tl-travel { padding: 6px 0 6px 52px; }
-.tl-stop { padding-bottom: 6px; }
-.dot { position: absolute; left: 0; top: 10px; width: 39px; height: 39px; border-radius: 50%; background: var(--zt-yellow); color: #111; display: grid; place-items: center; font-weight: 700; font-family: var(--zt-font-head); border: var(--zt-bw) solid var(--zt-line); z-index: 1; }
-.tl-start .dot { top: 0; background: var(--zt-card); color: var(--zt-ink); }
-.tl-stop.return .dot { background: var(--zt-card); color: var(--zt-ink); }
-.tl-stop.stamped .dot { background: #111; color: var(--zt-yellow); border-color: #111; }
-[data-bs-theme='dark'] .tl-stop.stamped .dot { border-color: var(--zt-yellow); }
-.tl-stop.skipped { opacity: 0.5; }
-.tl-stop.next .dot { background: var(--zt-pink); animation: zt-pulse 1.4s infinite; }
-.tl-stop.next .stop-card { box-shadow: 5px 5px 0 var(--zt-pink); }
-.tl-stop.next .stop-card:focus { outline: none; }
-.tl-stop.flash .stop-card { animation: leg-flash 1.6s ease-out; }
-@keyframes leg-flash { 0%, 40% { outline: 4px solid var(--zt-pink); outline-offset: 4px; } 100% { outline: 4px solid transparent; outline-offset: 4px; } }
-.tl-done-toggle, .tl-done { display: flex; align-items: center; min-height: 34px; padding-bottom: 6px; }
-.tl-done { opacity: 0.6; }
-.dot.done { width: 28px; height: 28px; left: 5px; top: 3px; font-size: 0.8rem; background: var(--zt-card); color: var(--zt-muted); border-color: var(--zt-muted); }
-.stop-card { box-shadow: var(--zt-shadow-sm); }
-.stop-card.joined { border-color: var(--zt-pink); }
-.why { color: var(--zt-muted); }
-.hours-note { color: #b45309; }
-[data-bs-theme='dark'] .hours-note { color: var(--zt-yellow); }
-.undo-strip { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 2px solid var(--zt-line); border-radius: 14px; background: var(--zt-yellow-pale); color: #111; }
-.undo-strip .btn-link { color: #111; white-space: nowrap; }
-.done-card { background: var(--zt-yellow-pale); color: #111; }
-.done-icon { font-size: 2rem; color: #b45309; }
-.finish { border-top: 2px dashed var(--zt-soft-line); padding-top: 12px; }
-.edit-panel { border-top: 2px dashed var(--zt-soft-line); padding-top: 12px; }
-.rain-alert { background: #111; color: var(--zt-yellow); border: var(--zt-bw) solid #111; border-radius: 18px; box-shadow: 4px 4px 0 var(--zt-yellow); }
-[data-bs-theme='dark'] .rain-alert { border-color: var(--zt-yellow); }
-.rain-alert .btn { --bs-btn-bg: var(--zt-yellow); --bs-btn-color: #111; --bs-btn-border-color: var(--zt-yellow); }
-.play-bar { position: sticky; bottom: calc(var(--zt-nav-h) + 24px); z-index: 5; }
+.timeline {
+  position: relative;
+  margin: 0 0 16px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  top: 8px;
+  bottom: 8px;
+  border-left: 3px dotted var(--zt-line);
+}
+
+.timeline li {
+  position: relative;
+  padding-left: 52px;
+}
+
+.tl-start {
+  padding-bottom: 8px;
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+}
+
+.tl-travel {
+  padding: 6px 0 6px 52px;
+}
+
+.tl-stop {
+  padding-bottom: 6px;
+}
+
+.dot {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 39px;
+  height: 39px;
+  border-radius: 50%;
+  background: var(--zt-yellow);
+  color: #111;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-family: var(--zt-font-head);
+  border: var(--zt-bw) solid var(--zt-line);
+  z-index: 1;
+}
+
+.tl-start .dot {
+  top: 0;
+  background: var(--zt-card);
+  color: var(--zt-ink);
+}
+
+.tl-stop.return .dot {
+  background: var(--zt-card);
+  color: var(--zt-ink);
+}
+
+.tl-stop.stamped .dot {
+  background: #111;
+  color: var(--zt-yellow);
+  border-color: #111;
+}
+
+[data-bs-theme='dark'] .tl-stop.stamped .dot {
+  border-color: var(--zt-yellow);
+}
+
+.tl-stop.skipped {
+  opacity: 0.5;
+}
+
+.tl-stop.next .dot {
+  background: var(--zt-pink);
+  animation: zt-pulse 1.4s infinite;
+}
+
+.tl-stop.next .stop-card {
+  box-shadow: 5px 5px 0 var(--zt-pink);
+}
+
+.tl-stop.next .stop-card:focus {
+  outline: none;
+}
+
+.tl-stop.flash .stop-card {
+  animation: leg-flash 1.6s ease-out;
+}
+
+@keyframes leg-flash {
+  0%, 40% {
+    outline: 4px solid var(--zt-pink);
+    outline-offset: 4px;
+  }
+
+  100% {
+    outline: 4px solid transparent;
+    outline-offset: 4px;
+  }
+}
+
+.tl-done-toggle,
+.tl-done {
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  padding-bottom: 6px;
+}
+
+.tl-done {
+  opacity: 0.6;
+}
+
+.dot.done {
+  width: 28px;
+  height: 28px;
+  left: 5px;
+  top: 3px;
+  font-size: 0.8rem;
+  background: var(--zt-card);
+  color: var(--zt-muted);
+  border-color: var(--zt-muted);
+}
+
+.rain-alert {
+  background: #111;
+  color: var(--zt-yellow);
+  border: var(--zt-bw) solid #111;
+  border-radius: 18px;
+  box-shadow: 4px 4px 0 var(--zt-yellow);
+}
+
+[data-bs-theme='dark'] .rain-alert {
+  border-color: var(--zt-yellow);
+}
+
+.rain-alert .btn {
+  --bs-btn-bg: var(--zt-yellow);
+  --bs-btn-color: #111;
+  --bs-btn-border-color: var(--zt-yellow);
+}
+
+.play-bar {
+  position: sticky;
+  bottom: calc(var(--zt-nav-h) + 24px);
+  z-index: 5;
+}
 </style>
