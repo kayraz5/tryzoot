@@ -124,10 +124,18 @@ function onPick(p) {
 </template>
 
 <style scoped>
-.stop-card { box-shadow: var(--zt-shadow-sm); }
-.stop-card.joined { border-color: var(--zt-pink); }
-.why { color: var(--zt-muted); }
-.hours-note { color: #b45309; }
-[data-bs-theme='dark'] .hours-note { color: var(--zt-yellow); }
-.edit-panel { border-top: 2px dashed var(--zt-soft-line); padding-top: 12px; }
+.stop-card { 
+  box-shadow: var(--zt-shadow-sm); }
+.stop-card.joined { 
+  border-color: var(--zt-pink); }
+.why { 
+  color: var(--zt-muted); }
+.hours-note { 
+  color: #b45309; }
+[data-bs-theme='dark'] .hours-note { 
+  color: var(--zt-yellow); }
+.edit-panel { 
+  border-top: 2px dashed var(--zt-soft-line); 
+  padding-top: 12px; }
 </style>
+

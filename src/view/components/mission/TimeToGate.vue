@@ -45,13 +45,72 @@ const leaveSoon = computed(() => props.leaveByMs && props.leaveByMs - tick.value
 </template>
 
 <style scoped>
-.ttg { border-radius: 16px; padding: 6px 12px 7px; min-width: 132px; background: #111; color: var(--zt-yellow); border: var(--zt-bw) solid #111; box-shadow: 4px 4px 0 var(--zt-yellow); }
-[data-bs-theme='dark'] .ttg { border-color: var(--zt-yellow); box-shadow: 4px 4px 0 var(--zt-yellow); }
-.ttg.amber { background: var(--zt-yellow); color: #111; box-shadow: 4px 4px 0 #111; }
-.ttg.red { background: var(--zt-orange); color: #fff; border-color: #111; box-shadow: 4px 4px 0 #111; animation: ttg-alarm 1.2s infinite; }
-@keyframes ttg-alarm { 0% { box-shadow: 4px 4px 0 #111, 0 0 0 0 rgba(255, 77, 0, 0.7); } 70%, 100% { box-shadow: 4px 4px 0 #111, 0 0 0 16px rgba(255, 77, 0, 0); } }
-.lbl { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; }
-.val { font-family: var(--zt-font-display); font-size: 2rem; line-height: 0.95; letter-spacing: 0.04em; }
-.leave { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; opacity: 0.95; }
-.leave.soon { background: var(--zt-pink); color: #111; border-radius: 6px; padding: 0 5px; display: inline-block; }
+.ttg {
+  border-radius: 16px;
+  padding: 6px 12px 7px;
+  min-width: 132px;
+  background: #111;
+  color: var(--zt-yellow);
+  border: var(--zt-bw) solid #111;
+  box-shadow: 4px 4px 0 var(--zt-yellow);
+}
+
+[data-bs-theme='dark'] .ttg {
+  border-color: var(--zt-yellow);
+  box-shadow: 4px 4px 0 var(--zt-yellow);
+}
+
+.ttg.amber {
+  background: var(--zt-yellow);
+  color: #111;
+  box-shadow: 4px 4px 0 #111;
+}
+
+.ttg.red {
+  background: var(--zt-orange);
+  color: #fff;
+  border-color: #111;
+  box-shadow: 4px 4px 0 #111;
+  animation: ttg-alarm 1.2s infinite;
+}
+
+@keyframes ttg-alarm {
+  0% {
+    box-shadow: 4px 4px 0 #111, 0 0 0 0 rgba(255, 77, 0, 0.7);
+  }
+
+  70%, 100% {
+    box-shadow: 4px 4px 0 #111, 0 0 0 16px rgba(255, 77, 0, 0);
+  }
+}
+
+.lbl {
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.val {
+  font-family: var(--zt-font-display);
+  font-size: 2rem;
+  line-height: 0.95;
+  letter-spacing: 0.04em;
+}
+
+.leave {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  opacity: 0.95;
+}
+
+.leave.soon {
+  background: var(--zt-pink);
+  color: #111;
+  border-radius: 6px;
+  padding: 0 5px;
+  display: inline-block;
+}
 </style>

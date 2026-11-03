@@ -27,7 +27,7 @@ const ret = computed(() => store.returnLeg)
 const spareMin = computed(() => (ret.value ? Math.max(0, Math.round((Date.parse(ret.value.arrive_by) - Date.parse(ret.value.arrive_iso)) / 60000)) : 0))
 const spareTone = computed(() => (spareMin.value < 45 ? 'danger' : spareMin.value < 90 ? 'warn' : 'ok'))
 
-// ── Apply one edit and remember its math ─────────────────────────────────────
+// Apply one edit and remember its math
 const busy = ref(false)
 const lastChange = ref(null) // { what, spareFrom, spareTo, backBy }
 async function apply(what, action) {
@@ -46,7 +46,7 @@ async function apply(what, action) {
 	}
 }
 
-// ── Stay length ──────────────────────────────────────────────────────────────
+// Stay length
 const clampStay = (min) => Math.min(MAX_STAY, Math.max(MIN_STAY, Math.round(min)))
 function setStay(leg, minutes) {
 	const next = clampStay(minutes)
@@ -69,7 +69,7 @@ function commitTyping(leg) {
 	if (typed.value !== '' && Number.isFinite(n)) setStay(leg, n)
 }
 
-// ── Order ────────────────────────────────────────────────────────────────────
+// Order 
 function moveTo(leg, from, to) {
 	if (to === from || to < 0 || to >= rows.value.length) return Promise.resolve(false)
 	return apply(`Moved ${leg.name} to stop ${to + 1 + doneCount.value}`, () => store.moveStopTo(leg, to))
@@ -187,44 +187,170 @@ function rowStyle(i) {
 		<p v-if="doneCount" class="tiny text-muted mt-2 mb-0"><i class="bi bi-check2-circle"></i> {{ doneCount }} completed stop{{ doneCount === 1 ? '' : 's' }} stay where they are.</p>
 	</section>
 </template>
-
 <style scoped>
-.editor { scroll-margin-top: 12px; }
-.spare { font-family: var(--zt-font-head); font-size: 2rem; font-weight: 700; line-height: 1.05; }
-.spare.warn { color: var(--zt-orange); }
-.spare.danger { color: var(--zt-pink); }
-.math { padding: 8px 10px; border-radius: 12px; background: var(--zt-yellow-pale); color: #111; min-height: 2.6em; }
+.editor {
+  scroll-margin-top: 12px;
+}
 
-.rows { display: flex; flex-direction: column; gap: 8px; }
+.spare {
+  font-family: var(--zt-font-head);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.spare.warn {
+  color: var(--zt-orange);
+}
+
+.spare.danger {
+  color: var(--zt-pink);
+}
+
+.math {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--zt-yellow-pale);
+  color: #111;
+  min-height: 2.6em;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .row-item {
-	display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 4px; border-radius: 14px;
-	border: 2px solid var(--zt-line); background: var(--zt-card); transition: transform 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 4px;
+  border-radius: 14px;
+  border: 2px solid var(--zt-line);
+  background: var(--zt-card);
+  transition: transform 0.15s ease;
 }
-.rows.dragging .row-item { user-select: none; }
-.row-item.lifted { transition: none; z-index: 2; position: relative; box-shadow: 4px 4px 0 var(--zt-line); }
-.row-item.fixed { border-color: var(--zt-pink); }
+
+.rows.dragging .row-item {
+  user-select: none;
+}
+
+.row-item.lifted {
+  transition: none;
+  z-index: 2;
+  position: relative;
+  box-shadow: 4px 4px 0 var(--zt-line);
+}
+
+.row-item.fixed {
+  border-color: var(--zt-pink);
+}
+
 .handle {
-	flex: none; width: 34px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 10px;
-	background: none; color: var(--zt-muted); font-size: 1.2rem; touch-action: none; cursor: grab;
+  flex: none;
+  width: 34px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--zt-muted);
+  font-size: 1.2rem;
+  touch-action: none;
+  cursor: grab;
 }
-.row-item.lifted .handle { cursor: grabbing; }
-.handle.locked { font-size: 0.9rem; cursor: default; }
+
+.row-item.lifted .handle {
+  cursor: grabbing;
+}
+
+.handle.locked {
+  font-size: 0.9rem;
+  cursor: default;
+}
+
 .num {
-	flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
-	background: var(--zt-yellow); color: #111; border: 2px solid var(--zt-line); font-weight: 800; font-size: 0.78rem;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--zt-yellow);
+  color: #111;
+  border: 2px solid var(--zt-line);
+  font-weight: 800;
+  font-size: 0.78rem;
 }
-.main { flex: 1; min-width: 0; }
-.name { font-weight: 800; font-size: 0.86rem; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  font-weight: 800;
+  font-size: 0.86rem;
+  line-height: 1.2;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow-wrap: anywhere;
+}
 
 /* Big tap targets: 40 px buttons either side of the minutes. */
-.stepper { flex: none; display: inline-flex; align-items: stretch; border: 2px solid var(--zt-line); border-radius: 12px; overflow: hidden; }
-.stepper > button { border: 0; background: var(--zt-card); color: var(--zt-ink); font-weight: 900; font-size: 1.1rem; width: 36px; height: 40px; }
-.stepper > button:disabled { opacity: 0.4; }
-.stepper .mins, .stepper .mins-input {
-	width: 54px; border: 0; border-left: 2px solid var(--zt-line); border-right: 2px solid var(--zt-line);
-	background: var(--zt-yellow-pale); color: #111; font-weight: 800; font-size: 0.95rem; text-align: center; padding: 0;
+.stepper {
+  flex: none;
+  display: inline-flex;
+  align-items: stretch;
+  border: 2px solid var(--zt-line);
+  border-radius: 12px;
+  overflow: hidden;
 }
-.stepper .mins small { font-size: 0.6rem; margin-left: 1px; }
-.mins-input { -moz-appearance: textfield; }
-.mins-input::-webkit-inner-spin-button, .mins-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+.stepper > button {
+  border: 0;
+  background: var(--zt-card);
+  color: var(--zt-ink);
+  font-weight: 900;
+  font-size: 1.1rem;
+  width: 36px;
+  height: 40px;
+}
+
+.stepper > button:disabled {
+  opacity: 0.4;
+}
+
+.stepper .mins,
+.stepper .mins-input {
+  width: 54px;
+  border: 0;
+  border-left: 2px solid var(--zt-line);
+  border-right: 2px solid var(--zt-line);
+  background: var(--zt-yellow-pale);
+  color: #111;
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 0;
+}
+
+.stepper .mins small {
+  font-size: 0.6rem;
+  margin-left: 1px;
+}
+
+.mins-input {
+  -moz-appearance: textfield;
+}
+
+.mins-input::-webkit-inner-spin-button,
+.mins-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 </style>

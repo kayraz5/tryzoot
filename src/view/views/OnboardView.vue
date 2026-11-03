@@ -1,11 +1,11 @@
+<!-- EDITOR: STEVEN -->
+ 
 <script setup>
 import {computed, ref} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
 import {useUserStore} from '../../model/stores/user.js';
 import {useUiStore} from '../../model/stores/ui.js';
 import {STYLES} from '../../model/data/origins.js';
-
-/* Steven: Four question quiz after user authentication */
 
 const user = useUserStore();
 const ui = useUiStore();

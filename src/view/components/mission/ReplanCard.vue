@@ -61,5 +61,7 @@ async function finishEarly() {
 </template>
 
 <style scoped>
-.finish { border-top: 2px dashed var(--zt-soft-line); padding-top: 12px; }
+.finish { 
+  border-top: 2px dashed var(--zt-soft-line); 
+  padding-top: 12px; }
 </style>

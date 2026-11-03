@@ -1,3 +1,5 @@
+<!-- EDITOR: KAYRA -->
+
 <script setup>
 import { computed, ref } from 'vue'
 import { useTripStore } from '../../../model/stores/trip.js'
