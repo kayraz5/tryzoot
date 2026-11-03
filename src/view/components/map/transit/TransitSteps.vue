@@ -9,7 +9,7 @@ import { computed, ref } from 'vue'
 const props = defineProps({
   steps: { type: Array, default: () => [] },  // transitSteps(): { icon, colour, badge, title, detail, mode }
   index: { type: Number, default: 0 },        // the step the traveller is on
-  busAlt: { type: Object, default: null }     // { service, stop, minutes } when a taxi leg has a bus option
+  busAlternative: { type: Object, default: null }     // { service, stop, minutes } when a taxi leg has a bus option
 })
 
 const showAll = ref(false)
@@ -58,8 +58,8 @@ const usesTransit = computed(() => props.steps.some((s) => s.mode !== 'walk'))
       </div>
     </template>
 
-    <div v-else-if="busAlt" class="up-next">
-      <i class="bi bi-bus-front-fill"></i> Or take bus {{ busAlt.service }} from {{ busAlt.stop }} · about {{ busAlt.minutes }} min
+    <div v-else-if="busAlternative" class="up-next">
+      <i class="bi bi-bus-front-fill"></i> Or take bus {{ busAlternative.service }} from {{ busAlternative.stop }} · about {{ busAlternative.minutes }} min
     </div>
 
     <ul v-if="showTips" class="tips">

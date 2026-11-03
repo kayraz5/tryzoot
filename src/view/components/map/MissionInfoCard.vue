@@ -34,7 +34,7 @@ const props = defineProps({
   guidance: { type: Object, default: null },       // { icon, text }
   steps: { type: Array, default: () => [] },       // transit steps for this leg (empty when walking/taxi)
   stepIndex: { type: Number, default: 0 },         // which of `steps` the traveller is on
-  busAlt: { type: Object, default: null },         // a bus that replaces a taxi leg, if any
+  busAlternative: { type: Object, default: null },         // a bus that replaces a taxi leg, if any
   check: { type: Object, default: null },          // { ok, message } — can you stamp right now?
   stamping: { type: Boolean, default: false },     // a stamp request is in flight
   stampedCount: { type: Number, default: 0 },
@@ -51,7 +51,7 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
 </script>
 
 <template>
-  <div id="CenterInfo" class="rounded-4">
+  <div class="mission-card rounded-4">
     <button type="button" class="card-close" aria-label="Hide next-stop card" @click="$emit('close')">
       <i class="bi bi-x-lg" aria-hidden="true"></i>
     </button>
@@ -106,16 +106,16 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
       </div>
 
       <!-- Train/bus legs: what to do now, then every step, full width under the stop. -->
-      <div v-if="steps.length || busAlt" class="col-12">
-        <TransitSteps :steps="steps" :index="stepIndex" :bus-alt="busAlt" />
+      <div v-if="steps.length || busAlternative" class="col-12">
+        <TransitSteps :steps="steps" :index="stepIndex" :bus-alternative="busAlternative" />
       </div>
 
       <div class="col-12">
         <QuestChatButton class="mt-2" />
         <div class="card-links">
           <QuestGoSolo />
-          <button id="ChangeMap" type="button" class="card-link" @click="$emit('change-map-style')">Map style</button>
-          <button id="NeedHelp" type="button" class="card-link" @click="$emit('need-help')">Need help?</button>
+          <button type="button" class="card-link card-link--map" @click="$emit('change-map-style')">Map style</button>
+          <button type="button" class="card-link card-link--help" @click="$emit('need-help')">Need help?</button>
         </div>
       </div>
     </div>
@@ -127,7 +127,7 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
    width) rather than vw. On a 320–430px phone, a vw-based clamp stays pinned to its
    floor, so the card looked identical on every device; sizing against the card
    itself scales properly within its 300–600px range. */
-#CenterInfo {
+.mission-card {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -290,12 +290,12 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
   text-underline-offset: 3px;
   white-space: nowrap;
 }
-#ChangeMap { color: var(--zt-yellow-pale); opacity: 0.7; }
-#NeedHelp { color: #ff6b6b; }
+.card-link--map { color: var(--zt-yellow-pale); opacity: 0.7; }
+.card-link--help { color: #ff6b6b; }
 
 /* Phones: a smaller card so it covers less of the map. */
 @media (max-width: 575.98px) {
-  #CenterInfo { padding: 10px 12px; }
+  .mission-card { padding: 10px 12px; }
   .stop-title { font-size: 1.05rem; margin: 0; line-height: 1.2; }
   .stop-meta { font-size: 0.65rem; }
   .stop-dist, .stop-guide { font-size: 0.78rem; }
