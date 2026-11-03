@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { updatePinProximity } from '../../../src/view/features/map/pinPoint.js'
+import { updatePinProximity } from '../../../src/view/components/map/pinPoint.js'
 
 describe('updatePinProximity', () => {
   it('turns on the close animation only for pins within the radius', () => {
