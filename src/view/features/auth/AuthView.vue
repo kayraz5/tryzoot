@@ -15,7 +15,27 @@ const confirmSent = ref(false);
 const email = ref('');
 const password = ref('');
 const method = ref('password'); // can be 'link' also
-const isSignUp = ref(false);
+/*
+    Which tab to open on. An explicit ?mode wins, because a button that said
+    "Sign up" has to produce a sign-up form. Without one — arriving by the
+    router's guard from a protected page, say — it follows whether this browser
+    has ever had an account, since offering "sign in" to someone who has never
+    registered is a dead end.
+*/
+const isSignUp = ref(
+    route.query.mode ? route.query.mode === 'signup' : !user.hasAccount);
+
+/*
+    Whether this visitor was already signed in when the page opened.
+
+    The redirect below exists to carry someone onward the moment they
+    authenticate. It cannot also fire for a session that was already there, or
+    the landing page's sign-up button would bounce anyone holding an old session
+    straight to /plan without ever showing them the form — which is the bug this
+    pairs with. A session that appears while the page is open is a sign-in; one
+    that was there when it opened is just history.
+*/
+const wasSignedIn = user.isAuthed;
 const name = ref('');
 const busy = ref(false);
 
@@ -27,12 +47,34 @@ const next = () => {
     );
 };
 
+/*
+    Leave the auth page, once.
+
+    Two things call this, because neither covers the other. The watcher below
+    catches a session that turns up on its own — following a magic link back
+    into the tab. The buttons catch what the watcher structurally cannot see: a
+    visitor who was already holding a session when the page opened never
+    transitions from signed out to signed in, so nothing fires, and the button
+    they just pressed appears to do nothing at all.
+
+    Guarded, because for a visitor who arrived signed out both paths are live
+    and replacing the route twice is a wasted navigation at best.
+*/
+let leaving = false;
+
+function proceed() {
+    if (leaving) return;
+    leaving = true;
+
+    router.replace(user.needsOnboarding ? {
+        name: 'onboard',
+        query: {next: next()},
+    } : next());
+}
+
 watchEffect(() => {
-    if (user.isAuthed) {
-        router.replace(user.needsOnboarding ? {
-            name: 'onboard',
-            query: {next: next()},
-        } : next())
+    if (user.isAuthed && !wasSignedIn) {
+        proceed();
     }
 })
 
@@ -44,7 +86,9 @@ async function submitPassword() {
         const signedIn = await user.passwordAuth(
             email.value.trim(), password.value, isSignUp.value);
 
-        if (!signedIn) {
+        if (signedIn) {
+            proceed();
+        } else {
             confirmSent.value = true;
             startCooldown();
         }
@@ -120,6 +164,7 @@ async function guest() {
     busy.value = true;
     await user.continueAsGuest(name.value.trim() || 'Field Traveller');
     busy.value = false;
+    proceed();
 }
 
 </script>
