@@ -1,0 +1,1350 @@
+{
+  "schemaVersion": 1,
+  "metadataType": "production-baseline",
+  "status": "captured",
+  "pathFormat": "repository-relative-posix",
+  "algorithm": "sha256",
+  "roots": [
+    "src",
+    "api"
+  ],
+  "recordCount": 334,
+  "records": [
+    {
+      "path": "api/_lib/groq.js",
+      "sha256": "c2d421e00213e00fde09e22ae709e8cd0ae113db236e658ac7bf6b35f7f7485b"
+    },
+    {
+      "path": "api/_lib/immigration.js",
+      "sha256": "a0d0514d008d9bd7796f1d9d66618e0b77d3c63b8c5992c2d242d9b7dd5026e2"
+    },
+    {
+      "path": "api/_lib/places/index.js",
+      "sha256": "664a0db1997cabb2c2d36891043b180ebead5ec6481a9c238b4066131452082f"
+    },
+    {
+      "path": "api/_lib/places/merge.js",
+      "sha256": "d18469790f0a6c9bcb7db1b59cfaeb871f2b175970c51e5c7c89831c6987e7d5"
+    },
+    {
+      "path": "api/_lib/places/osm.js",
+      "sha256": "ab85c22c0a59e645238a198b59861d95553cb44d9dc9a3c1953ae748083bdaca"
+    },
+    {
+      "path": "api/_lib/places/supabase.js",
+      "sha256": "01299e76726be8e6f15fe0e50ca20a75e871a2d4321dfabb896c15a66429de60"
+    },
+    {
+      "path": "api/_lib/supabase.js",
+      "sha256": "e427ed9b290e24a15f3e4abab4a5fc1495e179540bb285dc09ec853ef4a69bbb"
+    },
+    {
+      "path": "api/entry-rule.js",
+      "sha256": "e5005ecc7c4c16e56691f1f9599c6a6193e2281118c1cf87d67b6004e1586413"
+    },
+    {
+      "path": "api/plan.js",
+      "sha256": "5c62f5635ea3c2875440c56a1e72b7b442f680c7dee0e2007183ea1ace393f53"
+    },
+    {
+      "path": "api/route.js",
+      "sha256": "3b6df90e8a2d47320f078a18901fdfd311a913ec05f65d35e4e2bbaf035fc883"
+    },
+    {
+      "path": "api/summary.js",
+      "sha256": "9a60b2fe5ef63321a263723e2f0a0fa65fe6401c233cae5debe1440ceeb39340"
+    },
+    {
+      "path": "api/sync-places.js",
+      "sha256": "accde5b77b44eccc12aced80ddc10b64f7b8674487d10cc3da82a9cce45af935"
+    },
+    {
+      "path": "src/App.vue",
+      "sha256": "8b9b159828336999b0c097392a2c75c30dc08b0de98247e78786aad4672a85ff"
+    },
+    {
+      "path": "src/__tests__/CenterDialog.spec.js",
+      "sha256": "eddc800afd1867a2a9ef635299e4e4d7c9d42961a4152a599d34e034e044db33"
+    },
+    {
+      "path": "src/__tests__/QuestCoopChip.spec.js",
+      "sha256": "0b488eeffe206ad64ef9084fd93abdc27651fc9f22407929413489fb757f9939"
+    },
+    {
+      "path": "src/__tests__/StopRangePicker.spec.js",
+      "sha256": "27ba14932e62a560164fada61a89e033892aede742e88aa7db538a2b52752f12"
+    },
+    {
+      "path": "src/__tests__/airport.spec.js",
+      "sha256": "5c25135d4afa61b262e56349e6e6a16e2836c7bc279b1874e183d9dc2289a000"
+    },
+    {
+      "path": "src/__tests__/apiEntryRule.spec.js",
+      "sha256": "f1d88e960a141044e99c9b0086161864e448a75392bb103b892e364d2c32087f"
+    },
+    {
+      "path": "src/__tests__/apiLibGroq.spec.js",
+      "sha256": "1aa84ce22fca930c092fc93029330b9b033b8debcf25f957da64ef11e51def6e"
+    },
+    {
+      "path": "src/__tests__/apiLibImmigration.spec.js",
+      "sha256": "acf5f7838594bef4c76ba3e11363cab6f404264c66b7f775b92df2f5f6be436f"
+    },
+    {
+      "path": "src/__tests__/apiLibPlaces.spec.js",
+      "sha256": "a8999e543abb586ada9ffc71f39cbba386cc402ac415852a9808610e8cf968f7"
+    },
+    {
+      "path": "src/__tests__/apiPlan.spec.js",
+      "sha256": "acf9949f63b47a7f5af996d0c052bca2d22a6c967f219c479a1c421d212ea757"
+    },
+    {
+      "path": "src/__tests__/apiRoute.spec.js",
+      "sha256": "6e793b67bd575dd18533fb32662865bccf0744965a81278eaf3a451e693a77bb"
+    },
+    {
+      "path": "src/__tests__/apiSummary.spec.js",
+      "sha256": "00043c41b4f8355626378c1dfde0176879a81292b950659bb2dfe0aff355d45a"
+    },
+    {
+      "path": "src/__tests__/apiSyncPlaces.spec.js",
+      "sha256": "cf8982fc444026955098e027d26de4f77fd877d3297c6110457c84bc7382a73a"
+    },
+    {
+      "path": "src/__tests__/brand.spec.js",
+      "sha256": "3e1071c393152da70ec4382a06a6b55179bbff6d9146204070faadabe781648c"
+    },
+    {
+      "path": "src/__tests__/catalog.spec.js",
+      "sha256": "22cbbec00dee061d7500fb9b5b1415cecaf24e87ee7ebef1462de02fb7ab3f62"
+    },
+    {
+      "path": "src/__tests__/catalog.supabase.spec.js",
+      "sha256": "4937253e291f1a27913472eb71549765cfd2a5385acd7f72406af2e438e051f4"
+    },
+    {
+      "path": "src/__tests__/characterStore.spec.js",
+      "sha256": "483d03b4887160a9dce7d14235610c8b31231e62f40fce9d40c9089b7a916491"
+    },
+    {
+      "path": "src/__tests__/checkin.spec.js",
+      "sha256": "7fe473fe445c6003a9378cadc187f4e84d310d16244664c1a80373db68c3e802"
+    },
+    {
+      "path": "src/__tests__/clock.spec.js",
+      "sha256": "d00c0ec6405aabe9be7c5a6f34bec1b19f3c0ac48e6dd489d538524921c09c03"
+    },
+    {
+      "path": "src/__tests__/config.spec.js",
+      "sha256": "f1715450de450e694cf17c50b03bcf591bf1c029671cf26500bfea464d0d579e"
+    },
+    {
+      "path": "src/__tests__/dbIndex.spec.js",
+      "sha256": "d8c9c7f2ebe84893597db5ae67e490c68afd186b0666b5934373e5fb35fc925b"
+    },
+    {
+      "path": "src/__tests__/geo.spec.js",
+      "sha256": "3756b5d6f1b688539ed6c89537bcb545099b0bf3de8c7268c57e0da31a68498a"
+    },
+    {
+      "path": "src/__tests__/groq.spec.js",
+      "sha256": "4babf029d756fa1157f1723055bd98b84dc7e7cf2a5b646cca1c96569ee26ff0"
+    },
+    {
+      "path": "src/__tests__/helpers/fakeClock.js",
+      "sha256": "01abb00fe6686a22dd03cc06fcfa1f81d9882b40e78d6b30bb1fdc0da6886ac5"
+    },
+    {
+      "path": "src/__tests__/helpers/fixtures.js",
+      "sha256": "7a12989fa609366ebdb5c4337659645566bc0af09423ec0a4dbcaf5d1b60d7dd"
+    },
+    {
+      "path": "src/__tests__/helpers/gen.js",
+      "sha256": "fe352018ac3c39ced05508cd87fca76c43a522b5b6257d283a89575d089da1f1"
+    },
+    {
+      "path": "src/__tests__/helpers/index.js",
+      "sha256": "0b673e9a24d7220baa2dee549c4e4875ae2c4280d0ec4307aec3fad752a60ef5"
+    },
+    {
+      "path": "src/__tests__/hours.spec.js",
+      "sha256": "c1a0a2b52a4d22b7fcae10210c74abc1ecfec0e86eab599d3883a403e43d47b2"
+    },
+    {
+      "path": "src/__tests__/immigration.spec.js",
+      "sha256": "a15966f7ebee923daf23ed5677c1c1f571c80956b7cc63e3bb3e31b2e398c511"
+    },
+    {
+      "path": "src/__tests__/itinerarySchema.spec.js",
+      "sha256": "32dee1fa2763f58157748534b409c042a67d266361efaf789d88d3c176a00078"
+    },
+    {
+      "path": "src/__tests__/joinResolver.spec.js",
+      "sha256": "a49c42968bcd09b2ef263ee00ae610b6030645e6f6ee629f6846cd4c6d0b91db"
+    },
+    {
+      "path": "src/__tests__/localDb.spec.js",
+      "sha256": "ab4a32f196c898e3c54cd5b046e9f2c9d648ff4d7ac6da81a6bcf00dd19b738e"
+    },
+    {
+      "path": "src/__tests__/mapBuildings.spec.js",
+      "sha256": "c7064eb40e66e712148ca12d8ff6683ed84490d6b203f7866baec3a3b9aaddea"
+    },
+    {
+      "path": "src/__tests__/missionStore.spec.js",
+      "sha256": "f244afede542f22bb076b1650fb0906eecf774a993bc21b1f3aeffadcedfd042"
+    },
+    {
+      "path": "src/__tests__/mrtRoute.spec.js",
+      "sha256": "6b44fa3491a3c25186bbbedbb020c5110383b288ff75586af8b804fbece9221a"
+    },
+    {
+      "path": "src/__tests__/passportStore.spec.js",
+      "sha256": "324b4f0c2e5bf3a28193c015cb0f24e529afbbcdf2cf9bfffe64cd8ddc40a4bc"
+    },
+    {
+      "path": "src/__tests__/pinProximity.spec.js",
+      "sha256": "b435d493c6eddf5c2ccd3076a6f194d219ee4a1d94184d3b8bf671729478de50"
+    },
+    {
+      "path": "src/__tests__/placeImages.spec.js",
+      "sha256": "02bf94e252010cc1cc30046a223fd94f9722d8b95ef19a2d7ebbfe90be69f728"
+    },
+    {
+      "path": "src/__tests__/planUi.spec.js",
+      "sha256": "e576a667d37becd69fbd8e7ec4c829685d2da164eccdf46cef90f6e4dc2dbdf7"
+    },
+    {
+      "path": "src/__tests__/planner.spec.js",
+      "sha256": "8c0d85bc0181a5ac165f058ddeeee6cee6ff2ff82e2effe739f138214f1fe77c"
+    },
+    {
+      "path": "src/__tests__/questChat.spec.js",
+      "sha256": "92974cd0b86dde90148b4462f8eeeae21652b5b7f61fc5736e5ecdbb724dfb07"
+    },
+    {
+      "path": "src/__tests__/retimeWait.spec.js",
+      "sha256": "75ba4f96f5aafaeb315eeb428c2d4da311d4678ccef867f8c87fb1a334f8c2a9"
+    },
+    {
+      "path": "src/__tests__/routeGeometry.spec.js",
+      "sha256": "b24fbf90bb3cb90ec7340add50460f61b5b54808d62746c4d21172787306f0aa"
+    },
+    {
+      "path": "src/__tests__/routing.spec.js",
+      "sha256": "b318e517f7a305667c20a825885049bb03c73ec6d40996e526ef040f38e8d1ae"
+    },
+    {
+      "path": "src/__tests__/socialJoin.spec.js",
+      "sha256": "823c744ded419d5b3801dfb4406f420988b30c155443fc8b3835e4699ba4aacd"
+    },
+    {
+      "path": "src/__tests__/socialWindow.spec.js",
+      "sha256": "9f0dbf0b7bd6d51409935b4562f4b5782fbb1ac14adfa72af1f0c6c0906fe5f1"
+    },
+    {
+      "path": "src/__tests__/stopPins.spec.js",
+      "sha256": "09ec248f2e0b529258b6758fab99bf77268cecb68749276c68f6e6a7e3bb3d28"
+    },
+    {
+      "path": "src/__tests__/travel.spec.js",
+      "sha256": "4980fdfe80f76554dad4fab0a22f68db600c3ecf426bfc25d9b3250d6254cb9a"
+    },
+    {
+      "path": "src/__tests__/tripStore.spec.js",
+      "sha256": "6e9ea6c536352fed1dafed63ff7b7221bb19f529d7b2e6812042bd4fc046f647"
+    },
+    {
+      "path": "src/__tests__/uiStore.spec.js",
+      "sha256": "86f7707f4448fb9bc788880af0478e09565b7890c997fd5dd41600ac375b8bf2"
+    },
+    {
+      "path": "src/__tests__/useMissionNav.spec.js",
+      "sha256": "173cb0f1975272bb0e581fcc1459a6ef1cb09d2c6503953787281c10ad09417c"
+    },
+    {
+      "path": "src/__tests__/userStore.spec.js",
+      "sha256": "09e6e2d683013861f3ec4b8078912ae644a021813368ffc537d1bd803cfae265"
+    },
+    {
+      "path": "src/__tests__/weather.spec.js",
+      "sha256": "84d0601ef8a428e4d04f8c1830e0ecabf0feb792c38b849cbe68ff34ed9da07c"
+    },
+    {
+      "path": "src/__tests__/weatherHud.spec.js",
+      "sha256": "9cf4ba8547812cc2c673da4b362e8de842848671abefdf4b1f7426cd50a4d16c"
+    },
+    {
+      "path": "src/__tests__/xp.spec.js",
+      "sha256": "b87d0d1f9206c711b1c823e41001ba43df7da4f2bb291f66d52d6548bbec8220"
+    },
+    {
+      "path": "src/assets/stamps/adam-road-food-centre.png",
+      "sha256": "66f0fea86a1b8cbdc0e871cd9c31ccaef3be351ec5c621afa338793d6d2da6dd"
+    },
+    {
+      "path": "src/assets/stamps/adventure-cove-waterpark.png",
+      "sha256": "abfa54d3512c4a1d2174117bf4cdb943b6ed7cdd813d267aca42daa8eff96c28"
+    },
+    {
+      "path": "src/assets/stamps/amoy-street-food-centre.png",
+      "sha256": "e789056cca78b8bd34a22bcbe5f6e983509b2943c3ed3d931c6554653b3fe321"
+    },
+    {
+      "path": "src/assets/stamps/ann-siang-hill.png",
+      "sha256": "b0db4b5361c92555cdb5a8db93e5f0a5fec9b99ab7041d05beff70ad9712ada3"
+    },
+    {
+      "path": "src/assets/stamps/arab-street.png",
+      "sha256": "75a33b53d63044d0893f8124eda4e8ca55932e21dbd1e5170e0823783c4b405b"
+    },
+    {
+      "path": "src/assets/stamps/area-changi.png",
+      "sha256": "12dde433463da9d64f55eac4320059e25c70a6edd269ec5a022963a6f7495735"
+    },
+    {
+      "path": "src/assets/stamps/area-chinatown.png",
+      "sha256": "8e38b0742d4e2ec41a443c520f120ba59f6e8d2ddc4dd262093cbae9c07b6f74"
+    },
+    {
+      "path": "src/assets/stamps/area-civic-district.png",
+      "sha256": "08011656cf27b19c08fac59fd5f593694f653826b838bea7e64b361b88b57432"
+    },
+    {
+      "path": "src/assets/stamps/area-east-coast.png",
+      "sha256": "0971e7e7117496e715a6133cc551b96eb0854296c8bc08791543689e5642c5f6"
+    },
+    {
+      "path": "src/assets/stamps/area-harbourfront.png",
+      "sha256": "404b094f4611788b788b35729f876180d62412432231cd39fbf28255b5819c2c"
+    },
+    {
+      "path": "src/assets/stamps/area-kampong-glam.png",
+      "sha256": "9d2515f9cc4a0fa7e4291d09fdca2fd89574c6ce18ccc444cc271ff45519e03e"
+    },
+    {
+      "path": "src/assets/stamps/area-little-india.png",
+      "sha256": "83fe208b3928f3f65bcc646775fd06247d0132919bb6d8dc60098e3cea2b87a5"
+    },
+    {
+      "path": "src/assets/stamps/area-marina-bay.png",
+      "sha256": "dc9292633e2268f8eb59061109da7bcadbcdeda0377196675ef256f1f1a5d79b"
+    },
+    {
+      "path": "src/assets/stamps/area-north.png",
+      "sha256": "676a5840d6f68992f4f966e1cbff58b22854b15c992dfe86557c6ad4e606dcc8"
+    },
+    {
+      "path": "src/assets/stamps/area-orchard.png",
+      "sha256": "1559c81d1d040806c8f4f2d6f7cf000c90e28014002dacb541ef97f899c99029"
+    },
+    {
+      "path": "src/assets/stamps/area-sentosa.png",
+      "sha256": "6652cece5dde7459115ee9a73847d47c7339865b7d126a63b801a06c009891dc"
+    },
+    {
+      "path": "src/assets/stamps/area-tanglin.png",
+      "sha256": "c59d494cc8e8c9975dc5ea074eb19f4d3f4b68d908633cbe3d38c46fb145e45d"
+    },
+    {
+      "path": "src/assets/stamps/area-tiong-bahru.png",
+      "sha256": "0e808d151c70d0ed277b4486b4b9caf4ac0ce4ddfff065b4c641ec79dd4d93ae"
+    },
+    {
+      "path": "src/assets/stamps/area-west.png",
+      "sha256": "4d753053e72e1157e9d6dc719b353c5ac4046eb00d8637160c87091f28b82794"
+    },
+    {
+      "path": "src/assets/stamps/armenian-church.png",
+      "sha256": "ea75d08bfae438e4f772c000e9c2d9dee2fd93b76c20daba5d476f13261207a8"
+    },
+    {
+      "path": "src/assets/stamps/artscience-museum.png",
+      "sha256": "b76b96e8985896ada39c2a50cd78d356e191007fc4585362147e0e9163b2d4cb"
+    },
+    {
+      "path": "src/assets/stamps/asian-civilisations-museum.png",
+      "sha256": "107d9ceecea36fa050e6bbbf63a65894af2b1da44a76e67c3cf5430f9a38b5fb"
+    },
+    {
+      "path": "src/assets/stamps/balestier-art-deco-shophouses.png",
+      "sha256": "0d4959de9d0536ede5fc72681e1da48d0aac60d877206e320f807be0ba911184"
+    },
+    {
+      "path": "src/assets/stamps/bird-paradise.png",
+      "sha256": "1df9dd4993e29c5cef93dfcd346941d4540b5cad7a6ceff910c0182b0fa44ac6"
+    },
+    {
+      "path": "src/assets/stamps/boat-quay.png",
+      "sha256": "8723101b4a375cbef0b4476c1b5f6bbc87dfc4b41f3f8d42cc3568c20369e35c"
+    },
+    {
+      "path": "src/assets/stamps/botanic-gardens.png",
+      "sha256": "418d468b7cab367f990723df32d34fd871e8a2a6b5713abb21d583aa9c19808f"
+    },
+    {
+      "path": "src/assets/stamps/buddha-tooth-relic-temple.png",
+      "sha256": "13d8eefd87d8eb098cb8e9c2300af0851ae37d12895713b0611c70c45075cd8d"
+    },
+    {
+      "path": "src/assets/stamps/bugis-street.png",
+      "sha256": "8823a26b50dd2398b7fc13e6dad89febfefd7397deabddfd03a353f32583de0d"
+    },
+    {
+      "path": "src/assets/stamps/capitol-building.png",
+      "sha256": "18e38e603ca5de64be34195c972dbdf7a2e32464962599a244a6b918e9e703e9"
+    },
+    {
+      "path": "src/assets/stamps/cavenagh-bridge.png",
+      "sha256": "fcb263b0c36f795c91f90c1897a0e9ca3dfdc637c68a8b055b14aa0d2425a0d1"
+    },
+    {
+      "path": "src/assets/stamps/changi-beach-park.png",
+      "sha256": "e2920832f960b9108319843702808f9a42cc1acf09b4cb0c626bc9a260b58a83"
+    },
+    {
+      "path": "src/assets/stamps/changi-chapel-museum.png",
+      "sha256": "975d488cea5f89738b76927e274c5ab8ccb174b903d3fbee7ccb5b6d855024a4"
+    },
+    {
+      "path": "src/assets/stamps/changi-point-boardwalk.png",
+      "sha256": "ed53b71898f71eef967db84a2fbbca6e14feef09df05830060327aeaad07eadb"
+    },
+    {
+      "path": "src/assets/stamps/changi-village-hawker.png",
+      "sha256": "7548b07c2ad24ba364d3219388dff581fbc1decbbc34b1d09a252c6a92a3f216"
+    },
+    {
+      "path": "src/assets/stamps/chek-jawa.png",
+      "sha256": "d3afcd997fc16674057b746deeb0315aed265745590196aa73d1b88f165a8aa5"
+    },
+    {
+      "path": "src/assets/stamps/chijmes.png",
+      "sha256": "b69e1b9b6859e5326afa9d986173085dae7b04af7b3db2a24e9646891fd1f821"
+    },
+    {
+      "path": "src/assets/stamps/childrens-museum-singapore.png",
+      "sha256": "ea5082c7f8d6526e175f768ce3b459763092b06eff18ecb2c249e07fe93b5b3d"
+    },
+    {
+      "path": "src/assets/stamps/chinatown-complex.png",
+      "sha256": "d81dff78d2700b7dd46e84f697569f050e214112a1fe72c0a7e9c11cb671cb09"
+    },
+    {
+      "path": "src/assets/stamps/chinatown-heritage-centre.png",
+      "sha256": "3eae8658e58e5481b5d08e2fe0ac128fffc7916c3bf583e29a35c719a3a35a8e"
+    },
+    {
+      "path": "src/assets/stamps/chinese-garden.png",
+      "sha256": "d0f914ed9c553280eb689d25a743407388151e479dbed21aff25d9b23b949d1f"
+    },
+    {
+      "path": "src/assets/stamps/chinese-heritage-centre.png",
+      "sha256": "bb19118f52d17ebd4b317c4bba7e041ae103e051cfeea6be4e5781a4a28d2331"
+    },
+    {
+      "path": "src/assets/stamps/city-gallery.png",
+      "sha256": "196086c5a5e731115ee761032b96ee628dfd48543113eb68ac32de95e74b4267"
+    },
+    {
+      "path": "src/assets/stamps/civilian-war-memorial.png",
+      "sha256": "1fe59ea4edf213d4612a76d172a01d4affe0080cf50944994732fb78990f913a"
+    },
+    {
+      "path": "src/assets/stamps/clarke-quay.png",
+      "sha256": "e60dd943e80fe67e0eac8d4bf4cc17b1c9537865577f68ebf0be667571bd6a88"
+    },
+    {
+      "path": "src/assets/stamps/cloud-forest.png",
+      "sha256": "82d2daef4003213043faead8acbc88a394082eb2b79793963e6676ca42c8a9ab"
+    },
+    {
+      "path": "src/assets/stamps/dalhousie-obelisk.png",
+      "sha256": "0f2bcff53e6593f4130fe97c95ca8b7469df28deec2c73a5867a3eb2c7dcaa1c"
+    },
+    {
+      "path": "src/assets/stamps/dempsey-hill.png",
+      "sha256": "95ea8862330bb4b7b1f88b8202868d29789e7eacc457d0b65c228d53cc30c9d2"
+    },
+    {
+      "path": "src/assets/stamps/east-coast-lagoon.png",
+      "sha256": "eda686fd9d2760c0121dc7eeb1186ccb58b2504776ca47d8e7793cecb25e46ed"
+    },
+    {
+      "path": "src/assets/stamps/east-coast-park.png",
+      "sha256": "fbc999ff9ec632b6dc41342dd6c583323071d265be29a435549ed9a5d2ac0ac0"
+    },
+    {
+      "path": "src/assets/stamps/emerald-hill.png",
+      "sha256": "2b90cfe6c2253580e9cdd0ec8739cf5f845d52b586ed42a0d2d7456dce9b5abe"
+    },
+    {
+      "path": "src/assets/stamps/esplanade.png",
+      "sha256": "8d4563d8891eec8a83ac7809d57a918f5718220d5933880eb91f0b740f462623"
+    },
+    {
+      "path": "src/assets/stamps/eurasian-heritage-gallery.png",
+      "sha256": "8375d515bb52e5d4e4488cc45298dbb14b0521763dac81f88b5454402884fd16"
+    },
+    {
+      "path": "src/assets/stamps/flower-dome.png",
+      "sha256": "b8ff88632033437eb017577a03aca1a366748653ff9ca85207a6bdd70da9a077"
+    },
+    {
+      "path": "src/assets/stamps/former-ford-factory.png",
+      "sha256": "2276df31e15045e35188decfb188ae012c7b830eba9ec7997d9e1577c2d772f0"
+    },
+    {
+      "path": "src/assets/stamps/fort-canning.png",
+      "sha256": "551446560eee4bfe9f99c4f0ef1266560c14af998f22e3a3f9c2145fd38a62c6"
+    },
+    {
+      "path": "src/assets/stamps/garden-rhapsody.png",
+      "sha256": "ed12c51048517f9328a5985c4b28fa033156ce9fb39f4f2899874c8b74f3ee2d"
+    },
+    {
+      "path": "src/assets/stamps/geylang-serai-market.png",
+      "sha256": "159dd2f44d592e2f0d9a18019ad708b0d3ef13c86643a8ae6aa68a61fe077bb1"
+    },
+    {
+      "path": "src/assets/stamps/gillman-barracks.png",
+      "sha256": "3e86150472dc7fb6013694069eede6ce8be3e4ea3984ea240222abfef349a644"
+    },
+    {
+      "path": "src/assets/stamps/gluttons-bay.png",
+      "sha256": "1db494dfa559d4ec7cd7eefd5b7c53ffffc1aab7a2321fe0fc0ea4bb7e0452a5"
+    },
+    {
+      "path": "src/assets/stamps/haji-lane.png",
+      "sha256": "6fedf64a0b86f4d80a050e534a24d69ea5de05091ac1fa8f9c4e739be00f3f6c"
+    },
+    {
+      "path": "src/assets/stamps/haw-par-villa.png",
+      "sha256": "12d8f65d6ed594bb30f330bc2452a4e29b2ba4d9033364617a584cdd0ea94860"
+    },
+    {
+      "path": "src/assets/stamps/helix-bridge.png",
+      "sha256": "31ba7b5e36245ffaf05721c97f6a6be2a8fa8f11346a01a295b9494cf52a834d"
+    },
+    {
+      "path": "src/assets/stamps/henderson-waves.png",
+      "sha256": "876b5bec62fe53b9b564d558656a9e5aff51cad8b6e47ace317f4eda3a73cfa4"
+    },
+    {
+      "path": "src/assets/stamps/hill-street-tai-hwa.png",
+      "sha256": "01f8fa30ee8e8d9663019d0582b33b1129f3ee2c4fada4b0e8174ff3b9e06c9b"
+    },
+    {
+      "path": "src/assets/stamps/holland-village.png",
+      "sha256": "06880a166fa662b1b5351a845dcd8fe0794b3a750a0cdbef077ab3609e092c60"
+    },
+    {
+      "path": "src/assets/stamps/hong-lim-food-centre.png",
+      "sha256": "fea438fbe891b39eee2c82623e301142e24b58ad095cac61756a7029f694ae15"
+    },
+    {
+      "path": "src/assets/stamps/hong-san-see-temple.png",
+      "sha256": "9dc7829cc7cd7cd9184d9788d33506d36ece1dc9e936d753457517df7caf24a2"
+    },
+    {
+      "path": "src/assets/stamps/hortpark.png",
+      "sha256": "379ca7540174bbd009590c9c709bca5a12e84b77989620ebaa8f41d85f51a475"
+    },
+    {
+      "path": "src/assets/stamps/indian-heritage-centre.png",
+      "sha256": "a87d38b4dbc7d510166abc57a679eab86b3e466f122fc74718fb89ee73f5dd6d"
+    },
+    {
+      "path": "src/assets/stamps/ion-orchard.png",
+      "sha256": "3f89754eaa4522161ad48561d1e357a4cb291d928bd95c661257e4c61459350e"
+    },
+    {
+      "path": "src/assets/stamps/jamae-mosque-masjid-chulia.png",
+      "sha256": "e95022478428d19d68b16fb5988db1da56d369cf4b44ac84d26ff23f444004d7"
+    },
+    {
+      "path": "src/assets/stamps/jewel-canopy-park.png",
+      "sha256": "4de0968e8e11e3091538d5a921dfb0e93eb1ad424458c6067d7c96bd3ec90793"
+    },
+    {
+      "path": "src/assets/stamps/jewel-forest-valley.png",
+      "sha256": "adf326fea0ad4a05f932b07875ae8c0f4311ad779b621eb45f8575fb6f179265"
+    },
+    {
+      "path": "src/assets/stamps/jewel-rain-vortex.png",
+      "sha256": "e47c51dba6e15d2986729e5821a0b18a0bc1bbb4346256a67c3ee504fc31d104"
+    },
+    {
+      "path": "src/assets/stamps/joo-chiat-katong.png",
+      "sha256": "c13f829dc329cb461f51b115c2bd162a6fe1dc6dc0e3ecb0aa693d074e4b0a7a"
+    },
+    {
+      "path": "src/assets/stamps/katong-antique-house.png",
+      "sha256": "c114b7862bbd4a830a62d6c246fc3489849c6a37eb94ee6b8b8a8f3f108ea995"
+    },
+    {
+      "path": "src/assets/stamps/katong-laksa.png",
+      "sha256": "a5c49443f396e740d1386ad3444f9d6248d0c3c2a23ac88c5dca63ea00dec7e1"
+    },
+    {
+      "path": "src/assets/stamps/keong-saik-road.png",
+      "sha256": "956d353216f8a024c4e842291cbda65d4ae1dd1089503c59732bdb5f599d7d86"
+    },
+    {
+      "path": "src/assets/stamps/kim-choo.png",
+      "sha256": "eebb5237aebf2b548191a74149bf84082dd896dcf7610e38884a32402f718fab"
+    },
+    {
+      "path": "src/assets/stamps/koon-seng-shophouses.png",
+      "sha256": "b1d08c9ba0f0b49eb754331ae3765499d9d84dff396e66271362106efce0a16b"
+    },
+    {
+      "path": "src/assets/stamps/kranji-war-memorial.png",
+      "sha256": "814310c8d3594b5ef43bfe5b23d5793864ffad5541ce2a3b141dce9502c71454"
+    },
+    {
+      "path": "src/assets/stamps/kusu-island.png",
+      "sha256": "bcea9073ef1acc2906d88549e75b1b2281b10c2e1e4947606716299f9cecf6d8"
+    },
+    {
+      "path": "src/assets/stamps/kwan-im-temple.png",
+      "sha256": "ec61af0a12210056d4d5ffd5e3fc05ba5c63fa61726ea80b58b355f85dd064a4"
+    },
+    {
+      "path": "src/assets/stamps/labrador-nature-reserve.png",
+      "sha256": "dfe25faaf8b73f6bd04178b8eec7212f290b4db6ba52790df5c1cb715ba5d03b"
+    },
+    {
+      "path": "src/assets/stamps/lau-pa-sat.png",
+      "sha256": "c7599ef4bac248c993618cb12ef62e6f5a39d9592ad10da54c42d474d425957a"
+    },
+    {
+      "path": "src/assets/stamps/lim-bo-seng-memorial.png",
+      "sha256": "ae526a182f94d2117b648dce044afa9c29e56f74fb0dead144b276e389db6a71"
+    },
+    {
+      "path": "src/assets/stamps/macritchie-treetop.png",
+      "sha256": "f7ab024defec152e0927d5043c0ee8882c97802802139c1b89399e75a5141891"
+    },
+    {
+      "path": "src/assets/stamps/macritchie.png",
+      "sha256": "3febdc1467a3e21172f772597992cedb3775f3723ce94e12b7c0e8201abec068"
+    },
+    {
+      "path": "src/assets/stamps/maghain-aboth-synagogue.png",
+      "sha256": "c64b877ae7097fea990722ead6e29a805a21bf58815effa9af16dc0fd4486cdb"
+    },
+    {
+      "path": "src/assets/stamps/malay-heritage-centre.png",
+      "sha256": "3205d7603bab7be566c50f334dffd48bcfa365c8997c88158b2e27474cdba6ef"
+    },
+    {
+      "path": "src/assets/stamps/marina-barrage.png",
+      "sha256": "4f6dfe901433ad2ba21a65a1c1e3fcca8f9105bc95f24d07aa90e79f4c342c5e"
+    },
+    {
+      "path": "src/assets/stamps/maxwell-food-centre.png",
+      "sha256": "ecb77d502973e3ff50e71596ccfa6e99d0edf51c33c73f6ab8e3ce296bc0554e"
+    },
+    {
+      "path": "src/assets/stamps/mbs-skypark.png",
+      "sha256": "46fcc580229153ecee55dd0200ab5054b6f427132c430fb4aef72e1de029774d"
+    },
+    {
+      "path": "src/assets/stamps/merlion-park.png",
+      "sha256": "9358c116fa5029984605e275c931623b0ff24c6ee84f54d09558dd97fad2699a"
+    },
+    {
+      "path": "src/assets/stamps/mint-museum-of-toys.png",
+      "sha256": "778a293d23cddda6605c21b67643967d2b6fcef94c4dd4f3709f3e33e851a213"
+    },
+    {
+      "path": "src/assets/stamps/mount-faber.png",
+      "sha256": "5690e600948b61686ebcc6c6ec08d714edeb757a2661d616c2eeda941b379286"
+    },
+    {
+      "path": "src/assets/stamps/mustafa-centre.png",
+      "sha256": "372efe7acdac358909f283d452453a4c284c858ff74e049dcfda1aed29fbf7fe"
+    },
+    {
+      "path": "src/assets/stamps/national-gallery.png",
+      "sha256": "0e199aebc33a49ae7e49b731061fae50339fc1c23fa291e29bbd1463f996dfc5"
+    },
+    {
+      "path": "src/assets/stamps/national-museum.png",
+      "sha256": "1cf25efc10b37f104981f95caf7cf54d597b7aa0c89615d5a07d228907b36107"
+    },
+    {
+      "path": "src/assets/stamps/national-orchid-garden.png",
+      "sha256": "54dc44ff4e5d5f8fd3addd05463e5e449a7d59eb42263afea965a81f5e6762f2"
+    },
+    {
+      "path": "src/assets/stamps/newton-food-centre.png",
+      "sha256": "074740cbf86833624dbbeb9a6b5a4e7e51dc98d5cfd775bf5c53d4d2ab5a2210"
+    },
+    {
+      "path": "src/assets/stamps/ngee-ann-city.png",
+      "sha256": "89c24677cbe464f20667860aa85c2595f3902281d476c64ff7e229274dad8141"
+    },
+    {
+      "path": "src/assets/stamps/night-safari.png",
+      "sha256": "e2f283f45185bbc03ad5ff279da30942fac4a919efbd9ff749489470bd458bf5"
+    },
+    {
+      "path": "src/assets/stamps/nus-baba-house.png",
+      "sha256": "34a38ca08125f04bca073431297665fd5b69a6c7738d97f9ec8ab588ab0e678d"
+    },
+    {
+      "path": "src/assets/stamps/nus-university-museum.png",
+      "sha256": "6a74d02f05595cb3f2664e432ee6627926a3d4fdf9c36d6b85b271e71cfbbcd4"
+    },
+    {
+      "path": "src/assets/stamps/old-airport-road.png",
+      "sha256": "ceb42dd6fc7031f408a570993bfe04c2a26ae933d012f442923c7d8219ad1c68"
+    },
+    {
+      "path": "src/assets/stamps/old-hill-street-police.png",
+      "sha256": "ba014283ee35f93ee5bd8ce345716c7fbfd309c025b2dab6c926a79334d7e723"
+    },
+    {
+      "path": "src/assets/stamps/pagoda-street.png",
+      "sha256": "2376aa6107316b9d84776662377414c5d1886c8da44617bbf65a3ff7215acd2c"
+    },
+    {
+      "path": "src/assets/stamps/palawan-beach.png",
+      "sha256": "0a40f1ddf0b76a7af1010e613ecc04d54109410647a13cc334d08e2d9ab0b629"
+    },
+    {
+      "path": "src/assets/stamps/peoples-park-complex.png",
+      "sha256": "d8a44413c0cb4fdb718d71e91189a82518ca09008b3a79541d45e1e8f74bdfb0"
+    },
+    {
+      "path": "src/assets/stamps/peranakan-museum.png",
+      "sha256": "35dd4dcbcf6755df5a0de4b7e5821afc805dd4b34a6f526ed083666e5baeb51e"
+    },
+    {
+      "path": "src/assets/stamps/pinnacle-duxton.png",
+      "sha256": "68e5e9398a4158fee36cee7581e51a4bd200cd0db7497b1da8eeca2d9c5cc52e"
+    },
+    {
+      "path": "src/assets/stamps/pulau-ubin.png",
+      "sha256": "ee6fc876d5c9e6ed428100197ac0727124613bae0e175f9e765b4660fbad5157"
+    },
+    {
+      "path": "src/assets/stamps/raffles-hotel.png",
+      "sha256": "78bab92ff63f87ca4f25647e15841ef75af456fa89d2cad9c63c794779ccc5d2"
+    },
+    {
+      "path": "src/assets/stamps/raffles-statue.png",
+      "sha256": "b8d2ce2bcbdbf8e603385168e51d7920207917c9afe10217d271a95517526b23"
+    },
+    {
+      "path": "src/assets/stamps/red-dot-design-museum.png",
+      "sha256": "e6408c976c8ce0b624652c597184977093f932397748a06b6ff64a073da6e81d"
+    },
+    {
+      "path": "src/assets/stamps/reflections-at-bukit-chandu.png",
+      "sha256": "d75d209360301170dae9b0bd10010e6cbfa5d2b96fcbbbc9465a31324111fb05"
+    },
+    {
+      "path": "src/assets/stamps/resorts-world-sentosa.png",
+      "sha256": "bc8423d4262544f7ab5901b8bfa4b45fc2a99844ba2d4b1ef259a27dd68f5015"
+    },
+    {
+      "path": "src/assets/stamps/river-wonders.png",
+      "sha256": "a8bcd448e7aabeaa3e81e498a470e64b415ff3579eb5fcce7b5b4b555296048c"
+    },
+    {
+      "path": "src/assets/stamps/sam-tanjong-pagar-distripark.png",
+      "sha256": "bdd20cf3b81207a22457cfd020fa342bf087788f210bc448b9de5adaf16c2cef"
+    },
+    {
+      "path": "src/assets/stamps/satay-by-the-bay.png",
+      "sha256": "f431979a0697349c64a9bfa305e1f14a0f99b67e2f73fb52d66002e5e2c9889a"
+    },
+    {
+      "path": "src/assets/stamps/shoppes-mbs.png",
+      "sha256": "319694631e87656f360a744fefef64f59000bc76849f1122aeb1b0ac81812be2"
+    },
+    {
+      "path": "src/assets/stamps/siloso-beach.png",
+      "sha256": "3fc6f0fa4b3dd8b783fc3683dcb05d21b13773a27a8de189dbad8d8931cf4e53"
+    },
+    {
+      "path": "src/assets/stamps/sim-kwong-ho-shophouses.png",
+      "sha256": "0d4959de9d0536ede5fc72681e1da48d0aac60d877206e320f807be0ba911184"
+    },
+    {
+      "path": "src/assets/stamps/singapore-flyer.png",
+      "sha256": "cdcab730960378e37e521ffeb86ac8ca6d50140e687123a05e0c44aaefb3d641"
+    },
+    {
+      "path": "src/assets/stamps/singapore-river.png",
+      "sha256": "edee0f615e6ebd030f4f18bf18a171f68f794d8fcfcd4c159d3a611af826bd1c"
+    },
+    {
+      "path": "src/assets/stamps/singapore-science-centre.png",
+      "sha256": "cf651b0338b833788f1eb4ca823c203ca3b4534e41609b3f3dd8a649f98fea79"
+    },
+    {
+      "path": "src/assets/stamps/singapore-zoo.png",
+      "sha256": "0189a2ffd4f9d5e15cc1e6161922120466cb84e9fdfacf665d0331b38f8c6445"
+    },
+    {
+      "path": "src/assets/stamps/sit-flats.png",
+      "sha256": "60b10e486b902fa164ddb3dac41a07fc29c75e2ac8fdce0a5c7cc1c9d6a81666"
+    },
+    {
+      "path": "src/assets/stamps/spectra-show.png",
+      "sha256": "7d2aebcf0cc9e8608fd28b549be1864b1d82472bc2be8720909ffe6a4ff661e7"
+    },
+    {
+      "path": "src/assets/stamps/sri-mariamman-temple.png",
+      "sha256": "b715e8a558a1a4a2726288e77b4ef81488c70ab8767b64efe70ade4e8ff62088"
+    },
+    {
+      "path": "src/assets/stamps/sri-veeramakaliamman.png",
+      "sha256": "300c7918805dfacb4aa28e85cdbc7448d63986967bb5d34f37b5724f492c7c07"
+    },
+    {
+      "path": "src/assets/stamps/st-andrews-cathedral.png",
+      "sha256": "b4f133f57f29d5341dcbe3cb7a5d27716f9f8ce452353d658301e01c4cc17178"
+    },
+    {
+      "path": "src/assets/stamps/sultan-mosque.png",
+      "sha256": "fd49d2ac0a14f893c8f4ee3165cceb8251de071c1776fcda4bfcc21102b40f08"
+    },
+    {
+      "path": "src/assets/stamps/sun-yat-sen-nanyang-memorial-hall.png",
+      "sha256": "a5cd48cb4aa1618c7ee8a65111a0c1e17cd5de8c1df52612ea9c8908aa0a81e8"
+    },
+    {
+      "path": "src/assets/stamps/sungei-buloh.png",
+      "sha256": "ef82761a4ad5f3fcd5e445a5a9c5a924ddf319464f0113793e39102da9647d5a"
+    },
+    {
+      "path": "src/assets/stamps/supertree-grove.png",
+      "sha256": "a99f178bed1a1e8b50351e94ef334640635856fb83ac0cbcd71f211e5d772924"
+    },
+    {
+      "path": "src/assets/stamps/tan-teng-niah.png",
+      "sha256": "e461dbfa2f246c89578447c25feaa135883bba170b55c490e8fa0e0621ef54d3"
+    },
+    {
+      "path": "src/assets/stamps/tekka-centre.png",
+      "sha256": "fa606431d8331cbb5a3ddc256c3986d6ad19ebb9868ab6f80197f738430b3cce"
+    },
+    {
+      "path": "src/assets/stamps/the-cenotaph.png",
+      "sha256": "ecc9303b6852aada123fd4ea2423533ef984e739417492326d9ae3e4cc271a4c"
+    },
+    {
+      "path": "src/assets/stamps/the-japanese-cemetery-park.png",
+      "sha256": "c5205ff529fbd19c1effb12deffa1b694e5b6d7cf704ac57000497fb6b9cc289"
+    },
+    {
+      "path": "src/assets/stamps/thian-hock-keng.png",
+      "sha256": "255583e2c9220d94e022d1eee93906aa5a2020236d541cf62e50ca20503e3e21"
+    },
+    {
+      "path": "src/assets/stamps/tiong-bahru-estate.png",
+      "sha256": "8df2fc5129a9371813192637c534d5af1a4970facdc938614ed0661c939041ea"
+    },
+    {
+      "path": "src/assets/stamps/tiong-bahru-market.png",
+      "sha256": "8d96e6f41d490190390320299c6f8d9013dc897af7318e5a994d11ccb647a069"
+    },
+    {
+      "path": "src/assets/stamps/universal-studios.png",
+      "sha256": "0ad2eec55a1f80422930ea459a576c229930c4b49e4defa2daa02c52522a6b20"
+    },
+    {
+      "path": "src/assets/stamps/victoria-theatre.png",
+      "sha256": "09f282f770f4931e65e6b9ea0b4dd2d317c59bfdf7bef32d4e923d5f5b9a461c"
+    },
+    {
+      "path": "src/assets/stamps/vivocity.png",
+      "sha256": "996dbfc65b290efdaf35357e57a703e10bcb0f3e4d8f88e545dbe7d939e7d0b0"
+    },
+    {
+      "path": "src/assets/stamps/ya-kun-far-east.png",
+      "sha256": "2c0e09c747a3c1f67928517e00c0f45aa18a0ba80ef9f565388fe13cbe616b46"
+    },
+    {
+      "path": "src/assets/stamps/zam-zam.png",
+      "sha256": "7a1781a1e827217eee05325b138c6fb5b070f6f16e9cc21ac1e01609746aa321"
+    },
+    {
+      "path": "src/controller/router/index.js",
+      "sha256": "48afdbff43142ea798014c8a82401b24af53d315b875acb16752a87f295944aa"
+    },
+    {
+      "path": "src/main.js",
+      "sha256": "f27f7acaaf2f670726990d015e19bcb25c77d407355755efac86354d5db87a51"
+    },
+    {
+      "path": "src/model/data/interests.js",
+      "sha256": "a1b383094e0f4dcd1ddc04b7796a44288111bd0e2dd08122a062170ea6193233"
+    },
+    {
+      "path": "src/model/data/mrtLines.sg.json",
+      "sha256": "0a4aa75ce67237da8e1a2a16cf993efd42968c140ee7418802c4888fce1b0200"
+    },
+    {
+      "path": "src/model/data/origins.js",
+      "sha256": "5e7ecbaa1c2c6dbb028a7fa4a3e8660198d9103debab7f809c3b8e40ce612aa5"
+    },
+    {
+      "path": "src/model/data/places.synced.json",
+      "sha256": "2b6d62c54b88d67e0aa5a8cb5d0fac2853bca43afd94cae1edd2dec211719361"
+    },
+    {
+      "path": "src/model/data/sgEntrySnapshot.js",
+      "sha256": "7030dfe99b4254594ff1315783983814e56553cb90f70bb8532b71fb2abaa7ac"
+    },
+    {
+      "path": "src/model/data/sidequests.js",
+      "sha256": "14977fb147902d8df804c2c5a613b1a4b65a79fe7ec6092b8d2782dca300c9c5"
+    },
+    {
+      "path": "src/model/data/stampArt.js",
+      "sha256": "98a099d22bb7353b1a5e64a48c6f8cd77c1122e8d60b9d84f124b9e76d1238c6"
+    },
+    {
+      "path": "src/model/services/airport.js",
+      "sha256": "d360e50fab950751626d7866b484c571ff60f9389edd921b24ece34cd150003f"
+    },
+    {
+      "path": "src/model/services/brand.js",
+      "sha256": "cd0694fefcd40966be502711ce20fb4d7c79ca536ca8b28e3ab924a699d5b253"
+    },
+    {
+      "path": "src/model/services/catalog.js",
+      "sha256": "63841a8e8f9b8f21bc07d601c49d9d223183437da775037e135717be1c380a89"
+    },
+    {
+      "path": "src/model/services/checkin.js",
+      "sha256": "9cd9e2bcd08c82d45e217392d8e8157a3a6e75224089a72577476f7e48cb6ce1"
+    },
+    {
+      "path": "src/model/services/clock.js",
+      "sha256": "a68466143fd75f19ef448181d5c7c017f0950fa9fbfd3487efaceaf7a0132416"
+    },
+    {
+      "path": "src/model/services/config.js",
+      "sha256": "353374aa3e12b1552a173d752f11599942d1bcdc3e9e104e9652639bf29054a0"
+    },
+    {
+      "path": "src/model/services/db/index.js",
+      "sha256": "eb6162fe61c6c41cf17739f22051b32acc441bd18f79392e62dc55f01262b78b"
+    },
+    {
+      "path": "src/model/services/db/local.js",
+      "sha256": "a3f71e7fb7e05a9499135db7f0f8a7b7b5893f72f58b5efaca3218b9d8e0acd4"
+    },
+    {
+      "path": "src/model/services/db/remote.js",
+      "sha256": "80e8c8ee383eba46d8762b6bd161b084d67d4c4b4d33d12b2da97dba9d6f7bc4"
+    },
+    {
+      "path": "src/model/services/geo.js",
+      "sha256": "9ac4f6f4958870344b214b7a81098d60f22d1383582a826ac3793034ef731143"
+    },
+    {
+      "path": "src/model/services/groq.js",
+      "sha256": "4fdb4bc31cdb7ac82d4c65ebef95e615916bed5a368214ae4e037daa13daf577"
+    },
+    {
+      "path": "src/model/services/hours.js",
+      "sha256": "b25078759aa342f6787a7c78fe5ca1fece99bdc176643cca3509ea324cb2b0b0"
+    },
+    {
+      "path": "src/model/services/immigration.js",
+      "sha256": "bd4f2d82cfae9231f8c5dd1209b1e4a27c0921b006a1f0c6b14e6c2198b762bd"
+    },
+    {
+      "path": "src/model/services/itinerarySchema.js",
+      "sha256": "5f4584efe24f91b52abd44914d219e9dd6a1b308f3c232399f810968f083b108"
+    },
+    {
+      "path": "src/model/services/joinResolver.js",
+      "sha256": "c0922313947e46c4ba680cf124ad3c311495b74b4b3857b484503c7debe1e08d"
+    },
+    {
+      "path": "src/model/services/mrtRoute.js",
+      "sha256": "9ef604f13a130558e71e06142db5db7332ff98960906cbe29ab7b2ce6ff17e48"
+    },
+    {
+      "path": "src/model/services/notify.js",
+      "sha256": "d26cd41dbf7a9ce4d517a029a020e521395e88f34ad38a5fa0cac851f4de3cfc"
+    },
+    {
+      "path": "src/model/services/placeImages.js",
+      "sha256": "3be20a7ae73565eb0cae8ff12126db10a99ee67d6edba31b3be2e859b45ce8d9"
+    },
+    {
+      "path": "src/model/services/planner.js",
+      "sha256": "30b1b288501380c99ec99cae3b65cc3fcd9e7b7c601d9c586ee1af66487c0919"
+    },
+    {
+      "path": "src/model/services/routeGeometry.js",
+      "sha256": "17eac9e23a1044c8b83fb334ba2de43d1abecd22637552cb6516c1f614640e2f"
+    },
+    {
+      "path": "src/model/services/routing.js",
+      "sha256": "0ebccfc290644de21151c9ca2055ee7bcad88a73d04d58e41f42c3b93d9bdd71"
+    },
+    {
+      "path": "src/model/services/social.js",
+      "sha256": "049442200eac3c1f767176eb1ae2ac96b46a68961147f319aa66498ac6c29447"
+    },
+    {
+      "path": "src/model/services/stampArt.js",
+      "sha256": "3ce24533dd6b6094db9118d7d25813a410baf4927e4de9dac62ec47739d48e7c"
+    },
+    {
+      "path": "src/model/services/travel.js",
+      "sha256": "317e942f0935b4a91c8b75e8c18354d4519c28406044cc7c9786b4b6504e5e6b"
+    },
+    {
+      "path": "src/model/services/weather.js",
+      "sha256": "a2ccd0ce9ab5ac93252171eef21803299d3d4d53cf337795373b49d162c6b839"
+    },
+    {
+      "path": "src/model/services/xp.js",
+      "sha256": "75a34d26b45f1f380a6177d0071b6a514802a34051fbd69e81cbaa60514b128f"
+    },
+    {
+      "path": "src/model/stores/character.js",
+      "sha256": "0c246bd8e516c4b6db6f9ca97fbdd418662807118a712790ae8e444a764413cc"
+    },
+    {
+      "path": "src/model/stores/mission.js",
+      "sha256": "fb28b98cf35fdcdc8b61555eb6b20f081df221d9bae45c42f150b57293aeba0d"
+    },
+    {
+      "path": "src/model/stores/party.js",
+      "sha256": "76c8a8c75042a6a51dedf6cf66801964b10125d30caee93e290764abee707e79"
+    },
+    {
+      "path": "src/model/stores/passport.js",
+      "sha256": "5de66d24269004b30aa9d1472590c28ab0c5a82f6e7c1a33004f54a61bdc519c"
+    },
+    {
+      "path": "src/model/stores/trip.js",
+      "sha256": "ea5b786caea5f0d3b8a5f7fd4b1f085415354468f3348b1cac1df5f6d598bebb"
+    },
+    {
+      "path": "src/model/stores/ui.js",
+      "sha256": "943bb5f7b03fe2230e9b0d132723283e95078b46e97a8c0ab511b4caa5569162"
+    },
+    {
+      "path": "src/model/stores/user.js",
+      "sha256": "4327d5f1243fcf9ff1a5f8c996adf50d1aebdb599e71946ce4f4db457b9f83cb"
+    },
+    {
+      "path": "src/view/app/AppNav.vue",
+      "sha256": "9064bd8e7f5224e3296220c60859fda758dbd383158469eee491633ec5723603"
+    },
+    {
+      "path": "src/view/app/CenterDialog.vue",
+      "sha256": "1038708d79ac2a99d907d7a7d9ff286b12c3845626557aa9a51b0298b3e1bfd0"
+    },
+    {
+      "path": "src/view/app/ToastHost.vue",
+      "sha256": "148dfd230826e47ceb3e6dca622e827bafe0042548858673a7e542cd3d8f5346"
+    },
+    {
+      "path": "src/view/common/MemberAvatarStack.vue",
+      "sha256": "c7b539d41f00dd7c11447f5298ab188c250dac17f0b536de96f685623fe9187b"
+    },
+    {
+      "path": "src/view/common/PlaceArt.vue",
+      "sha256": "a9561d5f6618ea32d48180563f0c7b33abf04abeee77a29f539c52fa550cfda9"
+    },
+    {
+      "path": "src/view/common/ProfilePreviewModal.vue",
+      "sha256": "c072ee3e7b3b014138fea89a377ad268983566e2c6ef08a4e840a640cef17d3f"
+    },
+    {
+      "path": "src/view/common/StopGallery.vue",
+      "sha256": "3c971d58e548ec2cd6d3ace68e90e9d61927c12a17821199a9100206b36037a4"
+    },
+    {
+      "path": "src/view/common/UserAvatar.vue",
+      "sha256": "5747d25cfebbb1fe9ee14d2b8e255fb501edfbfdb0746580684ba4c3becfdfaf"
+    },
+    {
+      "path": "src/view/common/weather/RainOverlay.vue",
+      "sha256": "57e69940ee2be1e9a90f07f017fb1e84d5380b238bb74d8f6a7f145dcb0dec4e"
+    },
+    {
+      "path": "src/view/common/weather/SkyEffects.vue",
+      "sha256": "2935bbc405aaeafb1c7fa0b73b493587266736661c9689d17756fa1ab5ce65bd"
+    },
+    {
+      "path": "src/view/common/weather/WeatherChip.vue",
+      "sha256": "d23b8a1ff0016109ec34553bd7e73a14c90fee616222e3801968b88e48bc26fa"
+    },
+    {
+      "path": "src/view/common/weather/useWeatherRefresh.js",
+      "sha256": "e07b461fbe06e6e5aa9346544dc00c2c9b32601a02ee1a499f301d8a699c8581"
+    },
+    {
+      "path": "src/view/components/LayoverCard.vue",
+      "sha256": "ee9846c3715b3b6e260624b14283b65a9b1fd84b8ab986baf941846d862c58c6"
+    },
+    {
+      "path": "src/view/features/auth/AuthView.vue",
+      "sha256": "049816a4012a7fc349d63c513326c46220735f96f2f0b49c8b100c73560c3a7d"
+    },
+    {
+      "path": "src/view/features/auth/OnboardView.vue",
+      "sha256": "6f85d57d34bcd81526ba35887c11930b122fc76d89ecd47c6f433e09a5a9ada8"
+    },
+    {
+      "path": "src/view/features/character/CharacterStudio.vue",
+      "sha256": "635dd213e66913ef708d588d6423bf969d0cc5bd6e9a4627d539588c8dba5e35"
+    },
+    {
+      "path": "src/view/features/character/WardrobeView.vue",
+      "sha256": "451a903343bf85ac02ff907df24fedecf9ae6296d1d8c63c94ec6ae334d6e6e5"
+    },
+    {
+      "path": "src/view/features/character/traveller.js",
+      "sha256": "86caadfacc66367f87576338861ff1697983663bf11fb2f2d8006ff264cd3bd0"
+    },
+    {
+      "path": "src/view/features/character/travellerAssets.js",
+      "sha256": "41e8fc6de26ef468ca8754c528f872d11b51c6cf16bc538eb214ffad6475c3a1"
+    },
+    {
+      "path": "src/view/features/character/travellerLayer.js",
+      "sha256": "12612361ff0e29652f08ef916d6f7dac9db9bf510cbe8c48a2d96fa73d063dc2"
+    },
+    {
+      "path": "src/view/features/dev/DevView.vue",
+      "sha256": "db6e9d8c7e10620ccb99101ae7d63a782518f682157046a63067e8b58fa4ec0f"
+    },
+    {
+      "path": "src/view/features/landing/LandingView.vue",
+      "sha256": "7181bb73ddf11d23fe428217f89cbe99df176ee0c7b243bfce5faf4c03e1c595"
+    },
+    {
+      "path": "src/view/features/map/AirportHelp.vue",
+      "sha256": "2de5ce4def4b2dde33bdce54f3ba8c4f50331e6a1484a670c217bc3acb7527ab"
+    },
+    {
+      "path": "src/view/features/map/MapMenuButton.vue",
+      "sha256": "2a5452644a63c1a61e7a5e164500391bc31676ddf0bf128f790ab3944ce68508"
+    },
+    {
+      "path": "src/view/features/map/MapStatusStack.vue",
+      "sha256": "0ec8e6ffa14a8e5d9a6aab357d03542ba3d668c9aaab755b6737ae89d7bec435"
+    },
+    {
+      "path": "src/view/features/map/MapView.vue",
+      "sha256": "a957cb8d6946689d8c669eccc9e832af37827611f8cd1b69b36d8356cfa95bd8"
+    },
+    {
+      "path": "src/view/features/map/MissionInfoCard.vue",
+      "sha256": "e93dcb78c24eb10b8ae0e87e4867ea9715dec7fcf8c979d5769646eb68e4cac1"
+    },
+    {
+      "path": "src/view/features/map/mapBuildings.js",
+      "sha256": "328a4e79bb6d4fb15ce9ae107e1871a19f7791809f8239b4de2a1ef4b8cfe767"
+    },
+    {
+      "path": "src/view/features/map/mapLabels.js",
+      "sha256": "93aeffcfefda927c746ba9b859ed0cb9816b3e2ace4d4b7221f1c1b4016ffea7"
+    },
+    {
+      "path": "src/view/features/map/pinPoint.js",
+      "sha256": "097d3e16714138a727a46e0e020534b90f18aa61e1c69756a8b98d08e2a2952a"
+    },
+    {
+      "path": "src/view/features/map/questLayers.js",
+      "sha256": "4007fd904649260b3ce9366846138b1c4db4c215b8f80c5a3ea453ad61c08648"
+    },
+    {
+      "path": "src/view/features/map/useMissionNav.js",
+      "sha256": "6be7fe222d44f4aef8c5f3f8d1700b7222657f0fd2f5c1fd38994fb5613fd5b9"
+    },
+    {
+      "path": "src/view/features/mission/LayoverCard.vue",
+      "sha256": "d3d7f4d68c4e37101e52197289efc2fe349208c4754a2d659eda5384fa4e9738"
+    },
+    {
+      "path": "src/view/features/mission/MissionView.vue",
+      "sha256": "18790f445f7456bb52b62f66be6b6048f9a7b5bdce6d0f312fd97d1617b13779"
+    },
+    {
+      "path": "src/view/features/mission/PlacePicker.vue",
+      "sha256": "06126767a79e2b53a513ff9c8cadc5d4a6c53771b5c1f0a4f5c0797a5c2b717b"
+    },
+    {
+      "path": "src/view/features/mission/ScheduleView.vue",
+      "sha256": "3e8f0038b45f7dd3b3b62ae1135a4fa444bd6f288c57fd289f0712432c6613aa"
+    },
+    {
+      "path": "src/view/features/mission/SwipeView.vue",
+      "sha256": "a924cdc73d8b05024caa2954fcb033955b704cd927c332ca9e85260a533c5c32"
+    },
+    {
+      "path": "src/view/features/mission/TimeToGate.vue",
+      "sha256": "8569a22db16edf4d995e89dc759f000f6fe4dfda766abfef48459fe41b7bc56f"
+    },
+    {
+      "path": "src/view/features/passport/CodexView.vue",
+      "sha256": "3faf5e9eb317f339fa9b69d7b9551ec0408d5ab93862d00a29eb28d06e782c29"
+    },
+    {
+      "path": "src/view/features/passport/PassportView.vue",
+      "sha256": "d4501c26185f1ac8967ddda6311da6a2e2bb81007cd59c0163ee28c480bb9556"
+    },
+    {
+      "path": "src/view/features/passport/StampCelebration.vue",
+      "sha256": "15cc166b626f7800cbb6e0d0675d25ffbde5630a2beb4c4d523da7ff5d77b78e"
+    },
+    {
+      "path": "src/view/features/passport/pageArt.js",
+      "sha256": "657ca95a3a396e19cc8d8f0941bbfe106e84b318af959dcf4fd223822808d859"
+    },
+    {
+      "path": "src/view/features/passport/stampSlam.js",
+      "sha256": "2de238f53d16d0cdc9f7affd9ac5355755c6f5db9a2b67a90c5711c2e5fbc4ab"
+    },
+    {
+      "path": "src/view/features/places/ExploreView.vue",
+      "sha256": "be6f3d2dd0d06be2c8e8cac20c5f7e6c012ce241fac8565e80e0b3599f70424a"
+    },
+    {
+      "path": "src/view/features/places/PlaceCard.vue",
+      "sha256": "99354daa543237fbf6fc4e3e7d3fd1c98a2e51882ff3bf849c6e030626238a36"
+    },
+    {
+      "path": "src/view/features/places/PlaceView.vue",
+      "sha256": "9b73594877b1623b4a3b2290605a0f4d623e6885a687ac0aa82c3ba0f6eaf4c0"
+    },
+    {
+      "path": "src/view/features/plan/BufferBar.vue",
+      "sha256": "137c13730420706f5f7dbe37fcae5701926caa2e7ca2911357f6945505543074"
+    },
+    {
+      "path": "src/view/features/plan/EntryBanner.vue",
+      "sha256": "b3b2bd18764f06f6ac6943df572e4b50ab964dde894adaf612a5759ab6e22cbd"
+    },
+    {
+      "path": "src/view/features/plan/InterestTiles.vue",
+      "sha256": "e060067ad4d65eeb0834a3964bd66f4688e40f8e3870e549e5fd08d67f394488"
+    },
+    {
+      "path": "src/view/features/plan/LayoverDialog.vue",
+      "sha256": "15613298e42e9caab3e766bec6c418b67a743aa2e3ad2a0b95cb423475d71d66"
+    },
+    {
+      "path": "src/view/features/plan/LayoverSummary.vue",
+      "sha256": "468df29dd724f334c2c1c540432f7d057da858bcc10f5cb4be1af3b60e107920"
+    },
+    {
+      "path": "src/view/features/plan/MoreOptions.vue",
+      "sha256": "2b99be9d41ee3a3ab3c9612adcc5dee502f07efcfb09083751b9d3eb1eda2949"
+    },
+    {
+      "path": "src/view/features/plan/MoreOptionsFields.vue",
+      "sha256": "02dc98d3fe07e860561de716b262331e0aef92a9fd88c0950796d70ac09af4e6"
+    },
+    {
+      "path": "src/view/features/plan/OriginPicker.vue",
+      "sha256": "17c6ec100a9b64cb62936d6a4db649e57df16655c5b8752d34262dfee0e14502"
+    },
+    {
+      "path": "src/view/features/plan/PlanView.vue",
+      "sha256": "1e1985e0fe2e40eb5773b5064e07c30727bb41af6984801116afb5bf2e351d96"
+    },
+    {
+      "path": "src/view/features/plan/StylePicker.vue",
+      "sha256": "99e31ecb9362b4f1cf8314ab72fc2df0ec9a4bd5fb8932d88bb3a9e1693722c5"
+    },
+    {
+      "path": "src/view/features/plan/TimeBudgetCard.vue",
+      "sha256": "2ba7210a62fc1c805a3d6831627b59d712d2c53afe81b8d7f6a8683b9e50bc9e"
+    },
+    {
+      "path": "src/view/features/plan/plan.css",
+      "sha256": "ce3757184f5005063352cbe1b2a749538acebe34c0fd34809d358d76f6561e3e"
+    },
+    {
+      "path": "src/view/features/plan/planUi.js",
+      "sha256": "5a81a330275a1e57dcbe37912e81d8ab43bd7f326a2f94409a6b42ebdad75276"
+    },
+    {
+      "path": "src/view/features/profile/EntryCheck.vue",
+      "sha256": "474aa5895dc6eff4486ff898ba25d625c0954fac39bcc80966f14d1fa0999f7e"
+    },
+    {
+      "path": "src/view/features/profile/ProfileView.vue",
+      "sha256": "251a7babc2b2fda397136b285b47b43940ff4e59e9aab284e894cb6876b67ea2"
+    },
+    {
+      "path": "src/view/features/quests/JoinConfirmSheet.vue",
+      "sha256": "b66421864850fe7072116baa4736a01641598c7f32e0ded976d508648e3a1ee3"
+    },
+    {
+      "path": "src/view/features/quests/OpenToCompanySheet.vue",
+      "sha256": "eafdb3867995929f8db440d150d1171f2043424d718fec6e8dae0cef1de0c78d"
+    },
+    {
+      "path": "src/view/features/quests/QuestCard.vue",
+      "sha256": "f298ff51b6cd8407e53f587ac6a6ff1750e9ebd2d4aa74aaf86700045dbbfb5f"
+    },
+    {
+      "path": "src/view/features/quests/QuestChatButton.vue",
+      "sha256": "b644c228efae765aeaecd4e9b7f25e1309f96b188d18b66d66b42ad73118054a"
+    },
+    {
+      "path": "src/view/features/quests/QuestChatDrawer.vue",
+      "sha256": "9eff93c765652f5459e99d8b206615b97b9c6780366f6514a404f7478830d022"
+    },
+    {
+      "path": "src/view/features/quests/QuestChatHost.vue",
+      "sha256": "ba20a5d284c424fb419278da44f1f7d747f84c580e98518525e20dbe2399fa95"
+    },
+    {
+      "path": "src/view/features/quests/QuestCoopChip.vue",
+      "sha256": "ba8b3d591a761786a13978e9b168c0d6fa17bed0fbf6d81c4dd192b694c1fddb"
+    },
+    {
+      "path": "src/view/features/quests/QuestDetailView.vue",
+      "sha256": "ea937726f78bd202e42a51ca516f5f65da6d8e8440089b1b772c5b366aba1631"
+    },
+    {
+      "path": "src/view/features/quests/QuestGoSolo.vue",
+      "sha256": "1d4df29591b506fb9e1210eb00ab15b4787cc552402481b34b7fd7f95bd1ab83"
+    },
+    {
+      "path": "src/view/features/quests/QuestMapLive.vue",
+      "sha256": "874c81fc2eb746e52b5e5a67d971a12568795aaf1cd100d95f753107e6f85293"
+    },
+    {
+      "path": "src/view/features/quests/QuestsView.vue",
+      "sha256": "e14f898b92154b28858f020c4fdd339aec52931f5fbcb240d426b489524b43ab"
+    },
+    {
+      "path": "src/view/features/quests/StopRangePicker.vue",
+      "sha256": "c5d2be96f0be03348af1b65bb82c89601fbe581b6f2c87c6fb6caf51c567ad8f"
+    },
+    {
+      "path": "src/view/features/quests/memberMarkers.js",
+      "sha256": "7e6d10f51347b0a36f4cec3f3130e98e2d93beca6a698b48030889b64d191a19"
+    },
+    {
+      "path": "src/view/features/quests/useActiveQuest.js",
+      "sha256": "7f905b8138955f71a9a5298e10200dfc42aaa759dd3cef81ffea739d57ea5e19"
+    },
+    {
+      "path": "src/view/styles/app.css",
+      "sha256": "72551d61068ef085222bbee11fd0a82c1d0d9b126a3c79c2205a717a52eb9eb6"
+    }
+  ]
+}
