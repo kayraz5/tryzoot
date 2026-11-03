@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "sync:places": "node scripts/sync-places.mjs",
     "sync:mrt-lines": "node scripts/sync-mrt-lines.mjs",
-    "test:unit": "vitest",
+    "test:unit": "vitest --run --project unit",
+    "test:layout": "vitest --run --project integration-support",
     "test:e2e": "playwright test",
     "test:env": "node scripts/test-env.mjs",
     "test:supabase": "vitest --run --project supabase && playwright test --project supabase"
