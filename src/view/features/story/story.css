@@ -38,10 +38,16 @@ html.zt-story-route,
 	object-position: center;
 }
 
-/* Portrait phones letterbox the 16:9 frame instead of centre-cropping it, which
-   would keep only about a quarter of its width and cut the aircraft and most of
-   the gate lounge out of shot. --zt-sky and --zt-ground are set per scene from
-   script, so the fill continues the film's own edge colours. */
+/* Portrait phones fill the screen with the 16:9 frame rather than letterbox it:
+   a film with bars down a phone is a video embed, and this page is trying to be
+   a window. The crop that buys is severe — a 9:19.5 screen keeps about a
+   quarter of the frame's width — so it crops around a point chosen per scene
+   (--zt-focus, from SCENES in StoryView.vue) instead of around the centre.
+
+   Only the horizontal position is stated, because for any frame narrower than
+   16:9 the height is what `cover` fits and there is no vertical crop left to
+   place. The gradient is no longer a letterbox fill; it is the ground for the
+   moment before the first frame has decoded. */
 @media (max-width: 860px) and (orientation: portrait) {
 	.zt-story [data-sc-world] {
 		background: linear-gradient(to bottom, var(--zt-sky, #14110f) 0 32%, var(--zt-ground, #14110f) 68% 100%);
@@ -49,8 +55,8 @@ html.zt-story-route,
 
 	.zt-story [data-sc-segment] > video,
 	.zt-story [data-sc-segment] > img {
-		object-fit: contain;
-		object-position: center 32%;
+		object-fit: cover;
+		object-position: var(--zt-focus, 50%) center;
 	}
 }
 

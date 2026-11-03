@@ -1,5 +1,5 @@
 import {defineStore} from 'pinia';
-import {getDb, isGuestMode, setGuestMode} from '../services/db/index.js';
+import {getDb, hasLinkedAccount, isGuestMode, rememberLinkedAccount, setGuestMode} from '../services/db/index.js';
 import {HAS_SUPABASE} from '../services/config.js';
 import {levelFor, titleFor} from '../services/xp.js';
 
@@ -11,6 +11,9 @@ export const useUserStore = defineStore('user', {
         profile: null,
         ready: false,
         mode: 'local',
+        // Whether this browser has ever had an account. Read once, then kept in
+        // state so views react to it the way they do to session.
+        hasAccount: hasLinkedAccount(),
         _init: null
     }),
     
@@ -42,12 +45,14 @@ export const useUserStore = defineStore('user', {
             this.session = await db.getSession();
             
             if (this.session?.user) {
+                this.rememberAccount();
                 await this.refreshProfile();
             }
             
             db.onAuthChange(async (session) => {
                 this.session = session;
                 if (session?.user) {
+                    this.rememberAccount();
                     await this.refreshProfile();
                 } else {
                     this.profile = null;
@@ -55,6 +60,13 @@ export const useUserStore = defineStore('user', {
             });
             
             this.ready = true;
+        },
+        
+        // Record that this browser has had an account. Never undone: signOut
+        // ends the session, it does not un-create the account.
+        rememberAccount() {
+            this.hasAccount = true;
+            rememberLinkedAccount();
         },
         
         // refresh the profile
@@ -79,6 +91,9 @@ export const useUserStore = defineStore('user', {
             this.mode = db.kind;
             this.session = await db.signInGuest(name);
             
+            // The local adapter's onAuthChange is a no-op, so nothing else will
+            // notice this session; same for passwordAuth below.
+            this.rememberAccount();
             await this.refreshProfile();
             this.ready = true;
         },
@@ -115,6 +130,7 @@ export const useUserStore = defineStore('user', {
             }
             
             this.session = session;
+            this.rememberAccount();
             await this.refreshProfile();
             this.ready = true;
             

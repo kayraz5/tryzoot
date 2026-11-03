@@ -12,7 +12,12 @@ vi.mock('../model/services/social.js', async (orig) => ({
   leaveWindow: vi.fn(async () => {})
 }))
 
-vi.mock('../model/services/db/index.js', () => ({ getDb: async () => ({ kind: 'local', saveMission: async () => {} }) }))
+// Spread the real module: the user store also imports its localStorage helpers,
+// and a mock that lists only getDb leaves those undefined at store creation.
+vi.mock('../model/services/db/index.js', async (orig) => ({
+  ...(await orig()),
+  getDb: async () => ({ kind: 'local', saveMission: async () => {} })
+}))
 
 import QuestCoopChip from '../view/features/quests/QuestCoopChip.vue'
 import QuestMapLive from '../view/features/quests/QuestMapLive.vue'
