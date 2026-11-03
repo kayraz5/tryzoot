@@ -56,31 +56,31 @@ import destination from '@turf/destination'
 import { point } from '@turf/helpers'
 
 // 3D stop pins (WebGL custom layers) — see gl/pinPoint.js.
-import { PinLayer, syncStopPins, updatePinProximity, LANDMARK_BADGE } from './pinPoint.js'
+import { PinLayer, syncStopPins, updatePinProximity, LANDMARK_BADGE } from '../components/map/pinPoint.js'
 // The 3D traveller: traveller.js is the body, travellerAssets.js the outfits, and
 // travellerLayer.js the MapLibre wrapper (it also exports the bearing helper).
-import { TravellerLayer, bearingBetween } from '../character/travellerLayer.js'
+import { TravellerLayer, bearingBetween } from '../components/character/travellerLayer.js'
 
 // Presentational next-stop card. All mission/GPS data is passed as props; button
 // clicks come back as events so this view stays the single owner of map state.
-import MissionInfoCard from './MissionInfoCard.vue'
-import AirportHelp from './AirportHelp.vue'
+import MissionInfoCard from '../components/map/MissionInfoCard.vue'
+import AirportHelp from '../components/map/AirportHelp.vue'
 // Top-left HUD column (Singapore badge, weather chip, GPS/demo button + the Demo-Walk panel) and the menu button.
-import MapStatusStack from './MapStatusStack.vue'
-import MapMenuButton from './MapMenuButton.vue'
+import MapStatusStack from '../components/map/MapStatusStack.vue'
+import MapMenuButton from '../components/map/MapMenuButton.vue'
 // Social quests: live member pins + back-to-own-plan when joined stops end (no UI of its own).
-import QuestMapLive from '../quests/QuestMapLive.vue'
+import QuestMapLive from '../components/quests/QuestMapLive.vue'
 // Mission-derived values shared with drawing and the HUD (mission, next, here,
 // check-in status, guidance, countdown…).
-import { useMissionNav } from './useMissionNav.js'
+import { useMissionNav } from '../components/map/useMissionNav.js'
 // Loads forecast + PSI + lightning into the ui store, and refreshes them every 2 minutes.
-import { useWeatherRefresh } from '../../common/weather/useWeatherRefresh.js'
+import { useWeatherRefresh } from '../common/weather/useWeatherRefresh.js'
 
-import { useMissionStore } from '../../../model/stores/mission.js'
-import { useUiStore } from '../../../model/stores/ui.js'
+import { useMissionStore } from '../../model/stores/mission.js'
+import { useUiStore } from '../../model/stores/ui.js'
 // Outfit + fur saved in Me → Character. The store is deliberately free of 3D
 // imports, so reading it here is cheap.
-import { useCharacterStore } from '../../../model/stores/character.js'
+import { useCharacterStore } from '../../model/stores/character.js'
 
 import {
   geo,
@@ -90,26 +90,26 @@ import {
   teleport,
   startHeading,
   stopHeading
-} from '../../../model/services/geo.js'
-import { distanceM } from '../../../model/services/travel.js'
-import { addQuestLayers, createPlayerMarker, setFence, setQuestColors, syncStopMarkers } from './questLayers.js'
-import { applyMapLabelStyle } from './mapLabels.js'
-import { applyBuildingLayers, BUILDING_LAYERS } from './mapBuildings.js'
-import { loadCatalog } from '../../../model/services/catalog.js'
-import { formatTime } from '../../../model/services/hours.js'
+} from '../../model/services/geo.js'
+import { distanceM } from '../../model/services/travel.js'
+import { addQuestLayers, createPlayerMarker, setFence, setQuestColors, syncStopMarkers } from '../components/map/questLayers.js'
+import { applyMapLabelStyle } from '../components/map/mapLabels.js'
+import { applyBuildingLayers, BUILDING_LAYERS } from '../components/map/mapBuildings.js'
+import { loadCatalog } from '../../model/services/catalog.js'
+import { formatTime } from '../../model/services/hours.js'
 // Street-following geometry for walk/taxi legs, with provider failover. A leg whose
 // router calls are still pending (or all failing) is simply not drawn — never a
 // straight line.
-import { getWalkRoute, getDriveRoute } from '../../../model/services/routing.js'
+import { getWalkRoute, getDriveRoute } from '../../model/services/routing.js'
 // Same contract for public-transport legs: OneMap (bus + MRT) when the server has keys, else
 // our own MRT (walk + real track + walk) or direct-bus route. Each comes back as `parts`.
-import { getTransitRoute, currentPartIndex, transferPoints } from '../../../model/services/transit/index.js'
-import { setTransitTheme, setTransferPoints, routeFeatures } from './transit/layers.js'
-import { useTransit } from './transit/useTransit.js'
-import TransitStopSheet from './transit/TransitStopSheet.vue'
+import { getTransitRoute, currentPartIndex, transferPoints } from '../../model/services/transit/index.js'
+import { setTransitTheme, setTransferPoints, routeFeatures } from '../components/map/transit/layers.js'
+import { useTransit } from '../components/map/transit/useTransit.js'
+import TransitStopSheet from '../components/map/transit/TransitStopSheet.vue'
 // Trim a resolved route to the traveller's current position so the drawn line
 // starts exactly at the character (no straight "tail" from a stale route origin).
-import { trimRouteAtPosition } from '../../../model/services/routeGeometry.js'
+import { trimRouteAtPosition } from '../../model/services/routeGeometry.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 2. Module constants
