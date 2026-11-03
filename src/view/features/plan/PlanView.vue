@@ -17,8 +17,7 @@ import MoreOptions from './MoreOptions.vue'
 import './plan.css'
 
 /**
- * Plan a layover: Phones get three short steps;
- * from 992px wide the same sections sit on one page with a sticky summary card.
+ * Plan a layover: Phones get three short steps; Laptops get one page.
  * Each section is its own component in components/plan/.
  */
 const trip = useTripStore()
@@ -30,16 +29,15 @@ const planning = ref(false)
 const { budget, tooShort, startInPast } = usePlanTime()
 usePrePickedInterests()
 
-// ── Layout: wizard on phones, one page on wide screens ─────────────────
-const wideQuery = typeof window !== 'undefined' ? window.matchMedia('(min-width: 992px)') : null
+// Layout: wizard on phones, one page on wide screens 
+const wideQuery = typeof window !== 'undefined' ? window.matchMedia('(min-width: 992px)') : null // Check the media
 const wide = ref(wideQuery?.matches ?? false)
 const onWide = (e) => (wide.value = e.matches)
 const step = ref(1)
 const STEPS = ['Where & when', 'What you like', 'Your style']
 const showStep = (n) => wide.value || step.value === n
 
-// Planning is a focused flow: no bottom nav, a back arrow instead. Set during setup
-// (not after an async check) so the nav never flashes in and out when the page opens.
+// Nav never flashes in and out when the page opens.
 ui.navHidden = true
 onMounted(() => {
 	wideQuery?.addEventListener('change', onWide)
@@ -55,19 +53,22 @@ onBeforeUnmount(() => {
 const editingLayover = ref(false)
 const showLayoverForm = computed(() => !d.layoverSet || editingLayover.value)
 
-// ── Steps and submit ───────────────────────────────────────────────────
-const canLeaveStep1 = computed(() => d.layoverSet && !editingLayover.value && !tooShort.value && !startInPast.value)
-const canBuild = computed(() => canLeaveStep1.value && d.interests.length > 0 && !planning.value)
+// Steps and submit 
+const canLeaveStep1 = computed(() => 
+	d.layoverSet && !editingLayover.value && !tooShort.value && !startInPast.value)
+const canBuild = computed(() => 
+	canLeaveStep1.value && d.interests.length > 0 && !planning.value)
 
 function next() {
 	if (step.value === 1 && !canLeaveStep1.value) return
-	if (step.value === 2 && !d.interests.length) return ui.toast('Pick at least one thing you are into.', 'warning')
+	if (step.value === 2 && !d.interests.length) 
+		return ui.toast('Pick at least one thing you are into.', 'warning')
 	step.value = Math.min(3, step.value + 1)
 	window.scrollTo?.({ top: 0 })
 }
 /**
  * Header back arrow: previous step on phones, otherwise back to wherever they came from
- * (often the profile's entry check), or the profile when the plan page was opened directly.
+ * or the profile when the plan page was opened directly.
  */
 const cameFrom = typeof window !== 'undefined' ? window.history.state?.back : null
 function back() {
@@ -104,7 +105,7 @@ async function submit() {
 				<div class="steps mt-2" role="progressbar" :aria-valuenow="step" aria-valuemin="1" aria-valuemax="3">
 					<span v-for="n in 3" :key="n" :class="{ on: n <= step }"></span>
 				</div>
-				<div class="tiny text-muted text-end fw-800 mt-1">{{ step }} / 3 · {{ STEPS[step - 1] }}</div>
+				<div class="tiny text-muted text-end fw-800 mt-1">{{ step }} / 3  {{ STEPS[step - 1] }}</div>
 			</template>
 		</header>
 
@@ -150,7 +151,7 @@ async function submit() {
 			<div class="zt-card p-4 text-center">
 				<div class="spinner-border text-primary mb-3" role="status"></div>
 				<div class="fw-800">{{ mission.statusText || 'Plotting your quest…' }}</div>
-				<div class="tiny text-muted mt-1">Turf clusters · MRT matrix · Open-Meteo · Groq</div>
+				
 			</div>
 		</div>
 	</main>
@@ -172,7 +173,7 @@ async function submit() {
 .is-wide .plan-grid { grid-template-columns: minmax(0, 1fr) 300px; align-items: start; gap: 24px; }
 .plan-side { position: sticky; top: 16px; }
 
-/* Phone primary action; the bottom nav is hidden on this page */
+/* Phone primary action */
 .step-action { position: sticky; bottom: max(16px, env(safe-area-inset-bottom)); z-index: 5; }
 
 .btn-dark-pop { background: #111; color: var(--zt-yellow); border: var(--zt-bw) solid #111; box-shadow: 0 4px 0 var(--zt-yellow-soft); }
