@@ -344,7 +344,7 @@ onBeforeUnmount(() => {
 							<span class="zt-pass__key">Layover</span>
 							<b class="zt-pass__value">Singapore · 8h</b>
 						</div>
-						<button class="zt-cta zt-cta--pass" type="button" @click="router.push('/plan')">Start a layover</button>
+						<button class="zt-cta zt-cta--pass" type="button" @click="router.push('/plan')">Plan my layover</button>
 					</div>
 				</div>
 			</div>

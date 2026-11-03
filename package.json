@@ -13,7 +13,8 @@
     "sync:transit": "node scripts/sync-transit.mjs",
     "test:unit": "vitest",
     "test:e2e": "playwright test",
-    "video:faststart": "node scripts/faststart-video.mjs src/assets/videos/landing_page_video.mp4 public/story/flight.mp4"
+    "test:env": "node scripts/test-env.mjs",
+    "test:supabase": "vitest --run --project supabase && playwright test --project supabase"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",

@@ -1,10 +1,12 @@
+<!-- EDITOR: KAYRA -->
+
 <script setup>
 import { computed } from 'vue'
 import { useTripStore } from '../../../model/stores/trip.js'
 import { formatDuration, formatTime } from '../../../model/services/hours.js'
 import { sgDay } from './planUi.js'
 
-/** "Lands T3 → Departs T1" card with times; tapping it reopens the layover form. */
+/** "Lands T3 > Departs T1" card with times*/
 const emit = defineEmits(['edit'])
 const trip = useTripStore()
 const d = trip.draft

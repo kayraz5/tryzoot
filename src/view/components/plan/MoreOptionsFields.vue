@@ -65,8 +65,29 @@ const setParty = (n) => (d.partySize = Math.min(8, Math.max(1, n)))
 </template>
 
 <style scoped>
-.stepper { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 14px; border: 2px solid var(--zt-line); border-radius: 14px; }
-.round { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--zt-line); background: var(--zt-card); color: var(--zt-ink); display: grid; place-items: center; }
-.round.on { background: var(--zt-yellow); color: #111; }
-.round:disabled { opacity: 0.4; }
+.stepper { 
+	display: flex; 
+	align-items: center; 
+	gap: 8px; 
+	padding: 6px 6px 6px 14px; 
+	border: 2px solid var(--zt-line); 
+	border-radius: 14px; 
+}
+.round { 
+	width: 32px; 
+	height: 32px; 
+	border-radius: 50%; 
+	border: 2px solid var(--zt-line); 
+	background: var(--zt-card); 
+	color: var(--zt-ink); 
+	display: grid; 
+	place-items: center; 
+}
+.round.on { 
+	background: var(--zt-yellow); 
+	color: #111; 
+}
+.round:disabled { 
+	opacity: 0.4; 
+	}
 </style>
