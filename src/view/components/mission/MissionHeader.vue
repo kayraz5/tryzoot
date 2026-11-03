@@ -54,13 +54,61 @@ const hasPending = computed(() => store.visitLegs.some((l) => l.status === 'pend
 </template>
 
 <style scoped>
-.mhead-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.pills { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
-.pills .zt-pill { white-space: nowrap; }
-.title { font-size: clamp(1.6rem, 6.5vw, 2.3rem); line-height: 1.05; margin: 12px 0 6px; text-wrap: balance; }
-.meta { display: flex; flex-wrap: wrap; column-gap: 14px; row-gap: 2px; font-size: 0.84rem; color: var(--zt-muted); }
-.meta > span { white-space: nowrap; }
-.meta .bi { margin-right: 3px; }
-.undo-strip { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 2px solid var(--zt-line); border-radius: 14px; background: var(--zt-yellow-pale); color: #111; }
-.undo-strip .btn-link { color: #111; white-space: nowrap; }
+.mhead-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pills .zt-pill {
+  white-space: nowrap;
+}
+
+.title {
+  font-size: clamp(1.6rem, 6.5vw, 2.3rem);
+  line-height: 1.05;
+  margin: 12px 0 6px;
+  text-wrap: balance;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 14px;
+  row-gap: 2px;
+  font-size: 0.84rem;
+  color: var(--zt-muted);
+}
+
+.meta > span {
+  white-space: nowrap;
+}
+
+.meta .bi {
+  margin-right: 3px;
+}
+
+.undo-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 2px solid var(--zt-line);
+  border-radius: 14px;
+  background: var(--zt-yellow-pale);
+  color: #111;
+}
+
+.undo-strip .btn-link {
+  color: #111;
+  white-space: nowrap;
+}
 </style>

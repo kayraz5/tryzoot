@@ -33,6 +33,10 @@ function newLayover() {
 </template>
 
 <style scoped>
-.done-card { background: var(--zt-yellow-pale); color: #111; }
-.done-icon { font-size: 2rem; color: #b45309; }
+.done-card { 
+  background: var(--zt-yellow-pale); 
+  color: #111; }
+.done-icon { 
+  font-size: 2rem; 
+  color: #b45309; }
 </style>

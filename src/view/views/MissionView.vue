@@ -1,3 +1,5 @@
+<!-- EDITOR: KAYRA -->
+
 <script setup>
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -54,6 +56,7 @@ async function focusCurrent() {
 }
 const companyOpen = ref(false) // "Open to company" sheet (group quests)
 const editingSchedule = ref(false) // stop cards swap for the compact order + stay-time editor
+
 // Live "leave by" from where the traveller is; refreshed every 30 s of the app clock.
 const clockStep = computed(() => Math.floor(tick.value / 30000))
 const leaveBy = computed(() => (clockStep.value, m.value ? store.leaveBy() : null))
@@ -61,14 +64,14 @@ const leaveBy = computed(() => (clockStep.value, m.value ? store.leaveBy() : nul
 const modeIcon = { walk: 'bi-person-walking', mrt: 'bi-train-front', taxi: 'bi-taxi-front' }
 const modePill = { walk: '', mrt: 'ink', taxi: 'pale' }
 
-/** Outdoor legs whose visit hour is forecast > 60% rain (or forced rain from /dev). */
+// Weather checker
 const wetLegs = computed(() => {
   if (!m.value) return []
   const rainAt = rainLookup(ui.weather, ui.forceRain)
   return m.value.legs.filter((l) => l.kind === 'visit' && l.status === 'pending' && l.indoor === false && rainAt(Date.parse(l.arrive_iso)) > RAIN_LIMIT)
 })
 
-// Hand edits: one stop card's edit panel open at a time (keyed by place, since seq changes on every edit).
+// Editing schedule
 const editing = ref(null)
 const editKey = (leg) => (leg.kind === 'return' ? 'end' : leg.place_id)
 const toggleEdit = (leg) => (editing.value = editing.value === editKey(leg) ? null : editKey(leg))
@@ -116,12 +119,14 @@ async function regenerate() {
           <div class="dot start"><i class="bi bi-airplane-fill"></i></div>
           <div class="small"><b class="mono">{{ formatTime(Date.parse(m.start_iso) + m.buffers.exit_min * 60000) }}</b> Leave {{ m.origin.label }}<span v-if="m.buffers.exit_min" class="text-muted"> (after {{ m.buffers.exit_min }} min immigration)</span></div>
         </li>
+
         <li v-if="doneCount" class="tl-done-toggle">
           <div class="dot done"><i class="bi bi-check-lg"></i></div>
           <button type="button" class="btn btn-link btn-sm p-0 text-reset fw-800" :aria-expanded="showDone" @click="showDone = !showDone">
             {{ doneCount }} completed stop{{ doneCount === 1 ? '' : 's' }} · <span class="text-decoration-underline">{{ showDone ? 'Hide' : 'Show' }}</span>
           </button>
         </li>
+
         <template v-for="leg in m.legs" :key="leg.seq + leg.place_id">
           <!-- Done: a compact greyed line, only when expanded -->
           <template v-if="isDone(leg)">
@@ -133,20 +138,25 @@ async function regenerate() {
               </div>
             </li>
           </template>
+
           <template v-else>
           <li class="tl-travel">
             <span class="zt-pill" :class="modePill[leg.travel_mode]"><i class="bi" :class="modeIcon[leg.travel_mode]"></i> {{ leg.travel_min }} min</span>
             <span class="tiny text-muted ms-2">{{ leg.travel_detail }}</span>
           </li>
+
           <li :id="`leg-${leg.seq}`" :class="['tl-stop', leg.kind, leg.status, { next: store.nextLeg === leg, flash: flash === leg.seq }]">
             <div class="dot">
               <i v-if="leg.kind === 'return'" class="bi bi-house-door-fill"></i>
               <i v-else-if="leg.status === 'stamped'" class="bi bi-patch-check-fill"></i>
               <span v-else>{{ leg.seq }}</span>
             </div>
+
             <StopCard :leg="leg" :open="editing === editKey(leg)" :tabindex="store.nextLeg === leg ? -1 : undefined"
               @toggle="toggleEdit(leg)" @close="editing = null" />
+
           </li>
+
           </template>
         </template>
       </ol>
@@ -163,30 +173,156 @@ async function regenerate() {
     </template>
   </main>
 </template>
-
 <style scoped>
-.timeline { position: relative; margin: 0 0 16px; }
-.timeline::before { content: ''; position: absolute; left: 18px; top: 8px; bottom: 8px; border-left: 3px dotted var(--zt-line); }
-.timeline li { position: relative; padding-left: 52px; }
-.tl-start { padding-bottom: 8px; display: flex; align-items: center; min-height: 40px; }
-.tl-travel { padding: 6px 0 6px 52px; }
-.tl-stop { padding-bottom: 6px; }
-.dot { position: absolute; left: 0; top: 10px; width: 39px; height: 39px; border-radius: 50%; background: var(--zt-yellow); color: #111; display: grid; place-items: center; font-weight: 700; font-family: var(--zt-font-head); border: var(--zt-bw) solid var(--zt-line); z-index: 1; }
-.tl-start .dot { top: 0; background: var(--zt-card); color: var(--zt-ink); }
-.tl-stop.return .dot { background: var(--zt-card); color: var(--zt-ink); }
-.tl-stop.stamped .dot { background: #111; color: var(--zt-yellow); border-color: #111; }
-[data-bs-theme='dark'] .tl-stop.stamped .dot { border-color: var(--zt-yellow); }
-.tl-stop.skipped { opacity: 0.5; }
-.tl-stop.next .dot { background: var(--zt-pink); animation: zt-pulse 1.4s infinite; }
-.tl-stop.next .stop-card { box-shadow: 5px 5px 0 var(--zt-pink); }
-.tl-stop.next .stop-card:focus { outline: none; }
-.tl-stop.flash .stop-card { animation: leg-flash 1.6s ease-out; }
-@keyframes leg-flash { 0%, 40% { outline: 4px solid var(--zt-pink); outline-offset: 4px; } 100% { outline: 4px solid transparent; outline-offset: 4px; } }
-.tl-done-toggle, .tl-done { display: flex; align-items: center; min-height: 34px; padding-bottom: 6px; }
-.tl-done { opacity: 0.6; }
-.dot.done { width: 28px; height: 28px; left: 5px; top: 3px; font-size: 0.8rem; background: var(--zt-card); color: var(--zt-muted); border-color: var(--zt-muted); }
-.rain-alert { background: #111; color: var(--zt-yellow); border: var(--zt-bw) solid #111; border-radius: 18px; box-shadow: 4px 4px 0 var(--zt-yellow); }
-[data-bs-theme='dark'] .rain-alert { border-color: var(--zt-yellow); }
-.rain-alert .btn { --bs-btn-bg: var(--zt-yellow); --bs-btn-color: #111; --bs-btn-border-color: var(--zt-yellow); }
-.play-bar { position: sticky; bottom: calc(var(--zt-nav-h) + 24px); z-index: 5; }
+.timeline {
+  position: relative;
+  margin: 0 0 16px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  top: 8px;
+  bottom: 8px;
+  border-left: 3px dotted var(--zt-line);
+}
+
+.timeline li {
+  position: relative;
+  padding-left: 52px;
+}
+
+.tl-start {
+  padding-bottom: 8px;
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+}
+
+.tl-travel {
+  padding: 6px 0 6px 52px;
+}
+
+.tl-stop {
+  padding-bottom: 6px;
+}
+
+.dot {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 39px;
+  height: 39px;
+  border-radius: 50%;
+  background: var(--zt-yellow);
+  color: #111;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-family: var(--zt-font-head);
+  border: var(--zt-bw) solid var(--zt-line);
+  z-index: 1;
+}
+
+.tl-start .dot {
+  top: 0;
+  background: var(--zt-card);
+  color: var(--zt-ink);
+}
+
+.tl-stop.return .dot {
+  background: var(--zt-card);
+  color: var(--zt-ink);
+}
+
+.tl-stop.stamped .dot {
+  background: #111;
+  color: var(--zt-yellow);
+  border-color: #111;
+}
+
+[data-bs-theme='dark'] .tl-stop.stamped .dot {
+  border-color: var(--zt-yellow);
+}
+
+.tl-stop.skipped {
+  opacity: 0.5;
+}
+
+.tl-stop.next .dot {
+  background: var(--zt-pink);
+  animation: zt-pulse 1.4s infinite;
+}
+
+.tl-stop.next .stop-card {
+  box-shadow: 5px 5px 0 var(--zt-pink);
+}
+
+.tl-stop.next .stop-card:focus {
+  outline: none;
+}
+
+.tl-stop.flash .stop-card {
+  animation: leg-flash 1.6s ease-out;
+}
+
+@keyframes leg-flash {
+  0%, 40% {
+    outline: 4px solid var(--zt-pink);
+    outline-offset: 4px;
+  }
+
+  100% {
+    outline: 4px solid transparent;
+    outline-offset: 4px;
+  }
+}
+
+.tl-done-toggle,
+.tl-done {
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  padding-bottom: 6px;
+}
+
+.tl-done {
+  opacity: 0.6;
+}
+
+.dot.done {
+  width: 28px;
+  height: 28px;
+  left: 5px;
+  top: 3px;
+  font-size: 0.8rem;
+  background: var(--zt-card);
+  color: var(--zt-muted);
+  border-color: var(--zt-muted);
+}
+
+.rain-alert {
+  background: #111;
+  color: var(--zt-yellow);
+  border: var(--zt-bw) solid #111;
+  border-radius: 18px;
+  box-shadow: 4px 4px 0 var(--zt-yellow);
+}
+
+[data-bs-theme='dark'] .rain-alert {
+  border-color: var(--zt-yellow);
+}
+
+.rain-alert .btn {
+  --bs-btn-bg: var(--zt-yellow);
+  --bs-btn-color: #111;
+  --bs-btn-border-color: var(--zt-yellow);
+}
+
+.play-bar {
+  position: sticky;
+  bottom: calc(var(--zt-nav-h) + 24px);
+  z-index: 5;
+}
 </style>
