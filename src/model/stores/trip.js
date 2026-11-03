@@ -122,6 +122,14 @@ export const useTripStore = defineStore('trip', {
 			this.draft.interests = [...new Set(ids)]
 			if (touched) this.draft.interestsTouched = true
 		},
+		/** "Plan a new layover": forget the last layover, keep their preferences (interests, pace, walking…). */
+		startNewLayover() {
+			const fresh = defaultDraft()
+			for (const key of ['originId', 'arrivalTerminal', 'departureTerminal', 'landside', 'arrivalLocal', 'mustReturnLocal', 'layoverSet', 'startAtLanding', 'startLocal', 'entryDismissed']) {
+				this.draft[key] = fresh[key]
+			}
+			this.current = null
+		},
 		async saveTrip() {
 			const user = useUserStore()
 			const db = await getDb()
