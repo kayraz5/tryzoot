@@ -1,6 +1,6 @@
 // pnpm sync:mrt-lines -> refreshes src/model/data/mrtLines.sg.json from cheeaun/sgraildata's
 // sg-rail.geojson (community-maintained; built from LTA DataMall + OpenStreetMap). This is a
-// one-off/occasional run, not a live dependency of the app — see src/model/services/mrtRoute.js
+// one-off/occasional run, not a live dependency of the app — see src/model/services/transit/mrt.js
 // for how the written file gets used to draw real track geometry for MRT legs.
 //
 // Overpass (the usual way to pull OSM transit-route relations directly) was unreachable when
@@ -23,7 +23,7 @@ const LINE_ALIASES = {
 }
 // Sentosa Express ('SE' in travel.js) isn't part of the public MRT/LRT network this dataset
 // covers (it's run separately, by Sentosa Leisure Group) — no real-geometry source found for
-// it yet, so SE legs fall outside this file on purpose. mrtRoute.js needs to handle that gap.
+// it yet, so SE legs fall outside this file on purpose. transit/mrt.js handles that gap.
 const KNOWN_GAP_CODES = ['SE']
 
 const res = await fetch(SOURCE_URL)
