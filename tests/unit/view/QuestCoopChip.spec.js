@@ -12,12 +12,15 @@ vi.mock('../../../src/model/services/social.js', async (orig) => ({
   leaveWindow: vi.fn(async () => {})
 }))
 
-vi.mock('../../../src/model/services/db/index.js', () => ({ getDb: async () => ({ kind: 'local', saveMission: async () => {} }) }))
+vi.mock('../../../src/model/services/db/index.js', () => ({
+  getDb: async () => ({ kind: 'local', saveMission: async () => {} }),
+  hasLinkedAccount: () => false,
+}))
 
-import QuestCoopChip from '../../../src/view/features/quests/QuestCoopChip.vue'
-import QuestMapLive from '../../../src/view/features/quests/QuestMapLive.vue'
-import QuestChatButton from '../../../src/view/features/quests/QuestChatButton.vue'
-import QuestGoSolo from '../../../src/view/features/quests/QuestGoSolo.vue'
+import QuestCoopChip from '../../../src/view/components/quests/QuestCoopChip.vue'
+import QuestMapLive from '../../../src/view/components/quests/QuestMapLive.vue'
+import QuestChatButton from '../../../src/view/components/quests/QuestChatButton.vue'
+import QuestGoSolo from '../../../src/view/components/quests/QuestGoSolo.vue'
 import { useMissionStore } from '../../../src/model/stores/mission.js'
 import { usePartyStore } from '../../../src/model/stores/party.js'
 

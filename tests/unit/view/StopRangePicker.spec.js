@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import StopRangePicker from '../../../src/view/features/quests/StopRangePicker.vue'
+import StopRangePicker from '../../../src/view/components/quests/StopRangePicker.vue'
 
 const at = (hhmm) => `2026-10-21T${hhmm}:00+08:00`
 const stops = ['A', 'B', 'C', 'D', 'E'].map((name, i) => ({ name, place_id: name, arrive_iso: at(`1${i}:00`), depart_iso: at(`1${i}:40`) }))

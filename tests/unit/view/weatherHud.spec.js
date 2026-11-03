@@ -11,8 +11,8 @@ import { describeCode } from '../../../src/model/services/weather.js'
 import { tick } from '../../../src/model/services/clock.js'
 import { useWeatherRefresh } from '../../../src/view/common/weather/useWeatherRefresh.js'
 import WeatherChip from '../../../src/view/common/weather/WeatherChip.vue'
-import MapStatusStack from '../../../src/view/features/map/MapStatusStack.vue'
-import MapMenuButton from '../../../src/view/features/map/MapMenuButton.vue'
+import MapStatusStack from '../../../src/view/components/map/MapStatusStack.vue'
+import MapMenuButton from '../../../src/view/components/map/MapMenuButton.vue'
 import SkyEffects from '../../../src/view/common/weather/SkyEffects.vue'
 import RainOverlay from '../../../src/view/common/weather/RainOverlay.vue'
 
@@ -186,12 +186,12 @@ describe('SkyEffects', () => {
 })
 
 describe('RainOverlay', () => {
-  it('falls for forced rain, a high chance, or rain right now; not on other pages', () => {
+  it('falls for forced rain or rain right now (not just a high chance); not on other pages', () => {
     expect(mount(RainOverlay).find('.rain').exists()).toBe(false)
     ui.weather = forecast(0, 0, 30)
     expect(mount(RainOverlay).find('.rain').exists()).toBe(false)
     ui.weather = forecast(0, 0, 80)
-    expect(mount(RainOverlay).find('.rain').exists()).toBe(true)
+    expect(mount(RainOverlay).find('.rain').exists()).toBe(false)
     ui.weather = forecast(0, 0.3, 10)
     expect(mount(RainOverlay).find('.rain').exists()).toBe(true)
     ui.weather = null
