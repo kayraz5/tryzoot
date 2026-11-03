@@ -1,5 +1,4 @@
 import { describe, beforeEach, expect, it, vi } from 'vitest'
-import mrtLines from '../model/data/mrtLines.sg.json'
 import { HUBS } from '../model/services/travel.js'
 import { getWalkRoute } from '../model/services/routing.js'
 import { getMrtRoute } from '../model/services/mrtRoute.js'
@@ -33,8 +32,8 @@ describe('MRT route service', () => {
     expect(route.distance_m).toBeGreaterThan(0)
     expect(route.coords[0]).toEqual([changiT3.lng, changiT3.lat])
     expect(route.coords.at(-1)).toEqual([cityHall.lng, cityHall.lat])
-    expect(route.coords).toContainEqual([HUBS.changi_airport.lng, HUBS.changi_airport.lat])
-    expect(route.coords).toContainEqual([HUBS.city_hall.lng, HUBS.city_hall.lat])
+    expect(route.parts.some((part) => part.mode === 'mrt' && part.from.id === 'changi_airport')).toBe(true)
+    expect(route.parts.some((part) => part.mode === 'mrt' && part.to.id === 'city_hall')).toBe(true)
     expect(getWalkRoute).toHaveBeenCalledTimes(2)
   })
 
@@ -46,18 +45,14 @@ describe('MRT route service', () => {
   })
 
   it('returns null when a required walk leg is unavailable', async () => {
+    const farFromStation = { lat: HUBS.changi_airport.lat + 0.006, lng: HUBS.changi_airport.lng }
     getWalkRoute.mockResolvedValueOnce(null)
 
-    await expect(getMrtRoute(changiT3, cityHall)).resolves.toBeNull()
+    await expect(getMrtRoute(farFromStation, cityHall)).resolves.toBeNull()
   })
 
   it('handles Sentosa Express according to the available MRT geometry', async () => {
     const route = await getMrtRoute(HUBS.harbourfront, HUBS.rws)
-
-    if (!mrtLines.SE) {
-      expect(route).toBeNull()
-      return
-    }
 
     expect(route).toEqual(expect.objectContaining({
       coords: expect.any(Array),
