@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { syncStopPins } from '../view/features/map/pinPoint.js'
+import { syncStopPins } from '../view/components/map/pinPoint.js'
 
 const visit = (seq, placeId) => ({
   seq,

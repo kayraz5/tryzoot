@@ -1,10 +1,10 @@
-import { decodePolyline } from '../src/model/services/polyline.js'
+import { decodePolyline } from '../src/model/services/transit/polyline.js'
 
 /**
  * POST /api/transit — door-to-door public transport (bus + MRT) via OneMap, Singapore's
  * official map service. Body: { start: [lng,lat], end: [lng,lat], atMs?: number }
  * Returns the quickest itinerary as { minutes, parts: [...] } in the same `parts` shape the
- * client builds locally (mrtRoute.js / busRoute.js), or 503 when OneMap isn't configured —
+ * client builds locally (services/transit: mrt.js / bus.js), or 503 when OneMap isn't configured —
  * the client then falls back to its own MRT + direct-bus routing.
  *
  * Needs ONEMAP_EMAIL + ONEMAP_PASSWORD (free account: https://www.onemap.gov.sg/apidocs/register).
@@ -63,7 +63,8 @@ function toParts(itinerary, endName) {
       if (part.to.kind === 'place') part.to.name = endName || part.to.name
     } else {
       part.stops = (leg.intermediateStops?.length ?? 0) + 1
-      part.towards = leg.headsign || null
+      part.towards = leg.headsign || null // OneMap leaves this empty for trains; the client works it out
+      part.nextStop = place(leg.intermediateStops?.[0]) || part.to
       if (mode === 'bus') part.service = leg.routeShortName || leg.route
       else part.line = String(leg.route || leg.routeShortName || '').slice(0, 2).toUpperCase()
     }
