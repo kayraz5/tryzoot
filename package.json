@@ -11,6 +11,7 @@
     "sync:places": "node scripts/sync-places.mjs",
     "sync:mrt-lines": "node scripts/sync-mrt-lines.mjs",
     "sync:transit": "node scripts/sync-transit.mjs",
+    "test": "vitest --run",
     "test:unit": "vitest",
     "test:e2e": "playwright test",
     "test:env": "node scripts/test-env.mjs",
