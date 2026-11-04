@@ -7,9 +7,9 @@ import { expect, test } from '../fixtures/harness.js'
 
 test('lets a new guest choose a travel style and reach the plan page', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('button', { name: 'Start a layover' }).click()
+  await page.getByRole('button', { name: 'Sign up' }).first().click()
 
-  await expect(page).toHaveURL(/\/auth\?next=\/plan$/)
+  await expect(page).toHaveURL(/\/auth\?mode=signup&next=\/plan$/)
   // The guest name input is labelled "Play as guest"; "Traveller name (optional)" is its placeholder.
   await page.getByLabel('Play as guest').fill('E2E Traveller')
   await page.getByRole('button', { name: 'Continue as guest' }).click()
