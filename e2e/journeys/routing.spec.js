@@ -36,5 +36,5 @@ test.describe('onboarded party aliases', () => {
 test('redirects an unknown path to the landing page', async ({ page }) => {
   await page.goto('/not-a-real-zoot-route')
   await expect(page).toHaveURL(/\/$/)
-  await expect(page.getByRole('button', { name: 'Start a layover' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Sign up' }).first()).toBeVisible()
 })
