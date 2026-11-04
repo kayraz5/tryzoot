@@ -4,7 +4,7 @@ import { formatTime } from './hours.js'
 import { resolveJoin } from './joinResolver.js'
 
 /**
- * Social quests (docs/social-quests-spec.md), stored in the "parties" tables of supabase/social.sql.
+ * Social quests, stored in the "parties" tables of supabase/social.sql.
  * A host opens ONE window of consecutive stops; guests join part of it. Supabase only: guest mode
  * has no server, so nobody else could see the window.
  * The database enforces the rules; this file calls it and reshapes rows for the views.
@@ -33,7 +33,7 @@ async function myId(client) {
   return data.session?.user?.id || null
 }
 
-// ── Browsing ─────────────────────────────────────────────────────────────
+// Browsing
 
 /** Open windows that haven't ended, each with "who's going" (host first, with joined stop ranges). */
 export async function listOpenQuests() {
@@ -57,7 +57,7 @@ export async function getQuest(id) {
   return { ...quest, roster, mine }
 }
 
-// ── Hosting ──────────────────────────────────────────────────────────────
+// Hosting
 
 /** My open window for this mission (not closed, not over), or null. */
 export async function getHostedWindow(missionId) {
@@ -137,7 +137,7 @@ export function windowAfterEdit(quest, mission) {
   return key(next) === key(quest.stops) ? null : next
 }
 
-// ── Dev: drive the seeded fake travellers (dev_simulate in social.sql) ───
+// Dev: drive the seeded fake travellers (dev_simulate in social.sql)
 let demoIds = null
 export async function demoUserIds() {
   if (demoIds) return demoIds
@@ -150,7 +150,7 @@ export async function devSimulate(questId, action) {
   return must(await client.rpc('dev_simulate', { p_party: questId, p_action: action }))
 }
 
-// ── Does it fit MY layover? ──────────────────────────────────────────────
+// Does it fit MY layover?
 
 /** My strict back-at-airport time: the mission's return leg arrive_by (gate time minus re-entry and safety buffers). */
 export function airportBy(mission) {
@@ -185,7 +185,7 @@ export function stopsFit(stops, mission, nowMs = Date.now()) {
   return { ...base, ok: true, reason: 'Fits your window', detail: `Back at ${mission.origin.label} by ${formatTime(backAt)}, ${base.spareMin} min to spare.` }
 }
 
-// ── Joining (guest) ──────────────────────────────────────────────────────
+// Joining (guest)
 
 /**
  * Which of a window's stops I can pick: from the first one that starts after I'm out of the airport
@@ -261,7 +261,7 @@ export async function leaveWindow(id) {
   must(await client.rpc('leave_window', { p_party: id }))
 }
 
-// ── Live location: only between joined members, only while the window runs (RLS enforces it) ──
+// Live location: only between joined members, only while the window runs (RLS enforces it)
 
 export async function shareLocation(partyId, { lat, lng, accuracy }) {
   const client = await sb()
@@ -291,7 +291,7 @@ export async function watchLocations(partyId, onChange) {
   return () => client.removeChannel(channel)
 }
 
-// ── Chat: one per quest, members only (RLS), messages from people I blocked are never returned ──
+// Chat: one per quest, members only (RLS), messages from people I blocked are never returned
 
 export const QUICK_REPLIES = ['Running 5 min late', "I'm at the meeting point", 'On my way', 'Where are you?', 'Here! 👋']
 export const MESSAGE_MAX = 280
@@ -319,7 +319,7 @@ export async function watchMessages(partyId, onMessage) {
   return () => client.removeChannel(channel)
 }
 
-// ── Safety ──
+// Safety
 
 export const REPORT_REASONS = [
   { id: 'harassment', label: 'Harassment' },
@@ -345,7 +345,7 @@ export async function reportUser({ userId, partyId = null, messageId = null, rea
   }))
 }
 
-// ── Co-op stamps (given by the database when two members stamp the same place together) ──
+// Co-op stamps (given by the database when two members stamp the same place together)
 
 /** My co-op stamps not shown yet: [{ id, place_name, partners, bonus_xp }] */
 export async function coopUnseen() {

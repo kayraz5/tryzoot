@@ -79,7 +79,7 @@ async function demoReply() {
   try { await party.simulate(props.partyId, 'chat') } catch (err) { ui.toast(err.message, 'danger', 5000) }
 }
 
-// ── Report / Block from someone's profile ──
+// Report / Block from someone's profile
 function showProfile(userId) {
   if (userId === user.userId) return
   reporting.value = false
