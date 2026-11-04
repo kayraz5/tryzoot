@@ -4,7 +4,6 @@ import { useRoute } from 'vue-router'
 import { useUiStore } from '../../../model/stores/ui.js'
 
 // Draws falling raindrops over the whole screen when it is raining.
-
 const DROP_COUNT = 100; // how many raindrops to draw
 
 const ui = useUiStore();
@@ -15,14 +14,13 @@ const RAIN_PAGES = ['map']
 const route = useRoute();
 const onRainPage = computed(() => RAIN_PAGES.includes(route.name));
 
-// Rain only falls when measurable rain is happening right now. The hourly
-// chance of rain is just a forecast, so it is not used here.
-const rainingNow = computed(() => ui.forceRain || (ui.weather?.current?.mm ?? 0) > 0);
+// Rain only falls when it is heavy rain right now (4.0 mm/h or more). The hourly chance of rain is just a forecast, so it is not used here.
+const HEAVY_RAIN_MM = 4;
+const rainingNow = computed(() => ui.forceRain || (ui.weather?.current?.mm ?? 0) >= HEAVY_RAIN_MM);
 
 const isRaining = computed(() => onRainPage.value && rainingNow.value);
 
-// Make each raindrop slightly different so the rain looks natural.
-// This runs once, not on every update.
+// Make each raindrop slightly different so the rain looks natural. This runs once, not on every update.
 const drops = Array.from({ length: DROP_COUNT }, () => {
 	return {
 		left: Math.random() * 100, // position across the screen (%)
@@ -49,11 +47,9 @@ const drops = Array.from({ length: DROP_COUNT }, () => {
 .rain {
 	position: fixed;
 	inset: 0;
-	pointer-events: none;
-	/* clicks go through to the page underneath */
+	pointer-events: none; /* clicks go through to the page underneath */
 	overflow: hidden;
 	z-index: 50;
-	/* raise this if modals or menus appear behind the rain */
 }
 
 /* One raindrop: a thin vertical line. */

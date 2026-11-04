@@ -6,15 +6,12 @@ import { useUiStore } from '../../../model/stores/ui.js'
 // Haze layer + lightning flashes, drawn over the map pages only.
 
 const SKY_PAGES = ['map']
-const HAZE_STARTS_AT_PSI = 100   // no haze layer at or below this (PSI "Moderate" or better)
+const HAZE_STARTS_AT_PSI = 100 // no haze layer at or below this (PSI "Moderate" or better)
 
 const ui = useUiStore()
 const route = useRoute()
 const onSkyPage = computed(() => SKY_PAGES.includes(route.name))
 
-// ---------------------------------------------------------------
-// Haze: fades in from nothing at PSI 100 to full strength at PSI 200
-// ---------------------------------------------------------------
 const hazeOpacity = computed(() => {
 	if (!onSkyPage.value) return 0
 	const psi = ui.shownHaze?.psi
@@ -23,8 +20,7 @@ const hazeOpacity = computed(() => {
 	return strength * 0.95
 })
 
-// The cloud blobs: how far down the screen, how big, how fast they drift,
-// and a negative delay so they are already spread out when the page loads.
+// The cloud blobs: how far down the screen, how big, how fast they drift, and a negative delay so they are already spread out when the page loads.
 const CLOUDS = [
 	{ top: 0,  size: 640, speed: 80, delay: -10 },
 	{ top: 14, size: 520, speed: 62, delay: -40 },
@@ -35,13 +31,10 @@ const CLOUDS = [
 	{ top: 88, size: 620, speed: 78, delay: -60 }
 ]
 
-// ---------------------------------------------------------------
-// Lightning: a flash at random gaps of 2.5 to 7.5 seconds
-// ---------------------------------------------------------------
 const lightningOn = computed(() => onSkyPage.value && ui.shownLightning?.nearby === true)
 
-const flashKey = ref(0)       // changing this restarts the flash animation
-const boltLeft = ref(50)      // where the bolt appears across the screen (%)
+const flashKey = ref(0) // changing this restarts the flash animation
+const boltLeft = ref(50) // where the bolt appears across the screen (%)
 let timer = null
 
 function scheduleFlash() {
@@ -66,7 +59,7 @@ onUnmounted(stopFlashes)
 </script>
 
 <template>
-		<!-- Haze: a tint plus big soft clouds drifting across -->
+	<!-- Haze: a tint plus big soft clouds drifting across -->
 	<div v-if="hazeOpacity > 0" class="haze" :style="{ opacity: hazeOpacity }" aria-hidden="true">
 		<div v-for="(cloud, i) in CLOUDS" :key="i" class="cloud" :style="{
 			top: cloud.top + '%',
@@ -96,12 +89,9 @@ onUnmounted(stopFlashes)
 	overflow: hidden;
 }
 
-/* ---------- Haze ---------- */
 .haze {
 	z-index: 48;
-	/* behind the rain (50) */
-	/* A warm tint, a little thicker toward the bottom like a low haze bank. */
-	background: linear-gradient(to bottom, rgba(200, 170, 110, 0.25), rgba(200, 170, 110, 0.5));
+	background: linear-gradient(to bottom, rgba(200, 170, 110, 0.25), rgba(200, 170, 110, 0.5)); /* A warm tint, a little thicker toward the bottom like a low haze bank. */
 }
 
 /* One cloud: a wide soft oval, solid in the middle and fading to nothing at the edges. */
@@ -125,12 +115,9 @@ onUnmounted(stopFlashes)
 	to   { transform: translateX(120vw); }
 }
 
-/* ---------- Lightning ---------- */
 .storm {
 	z-index: 52;
 }
-
-/* in front of the rain (50) */
 
 .flash {
 	position: absolute;
