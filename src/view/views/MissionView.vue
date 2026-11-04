@@ -9,7 +9,9 @@ import { loadCatalog } from '../../model/services/catalog.js'
 import { formatTime } from '../../model/services/hours.js'
 import { rainLookup } from '../../model/services/weather.js'
 import { RAIN_LIMIT } from '../../model/services/planner.js'
-import { tick } from '../../model/services/clock.js'
+import { now, tick } from '../../model/services/clock.js'
+import { geo, hasFix, startGps } from '../../model/services/geo.js'
+import { travel } from '../../model/services/travel.js'
 import LayoverCard from '../components/mission/LayoverCard.vue'
 import MissionHeader from '../components/mission/MissionHeader.vue'
 import QuestDoneCard from '../components/mission/QuestDoneCard.vue'
@@ -33,6 +35,8 @@ async function load() {
   focusCurrent()
 }
 onMounted(load)
+// The map is what asks for location; if it's already allowed, follow it here too (no prompt).
+onMounted(() => navigator.permissions?.query({ name: 'geolocation' }).then((p) => p.state === 'granted' && !geo.fake && startGps(), () => {}))
 watch(() => route.params.id, load)
 
 const m = computed(() => store.mission)
@@ -60,6 +64,20 @@ const editingSchedule = ref(false) // stop cards swap for the compact order + st
 // Live "leave by" from where the traveller is; refreshed every 30 s of the app clock.
 const clockStep = computed(() => Math.floor(tick.value / 30000))
 const leaveBy = computed(() => (clockStep.value, m.value ? store.leaveBy() : null))
+
+// Once they're out (trip started, or a stop already stamped) and there's a GPS fix, the next
+// stop's travel line is from where they actually are (matching the map's directions), not from
+// wherever the plan assumed they'd be.
+const isOut = () => now() >= Date.parse(m.value.start_iso) + m.value.buffers.exit_min * 60000 || store.stampedCount > 0
+const liveNext = computed(() => {
+  clockStep.value
+  const next = store.nextLeg
+  if (!m.value || !next || !hasFix() || !isOut()) return null
+  const to = next.kind === 'return' ? m.value.return_to || m.value.origin : next
+  const tr = travel({ lat: geo.lat, lng: geo.lng }, to, { maxWalk: m.value.prefs?.maxWalk, style: m.value.style, atMs: now() })
+  return { leg: next, mode: tr.mode, minutes: tr.minutes, detail: `From your location · ${tr.detail}` }
+})
+const travelOf = (leg) => (liveNext.value?.leg === leg ? liveNext.value : { mode: leg.travel_mode, minutes: leg.travel_min, detail: leg.travel_detail })
 
 const modeIcon = { walk: 'bi-person-walking', mrt: 'bi-train-front', taxi: 'bi-taxi-front' }
 const modePill = { walk: '', mrt: 'ink', taxi: 'pale' }
@@ -141,8 +159,8 @@ async function regenerate() {
 
           <template v-else>
           <li class="tl-travel">
-            <span class="zt-pill" :class="modePill[leg.travel_mode]"><i class="bi" :class="modeIcon[leg.travel_mode]"></i> {{ leg.travel_min }} min</span>
-            <span class="tiny text-muted ms-2">{{ leg.travel_detail }}</span>
+            <span class="zt-pill" :class="modePill[travelOf(leg).mode]"><i class="bi" :class="modeIcon[travelOf(leg).mode]"></i> {{ travelOf(leg).minutes }} min</span>
+            <span class="tiny text-muted ms-2">{{ travelOf(leg).detail }}</span>
           </li>
 
           <li :id="`leg-${leg.seq}`" :class="['tl-stop', leg.kind, leg.status, { next: store.nextLeg === leg, flash: flash === leg.seq }]">
