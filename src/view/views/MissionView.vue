@@ -10,7 +10,7 @@ import { formatTime } from '../../model/services/hours.js'
 import { rainLookup } from '../../model/services/weather.js'
 import { RAIN_LIMIT } from '../../model/services/planner.js'
 import { now, tick } from '../../model/services/clock.js'
-import { geo, hasFix } from '../../model/services/geo.js'
+import { geo, hasFix, startGps } from '../../model/services/geo.js'
 import { travel } from '../../model/services/travel.js'
 import LayoverCard from '../components/mission/LayoverCard.vue'
 import MissionHeader from '../components/mission/MissionHeader.vue'
@@ -35,6 +35,8 @@ async function load() {
   focusCurrent()
 }
 onMounted(load)
+// The map is what asks for location; if it's already allowed, follow it here too (no prompt).
+onMounted(() => navigator.permissions?.query({ name: 'geolocation' }).then((p) => p.state === 'granted' && !geo.fake && startGps(), () => {}))
 watch(() => route.params.id, load)
 
 const m = computed(() => store.mission)
@@ -63,12 +65,14 @@ const editingSchedule = ref(false) // stop cards swap for the compact order + st
 const clockStep = computed(() => Math.floor(tick.value / 30000))
 const leaveBy = computed(() => (clockStep.value, m.value ? store.leaveBy() : null))
 
-// Once they're out and the map has a GPS fix, the next stop's travel line is from where they
-// actually are (matching the map's directions), not from wherever the plan assumed they'd be.
+// Once they're out (trip started, or a stop already stamped) and there's a GPS fix, the next
+// stop's travel line is from where they actually are (matching the map's directions), not from
+// wherever the plan assumed they'd be.
+const isOut = () => now() >= Date.parse(m.value.start_iso) + m.value.buffers.exit_min * 60000 || store.stampedCount > 0
 const liveNext = computed(() => {
   clockStep.value
   const next = store.nextLeg
-  if (!m.value || !next || !hasFix() || now() < Date.parse(m.value.start_iso) + m.value.buffers.exit_min * 60000) return null
+  if (!m.value || !next || !hasFix() || !isOut()) return null
   const to = next.kind === 'return' ? m.value.return_to || m.value.origin : next
   const tr = travel({ lat: geo.lat, lng: geo.lng }, to, { maxWalk: m.value.prefs?.maxWalk, style: m.value.style, atMs: now() })
   return { leg: next, mode: tr.mode, minutes: tr.minutes, detail: `From your location · ${tr.detail}` }
