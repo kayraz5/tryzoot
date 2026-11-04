@@ -11,7 +11,8 @@ import { rainLookup } from '../../model/services/weather.js'
 import { RAIN_LIMIT } from '../../model/services/planner.js'
 import { now, tick } from '../../model/services/clock.js'
 import { geo, hasFix, startGps } from '../../model/services/geo.js'
-import { travel } from '../../model/services/travel.js'
+import { travel, distanceM } from '../../model/services/travel.js'
+import { getTransitRoute, lineInfo } from '../../model/services/transit/index.js'
 import LayoverCard from '../components/mission/LayoverCard.vue'
 import MissionHeader from '../components/mission/MissionHeader.vue'
 import QuestDoneCard from '../components/mission/QuestDoneCard.vue'
@@ -65,22 +66,36 @@ const editingSchedule = ref(false) // stop cards swap for the compact order + st
 const clockStep = computed(() => Math.floor(tick.value / 30000))
 const leaveBy = computed(() => (clockStep.value, m.value ? store.leaveBy() : null))
 
-// Once they're out (trip started, or a stop already stamped) and there's a GPS fix, the next
-// stop's travel line is from where they actually are (matching the map's directions), not from
-// wherever the plan assumed they'd be.
-const isOut = () => now() >= Date.parse(m.value.start_iso) + m.value.buffers.exit_min * 60000 || store.stampedCount > 0
-const liveNext = computed(() => {
-  clockStep.value
+// With a GPS fix, the next stop's travel line is from where they actually are, worked out the
+// same way as the map (OneMap bus/MRT route, else our own), not from where the plan assumed.
+const liveNext = ref(null) // { leg, mode, minutes, detail }
+let routedFrom = null
+const rideName = (p) => (p.mode === 'bus' ? `Bus ${p.service}` : `${lineInfo(p.line).colour} line`)
+async function refreshLiveNext() {
   const next = store.nextLeg
-  if (!m.value || !next || !hasFix() || !isOut()) return null
+  if (!m.value || !next || !hasFix()) return (liveNext.value = null)
+  const here = { lat: geo.lat, lng: geo.lng }
+  // Re-route only for a new stop or after moving 150 m+, so GPS jitter doesn't hammer OneMap.
+  if (liveNext.value?.leg === next && routedFrom && distanceM(routedFrom, here) < 150) return
+  routedFrom = here
   const to = next.kind === 'return' ? m.value.return_to || m.value.origin : next
-  const tr = travel({ lat: geo.lat, lng: geo.lng }, to, { maxWalk: m.value.prefs?.maxWalk, style: m.value.style, atMs: now() })
-  return { leg: next, mode: tr.mode, minutes: tr.minutes, detail: `From your location · ${tr.detail}` }
-})
+  const tr = travel(here, to, { maxWalk: m.value.prefs?.maxWalk, style: m.value.style, atMs: now() })
+  liveNext.value = { leg: next, mode: tr.mode, minutes: tr.minutes, detail: `From your location · ${tr.detail}` }
+  if (tr.mode !== 'mrt') return
+  const route = await getTransitRoute(here, to)
+  const rides = route?.parts.filter((p) => p.mode !== 'walk') || []
+  if (!rides.length || store.nextLeg !== next) return
+  const board = rides[0].from?.name
+  liveNext.value = {
+    leg: next, mode: rides.some((p) => p.mode === 'bus') ? 'bus' : 'mrt', minutes: Math.round(route.minutes),
+    detail: `From your location · ${rides.map(rideName).join(' → ')}${board ? ` from ${board}` : ''}`
+  }
+}
+watch(() => [store.nextLeg, geo.lat, geo.lng], refreshLiveNext, { immediate: true })
 const travelOf = (leg) => (liveNext.value?.leg === leg ? liveNext.value : { mode: leg.travel_mode, minutes: leg.travel_min, detail: leg.travel_detail })
 
-const modeIcon = { walk: 'bi-person-walking', mrt: 'bi-train-front', taxi: 'bi-taxi-front' }
-const modePill = { walk: '', mrt: 'ink', taxi: 'pale' }
+const modeIcon = { walk: 'bi-person-walking', mrt: 'bi-train-front', bus: 'bi-bus-front', taxi: 'bi-taxi-front' }
+const modePill = { walk: '', mrt: 'ink', bus: 'ink', taxi: 'pale' }
 
 // Weather checker
 const wetLegs = computed(() => {
