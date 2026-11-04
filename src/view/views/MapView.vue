@@ -92,7 +92,7 @@ import {
   stopHeading
 } from '../../model/services/geo.js'
 import { distanceM } from '../../model/services/travel.js'
-import { addQuestLayers, createPlayerMarker, setFence, setQuestColors, syncStopMarkers } from '../components/map/questLayers.js'
+import { addQuestLayers, createTravellerMarker, setFence, setQuestColors, syncStopMarkers } from '../components/map/questLayers.js'
 import { applyMapLabelStyle } from '../components/map/mapLabels.js'
 import { applyBuildingLayers, BUILDING_LAYERS } from '../components/map/mapBuildings.js'
 import { loadCatalog } from '../../model/services/catalog.js'
@@ -415,7 +415,7 @@ function createMap() {
 function onMapLoad() {
   attachTransit(map, mapTheme.value === 'theme')
   addQuestLayers(map)
-  player = createPlayerMarker()
+  player = createTravellerMarker()
   // The map opens with buildings hidden and 3D off. Both are user choices in the
   // Map appearance dialog: buildings can be shown flat, or extruded in 3D.
   syncBuildingLayers()
@@ -1969,8 +1969,8 @@ function writeMissionCardFlag(open) {
 .zt-stop-marker.done { background: #111; color: #ffcc00; border-color: #ffcc00; box-shadow: none; }
 @keyframes zt-marker-pulse { 0% { box-shadow: 3px 3px 0 #111, 0 0 0 0 rgba(248, 56, 120, 0.7); } 70%, 100% { box-shadow: 3px 3px 0 #111, 0 0 0 16px rgba(248, 56, 120, 0); } }
 
-.zt-player-marker { position: relative; width: clamp(30px, 10vw, 40px); height: clamp(30px, 10vw, 40px); pointer-events: none; }
-.zt-player-marker .core {
+.zt-traveller-marker { position: relative; width: clamp(30px, 10vw, 40px); height: clamp(30px, 10vw, 40px); pointer-events: none; }
+.zt-traveller-marker .core {
   position: absolute;
   inset: 4px;
   border-radius: 50%;
@@ -1982,7 +1982,7 @@ function writeMissionCardFlag(open) {
   font-size: clamp(0.8rem, 2.8vw, 1rem);
 }
 
-.zt-player-marker .pulse {
+.zt-traveller-marker .pulse {
 	position: absolute;
 	inset: 0;
 	border-radius: 50%;

@@ -3,8 +3,10 @@
  * Free, keyless and openly licensed. Every image carries its author + licence for the credit line.
  *
  * getPlaceImages(place) -> Promise<[{ src, full, alt, credit, license, page }]>, up to MAX_IMAGES.
- * Results are cached in localStorage so a mission page doesn't refetch on every visit,
- * and requests run one at a time because Wikimedia rate-limits bursts.
+ * Most places are pre-fetched by `pnpm sync:place-images` into data/placeImages.json, so their
+ * photos show at once with no lookup. Places missing from it are looked up live; those results
+ * are cached in localStorage so a mission page doesn't refetch on every visit, and requests
+ * run one at a time because Wikimedia rate-limits bursts.
  */
 
 const MAX_IMAGES = 3
@@ -27,9 +29,18 @@ const SEARCH = {
 
 const inflight = new Map()
 let queue = Promise.resolve()
+let seeded = null // id -> images, loaded once as its own chunk so it stays out of the main bundle
 
-export function getPlaceImages(place) {
-  if (!place?.id) return Promise.resolve([])
+const loadSeeded = () => (seeded ||= import('../data/placeImages.json').then((m) => m.default, () => ({})))
+
+export async function getPlaceImages(place) {
+  if (!place?.id) return []
+  const pre = (await loadSeeded())[place.id]
+  if (pre?.length) return pre
+  return liveImages(place)
+}
+
+function liveImages(place) {
   const cached = readCache()[place.id]
   if (cached && Date.now() - cached.at < (cached.images.length ? TTL_MS : MISS_TTL_MS)) return Promise.resolve(cached.images)
   if (!inflight.has(place.id)) {
@@ -43,7 +54,8 @@ export function getPlaceImages(place) {
   return inflight.get(place.id)
 }
 
-async function fetchImages(place) {
+/** Live lookup: Commons photos near the place, topped up with the Wikipedia lead image. Also used by scripts/sync-place-images.mjs. */
+export async function fetchImages(place) {
   const images = await fromCommons(place)
   if (images.length < MAX_IMAGES) {
     const lead = await fromWikipedia(place)
