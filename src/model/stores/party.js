@@ -73,7 +73,7 @@ export const usePartyStore = defineStore('party', {
       d?.resolve(value)
     },
 
-    // ── Chat ──
+    // Chat
     /** Load a quest's chat and follow new messages. Pair every call with stopChat(). */
     async startChat(partyId) {
       this.chatUsers++
@@ -139,7 +139,7 @@ export const usePartyStore = defineStore('party', {
       this.open = this.open.filter((q) => q.host_id !== userId)
     },
 
-    // ── Co-op stamps ──
+    // Co-op stamps
     /**
      * Show any co-op stamps I haven't seen ("You and Mei were both at Maxwell for the first time"),
      * after the stamp celebration closes, then refresh my XP. Called after stamping, when the map

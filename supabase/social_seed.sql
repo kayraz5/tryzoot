@@ -1,4 +1,3 @@
--- ════════════════════════════════════════════════════════════════════════
 -- Zoot · Social demo seed: 3 fake travellers + open windows to join.
 -- Run in Supabase → SQL Editor AFTER social.sql.
 -- Times are relative to now(), so RE-RUN THIS whenever the demo windows have ended.
@@ -9,9 +8,8 @@
 --         (One quest at a time: Lina is Mei's guest, so she can't also host one.)
 --   dev_simulate('guest_joins') picks one of them to join YOUR window (demo only; bots may be in two quests).
 -- The fake accounts have no password and can't sign in.
--- ════════════════════════════════════════════════════════════════════════
 
--- ── Fake users (auth row → profile via the handle_new_user trigger) ─────
+-- Fake users (auth row → profile via the handle_new_user trigger)
 insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
   raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
   confirmation_token, recovery_token, email_change_token_new, email_change)
@@ -46,7 +44,7 @@ insert into public.demo_users (user_id) values
   ('d0000000-0000-4000-8000-000000000003')
 on conflict (user_id) do nothing;
 
--- ── A window stop: same shape as a mission visit leg, timed from now() ──
+-- A window stop: same shape as a mission visit leg, timed from now()
 create or replace function pg_temp.demo_stop(p_place text, p_arrive_min int, p_stay int, p_mode text, p_travel_min int, p_detail text, p_xp int)
 returns jsonb language sql as $$
   select jsonb_build_object(
@@ -64,7 +62,7 @@ delete from public.stamps where user_id in (select user_id from public.demo_user
 delete from public.parties where id in ('d1000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000002');
 delete from public.parties where host_id in (select user_id from public.demo_users);
 
--- ── Mei: Chinatown window, open, Lina joined stops 1–2 ──────────────────
+-- Mei: Chinatown window, open, Lina joined stops 1–2
 insert into public.parties (id, host_id, title, style, capacity, starts_at, meeting_place_id, note, stops)
 values (
   'd1000000-0000-4000-8000-000000000001',
@@ -91,7 +89,7 @@ insert into public.messages (party_id, user_id, type, body) values
   ('d1000000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-000000000001', 'text', 'Hi! I''ll be at Maxwell in 30, wearing a yellow cap.'),
   ('d1000000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-000000000003', 'chip', 'Running 5 min late');
 
--- ── Arjun: late window (most short layovers can't fit it) ───────────────
+-- Arjun: late window (most short layovers can't fit it)
 insert into public.parties (id, host_id, title, style, capacity, starts_at, meeting_place_id, note, stops)
 values (
   'd1000000-0000-4000-8000-000000000002',

@@ -25,7 +25,7 @@ const router = useRouter();
 const editing = ref(false);
 const name = ref(user.profile?.display_name || '');
 
-// ── Character tab ────────────────────────────────────────────────────────
+// Character tab
 const tab = ref('profile');          // 'profile' | 'character'
 const character = useCharacterStore();
 

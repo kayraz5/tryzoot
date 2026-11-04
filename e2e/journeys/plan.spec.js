@@ -1,7 +1,6 @@
 /**
  * Journey — Feature: onboarded layover planning, generation, and return-leg safety.
  * Runs in the guest harness (zoot.guest='1', /api/plan built from the posted catalog); see e2e/fixtures/harness.js.
- * Reference: docs/repo-audit.md §1.
  */
 import { expect, test } from '../fixtures/harness.js'
 

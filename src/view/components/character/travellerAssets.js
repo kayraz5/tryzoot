@@ -1,6 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
 //  travellerAssets.js — THE WARDROBE (data + props only, no character here)
-// ─────────────────────────────────────────────────────────────────────────────
 //  This file holds the *resources* for the traveller character:
 //    1. tiny helpers that build rounded shapes and materials
 //    2. PALETTE  — every colour used, named
@@ -13,7 +11,6 @@
 //  the two files from depending on each other in a circle.
 //
 //  To add your own outfit, scroll to OUTFITS at the bottom and copy a block.
-// ─────────────────────────────────────────────────────────────────────────────
 
 import * as THREE from 'three'
 // Three.js core only ships a hard-edged BoxGeometry. RoundedBoxGeometry is an
@@ -22,7 +19,7 @@ import * as THREE from 'three'
 // reads as a soft toy instead of Minecraft.
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 
-// ── 1. MATERIAL HELPERS ──────────────────────────────────────────────────────
+// 1. MATERIAL HELPERS
 // A "material" is the surface description: what colour it is and how light
 // bounces off it. MeshStandardMaterial is the physically-based one:
 //   roughness 0 = mirror-smooth, 1 = completely matte
@@ -49,7 +46,7 @@ export const metalMat = (color) => new THREE.MeshStandardMaterial({ color: check
 // used for the lantern flame so it looks lit from the inside.
 export const glowMat = (color) => new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.8, roughness: 0.4 })
 
-// ── 2. SHAPE HELPERS ─────────────────────────────────────────────────────────
+// 2. SHAPE HELPERS
 // Every one of these returns a THREE.Mesh (geometry + material = a drawable
 // object). They exist so the body/prop code below reads like a description of
 // the character instead of a wall of `new THREE.Mesh(new THREE.…Geometry(…))`.
@@ -112,7 +109,7 @@ export function group(...children) {
   return g
 }
 
-// ── 3. PALETTE ───────────────────────────────────────────────────────────────
+// 3. PALETTE
 // Every colour in one place. 0x… is just hex, same as CSS #… — 0x8a6243 is #8a6243.
 // Change a value here and every outfit using it updates at once.
 
@@ -156,7 +153,7 @@ export const PALETTE = {
   forest: 0x3f5d45, wool: 0xb0432f, lanternGlow: 0xffd978, woodBrown: 0x6b4a2f
 }
 
-// ── 4. FURS ──────────────────────────────────────────────────────────────────
+// 4. FURS
 // The character underneath the clothes. Swap with traveller.setFur('fox').
 //   coat     — body, limbs, tail, ears
 //   belly    — muzzle, cheeks, chest fur
@@ -173,7 +170,7 @@ export const FURS = {
   fox: { label: 'Fox', coat: PALETTE.furFox, belly: 0xfaeede }
 }
 
-// ── 5. ACCESSORIES ───────────────────────────────────────────────────────────
+// 5. ACCESSORIES
 // The "preloaded assets" you can try on. Each entry is:
 //
 //   slot  — where on the body it attaches. traveller.js creates an empty marker
@@ -357,7 +354,7 @@ export const ACCESSORIES = {
 }
 
 
-// ── 6. HATS ──────────────────────────────────────────────────────────────────
+// 6. HATS
 // Headgear, picked independently of the outfit (Me → Character). Each entry is
 // { label, build(colors) } and is parented to the 'head' slot, which sits at
 // hat-band height on the skull — so a build() that returns something centred on
@@ -459,7 +456,7 @@ export const HATS = {
   }
 }
 
-// ── 7. EYEWEAR ───────────────────────────────────────────────────────────────
+// 7. EYEWEAR
 // Parented to the 'face' slot, which sits just clear of the eyeballs (they bulge
 // to z 0.5, the slot is at 0.52) — so lenses at local z 0 rest right on them.
 
@@ -534,7 +531,7 @@ export const EYEWEAR = {
   }
 }
 
-// ── 8. OUTFITS ───────────────────────────────────────────────────────────────
+// 8. OUTFITS
 // A preset = colours for the clothes the body itself wears (shirt/pants/boots/
 // belt), plus a list of accessory names from ACCESSORIES above.
 //

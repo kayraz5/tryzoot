@@ -20,9 +20,7 @@ const haze = computed(() => {
 })
 const lightningNearby = computed(() => ui.shownLightning?.nearby === true)
 
-// ---------------------------------------------------------------
 // Find the forecast for the current hour
-// ---------------------------------------------------------------
 
 // Each forecast hour has a start time (h.ms) and lasts one hour
 const currentHour = computed(() => {
@@ -37,9 +35,7 @@ const currentHour = computed(() => {
     });
 })
 
-// ---------------------------------------------------------------
 // Build the info the chip displays
-// ---------------------------------------------------------------
 
 // Returns one object: { icon, label, prob, temp, mm } / null (if there is nothing to show yet).
 const RAINY_ICON = /rain|drizzle/ // icon names that mean rain

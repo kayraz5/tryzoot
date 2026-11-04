@@ -1,7 +1,6 @@
 /**
  * Join resolution: what happens to a guest's own itinerary when they join part of someone's window.
- * Pure functions (no store, no network), so they're unit-tested in src/__tests__/joinResolver.spec.js
- * against the worked examples in docs/social-quests-spec.md.
+ * Pure functions (no store, no network), so they're unit-tested in tests/unit/model/joinResolver.spec.js.
  *
  * Rules, applied once, in order. Nothing is ever moved to a new time; own stops are only removed.
  *   1. The joined stops become fixed-time blocks tagged "with <host>".
