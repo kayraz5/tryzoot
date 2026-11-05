@@ -79,7 +79,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
           >
         </div>
         <p v-if="style" class="small text-muted mb-0">{{ style.blurb }}</p>
-        <div v-if="$slots.actions" class="pp-actions"><slot name="actions" /></div>
+        <div v-if="$slots.actions" class="pp-actions">
+          <slot name="actions" />
+        </div>
       </div>
     </div>
   </Teleport>

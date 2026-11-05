@@ -9,7 +9,10 @@ import { placesDbFromEnv, savePlaces } from '../api/_lib/places/supabase.js'
 
 const OUT_FILE = new URL('../src/model/data/places.synced.json', import.meta.url)
 
-Object.assign(process.env, { ...loadEnv('development', process.cwd(), ''), ...process.env })
+Object.assign(process.env, {
+  ...loadEnv('development', process.cwd(), ''),
+  ...process.env
+})
 
 // Check Supabase before the slow OpenStreetMap pull, so a missing key or column fails straight away
 const db = placesDbFromEnv()

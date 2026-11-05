@@ -37,7 +37,10 @@ function onScroll() {
   if (el) active.value = Math.round(el.scrollLeft / el.clientWidth)
 }
 function goTo(i) {
-  strip.value?.scrollTo({ left: i * strip.value.clientWidth, behavior: 'smooth' })
+  strip.value?.scrollTo({
+    left: i * strip.value.clientWidth,
+    behavior: 'smooth'
+  })
 }
 
 async function show(i) {
@@ -158,8 +161,8 @@ onBeforeUnmount(close)
             </div>
             <a :href="images[open].page" target="_blank" rel="noopener" class="lb-credit">
               Photo: {{ images[open].credit
-              }}<template v-if="images[open].license"> · {{ images[open].license }}</template> ·
-              Wikimedia Commons
+              }}<template v-if="images[open].license"> · {{ images[open].license }}</template>
+              · Wikimedia Commons
             </a>
           </figcaption>
         </figure>

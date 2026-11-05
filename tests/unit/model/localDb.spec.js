@@ -26,8 +26,7 @@ describe('localDb guest authentication and profiles', () => {
     expect(await localDb.getSession()).toEqual(second)
   })
 
-  it('rejects email and password authentication methods without Supabase keys', async () => {
-    await expect(localDb.signInWithEmail()).rejects.toThrow('needs Supabase keys')
+  it('rejects password sign-in and sign-up without Supabase keys', async () => {
     await expect(localDb.signInWithPassword()).rejects.toThrow('needs Supabase keys')
     await expect(localDb.signUpWithPassword()).rejects.toThrow('needs Supabase keys')
   })
@@ -45,7 +44,7 @@ describe('localDb guest authentication and profiles', () => {
 
     const updated = await localDb.updateProfile(user.id, {
       style: 'budget',
-      home_city: 'Singapore'
+      home_city: 'Singapore',
     })
     expect(updated).toMatchObject({
       id: user.id,
@@ -116,7 +115,7 @@ describe('localDb stamps and geofencing', () => {
     await expect(
       localDb.stampPlace({
         ...common,
-        position: { lat: 1.3000, lng: 103.9000, accuracy: 5 },
+        position: { lat: 1.3, lng: 103.9, accuracy: 5 },
         fake: false,
         dev: false,
       })
@@ -124,7 +123,7 @@ describe('localDb stamps and geofencing', () => {
 
     const first = await localDb.stampPlace({
       ...common,
-      position: { lat: 1.3000, lng: 103.9000, accuracy: 5 },
+      position: { lat: 1.3, lng: 103.9, accuracy: 5 },
       fake: false,
       dev: true,
     })
@@ -199,7 +198,7 @@ describe('localDb malformed JSON fallbacks', () => {
         const row = await localDb.saveTrip({ id: 'fallback-trip', title: 'Fallback' })
         return JSON.parse(localStorage.getItem('zoot.trips')).map((trip) => trip.id === row.id)
       },
-      [true]
+      [true],
     ],
     ['missions', 'zoot.missions', async () => localDb.listMissions(), []],
     ['stamps', 'zoot.stamps', async () => localDb.listStamps('guest-1'), []],

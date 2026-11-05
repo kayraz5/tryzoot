@@ -31,6 +31,7 @@ import MapMenuButton from '../components/map/MapMenuButton.vue'
 import QuestMapLive from '../components/quests/QuestMapLive.vue'
 import { useMissionNav } from '../components/map/useMissionNav.js'
 import { useWeatherRefresh } from '../common/weather/useWeatherRefresh.js'
+import { useCooldown } from '../common/useCooldown.js'
 import { useMissionStore } from '../../model/stores/mission.js'
 import { useUiStore } from '../../model/stores/ui.js'
 import { usePartyStore } from '../../model/stores/party.js'
@@ -82,7 +83,7 @@ const LIVE_ROUTE_COLOR = '#ff1dce' // brighter than the planned-route pink; the 
 const LIVE_ROUTE_CASING_COLOR = '#111111'
 const LIVE_ROUTE_LAYOUT = { 'line-join': 'round', 'line-cap': 'round' }
 
-const MBS_DEMO_PIN = { id: 'mbs-pin', lng: 103.8607, lat: 1.2830, label: LANDMARK_BADGE }
+const MBS_DEMO_PIN = { id: 'mbs-pin', lng: 103.8607, lat: 1.283, label: LANDMARK_BADGE }
 
 const OTTER_VIEW = {
   pitch: 62,
@@ -284,6 +285,7 @@ onMounted(async () => {
 
   window.addEventListener('keydown', onDemoKeyDown)
   window.addEventListener('keyup', onDemoKeyUp)
+  window.addEventListener('pointerdown', onPointerDownOutsideTools)
   raf = requestAnimationFrame(demoWalkLoop)
 })
 
@@ -294,6 +296,7 @@ onUnmounted(() => {
   clearTimeout(travellerStopTimer)
   window.removeEventListener('keydown', onDemoKeyDown)
   window.removeEventListener('keyup', onDemoKeyUp)
+  window.removeEventListener('pointerdown', onPointerDownOutsideTools)
   stopHeading()
   detachOrbitListeners()
   markers.clear()
@@ -908,6 +911,18 @@ function zoomOut() {
   map.zoomTo(12, { duration: 1500 })
 }
 
+/**
+ * Tapping anywhere off the drawer closes it, so the hamburger isn't the only way out.
+ * pointerdown rather than click, so dragging the map dismisses it as the drag starts
+ * instead of waiting for the gesture to end. The drawer and the hamburger are excluded:
+ * the tools inside stay tappable, and the hamburger's own toggle still works.
+ */
+function onPointerDownOutsideTools(event) {
+  if (!mapToolsOpen.value) return
+  if (event.target instanceof Element && event.target.closest('.map-tools, .menu-btn')) return
+  mapToolsOpen.value = false
+}
+
 function animateToFlat() {
   // Arrive already pointed the right way, so the lock does not have to swing the
   // whole world when the transition lands.
@@ -1074,11 +1089,15 @@ async function replan(mode) {
   await missionStore.replan(mode)
 }
 
-async function skipNextStop() {
+const { cooling: skipping, run: runSkip } = useCooldown()
+function skipNextStop() {
   helpOpen.value = false
   if (next.value?.kind !== 'visit') return
-  await missionStore.skip(next.value)
-  ui.toast('Stop skipped. On to the next one.', 'dark')
+  // Without the cooldown a fast double-tap skips two stops and toasts twice.
+  return runSkip(async () => {
+    await missionStore.skip(next.value)
+    ui.toast('Stop skipped. On to the next one.', 'dark')
+  })
 }
 
 function openAirportHelp() {
@@ -1158,7 +1177,7 @@ function jumpNearNextStop(meters) {
   const place = pointNearNextStop(meters)
   if (!place) return
   if (!geo.fake) {
-    setFake(true);
+    setFake(true)
     demoPanelOpen.value = true
   }
   teleport(place)
@@ -1333,7 +1352,7 @@ function writeMissionCardFlag(open) {
       role="timer"
     >
       <span class="bi-airplane-fill"> &nbsp; Time to Travel</span>
-      <br >
+      <br />
       <div class="time_left_from_trip mono">{{ countdown || '--:--:--' }}</div>
       <div class="time_back_from_trip">
         {{
@@ -1414,7 +1433,7 @@ function writeMissionCardFlag(open) {
       :guidance="guidance"
       :steps="liveSteps"
       :step-index="liveStepIndex"
-      :bus-alt="busAlt"
+      :bus-alternative="busAlt"
       :check="check"
       :stamping="stamping"
       :stamped-count="missionStore.stampedCount"
@@ -1538,7 +1557,7 @@ function writeMissionCardFlag(open) {
       </button>
       <button
         class="btn btn-outline-warning btn-sm w-100 mb-2"
-        :disabled="next?.kind !== 'visit'"
+        :disabled="skipping || next?.kind !== 'visit'"
         @click="skipNextStop"
       >
         <i class="bi bi-skip-forward-fill"></i> Skip this stop

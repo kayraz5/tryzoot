@@ -47,25 +47,31 @@ async function choose(mode) {
 </template>
 
 <style scoped>
+/* Segmented pill matching the card's other controls. cqi resolves against
+   .mission-card, so this scales with the card rather than the viewport. */
 .transport-toggle {
   display: flex;
-  padding: 3px;
-  gap: 3px;
+  padding: calc(var(--gap) * 0.35);
+  gap: calc(var(--gap) * 0.35);
   border-radius: 99px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 244, 194, 0.25);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 244, 194, 0.16);
 }
 .opt {
-  flex: 1;
-  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: calc(var(--pad-sm) * 0.8) calc(var(--pad) * 1.1);
   border: 0;
   border-radius: 99px;
   background: none;
   color: var(--zt-yellow-pale);
-  opacity: 0.7;
-  font-size: 0.75rem;
+  opacity: 0.65;
+  font-size: var(--t-sm);
   font-weight: 800;
   white-space: nowrap;
+  cursor: pointer;
 }
 .opt.on {
   background: var(--zt-yellow);

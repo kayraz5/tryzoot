@@ -1,6 +1,6 @@
 // EDITOR: HULBERT
 import { createClient } from '@supabase/supabase-js';
-import { SUPABASE_URL, SUPABASE_ANON_KEY, CITY } from "../config.js";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, CITY } from '../config.js';
 
 /* Steven: Supabase adaptor */
 
@@ -14,16 +14,16 @@ export function createRemoteDb() {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true,
+      detectSessionInUrl: true
     }
-  })
+  });
 
   const must = ({ data, error }) => {
     if (error) {
       throw new Error(error.message);
     }
     return data;
-  }
+  };
 
   return {
     kind: 'supabase',
@@ -36,14 +36,6 @@ export function createRemoteDb() {
     onAuthChange(cb) {
       const { data } = db.auth.onAuthStateChange((_event, session) => cb(session));
       return () => data.subscription.unsubscribe();
-    },
-    async signInWithEmail(email) {
-      must(
-        await db.auth.signInWithOtp({
-          email,
-          options: { emailRedirectTo: `${location.origin}/auth` }
-        })
-      );
     },
     async signInWithPassword(email, password) {
       return must(await db.auth.signInWithPassword({ email, password })).session;
@@ -59,9 +51,7 @@ export function createRemoteDb() {
       // Supabase answers a sign-up for an email that already has an account with a fake user
       // (no identities) and sends no email, so the app must not say "check your inbox".
       if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-        throw new Error(
-          'An account with this email already exists. Sign in instead, or use a magic link.'
-        );
+        throw new Error('An account with this email already exists. Sign in instead.');
       }
       return data?.session ?? null;
     },
@@ -119,10 +109,10 @@ export function createRemoteDb() {
         style: trip.style,
         interests: trip.interests,
         energy: trip.energy,
-        status: 'planned',
-      }
-      const saved = must(await db.from('trips').insert(row).select().single())
-      return { ...trip, id: saved.id }
+        status: 'planned'
+      };
+      const saved = must(await db.from('trips').insert(row).select().single());
+      return { ...trip, id: saved.id };
     },
 
     async saveMission(mission) {
@@ -134,13 +124,13 @@ export function createRemoteDb() {
           payload_json: mission,
           buffer_min: mission.buffer_min,
           groq_model: mission.groq_model,
-          fallback_used: mission.fallback_used,
+          fallback_used: mission.fallback_used
         })
       );
       must(await db.from('mission_legs').delete().eq('mission_id', mission.id));
       must(
         await db.from('mission_legs').insert(
-          mission.legs.map(l => {
+          mission.legs.map((l) => {
             return {
               mission_id: mission.id,
               seq: l.seq,
@@ -152,11 +142,11 @@ export function createRemoteDb() {
               xp: l.xp,
               status: l.status,
               arrive_at: l.arrive_iso,
-              depart_at: l.depart_iso,
-            }
+              depart_at: l.depart_iso
+            };
           })
         )
-      )
+      );
 
       return mission;
     },
@@ -165,11 +155,11 @@ export function createRemoteDb() {
       return row?.payload_json || null;
     },
     async listMissions() {
-      const rows = must(await db.from('missions').select('payload_json'))
+      const rows = must(await db.from('missions').select('payload_json'));
       return rows
         .map((r) => r.payload_json)
         .filter(Boolean)
-        .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
+        .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
     },
 
     async stampPlace({ place, position, fake, missionId }) {
@@ -180,9 +170,9 @@ export function createRemoteDb() {
           p_lng: position?.lng,
           p_accuracy: position?.accuracy ?? 999,
           p_mission_id: missionId || null,
-          p_fake_gps: Boolean(fake),
+          p_fake_gps: Boolean(fake)
         })
-      )
+      );
       const {
         data: { user }
       } = await db.auth.getUser();
@@ -214,6 +204,6 @@ export function createRemoteDb() {
           .select()
           .single()
       );
-    },
+    }
   };
-};
+}

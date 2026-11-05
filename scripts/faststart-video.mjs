@@ -1,22 +1,6 @@
 // EDITOR: MATTHEW
-/**
- * Moves an MP4's `moov` atom in front of `mdat` (what ffmpeg calls -movflags
- * +faststart), without needing ffmpeg.
- *
- * Why this matters here: a scroll-scrubbed clip is seeked constantly, and a
- * browser cannot seek — or even report a duration — until it has the `moov`
- * index. With `moov` written after `mdat`, that index is the last thing in the
- * file, so the whole clip has to arrive before the first frame can paint. The
- * supplied landing-page video was authored that way: 10MB of download before
- * anything appears.
- *
- * Relocating `moov` shifts every byte of `mdat`, so each chunk offset in the
- * sample tables has to move by the same delta or the file decodes to garbage.
- * That is all this script does: reorder the top-level boxes and add the delta
- * to every `stco` (32-bit) and `co64` (64-bit) entry.
- *
- *   node scripts/faststart-video.mjs <in.mp4> <out.mp4>
- */
+//Moves an MP4's `moov` atom in front of `mdat` (what ffmpeg calls -movflags +faststart), without needing ffmpeg.
+
 import { readFileSync, writeFileSync } from 'node:fs'
 
 const [, , IN, OUT] = process.argv

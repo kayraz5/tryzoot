@@ -7,6 +7,7 @@ import { expect, test } from '../fixtures/harness.js'
 
 test('lets a new guest choose a travel style and reach the plan page', async ({ page }) => {
   await page.goto('/')
+  await page.locator('html.sc-ready').waitFor() // race condition intercepted, added this to wait elem to load
   await page.getByRole('button', { name: 'Sign up' }).first().click()
 
   await expect(page).toHaveURL(/\/auth\?mode=signup&next=\/plan$/)

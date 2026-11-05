@@ -70,7 +70,9 @@ const bars = computed(() => Array.from({ length: 9 }, (_, i) => 22 + ((seed.valu
       <div class="skyline">
         <span v-for="(h, i) in bars" :key="i" :style="{ height: h + '%' }"></span>
       </div>
-      <div class="disc"><i class="bi" :class="icon" aria-hidden="true"></i></div>
+      <div class="disc">
+        <i class="bi" :class="icon" aria-hidden="true"></i>
+      </div>
       <span class="spark s1">✦</span><span class="spark s2">✦</span><span class="spark s3">✦</span>
     </template>
     <span class="area-tag">{{ place.area }}</span>

@@ -40,7 +40,9 @@ const cancel = () => party.answer(false)
           <i class="bi" :class="party.dialog.icon"></i>
         </div>
         <h2 id="cd-title" class="h4 mb-2">{{ party.dialog.title }}</h2>
-        <p v-if="party.dialog.body" id="cd-body" class="mb-4">{{ party.dialog.body }}</p>
+        <p v-if="party.dialog.body" id="cd-body" class="mb-4">
+          {{ party.dialog.body }}
+        </p>
         <div class="d-flex gap-2">
           <button
             v-if="party.dialog.cancelText"

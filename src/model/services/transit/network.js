@@ -31,7 +31,7 @@ HUBS.rws = {
   name: 'Resorts World (Sentosa Express)',
   code: 'SE2',
   lat: 1.2557,
-  lng: 103.8210,
+  lng: 103.821,
   exits: []
 }
 HUBS.beach = { name: 'Beach (Sentosa Express)', code: 'SE3', lat: 1.2535, lng: 103.8174, exits: [] }
@@ -82,7 +82,7 @@ export function rideMinutes(fromHub, toHub) {
         lines: cur.lines,
         path: cur.path,
         edgeLines: cur.edgeLines
-      };
+      }
       break
     }
     for (const e of ADJ[cur.node] || []) {
@@ -178,5 +178,8 @@ export function rideRuns(ride) {
 
 /** ['CG', 'EW', 'NS'] -> "East West Line → North South Line": what travellers see on signs, not line codes. */
 export function lineNames(lines) {
-  return lines.map((l) => LINES[l]?.name || l).filter((n, i, all) => n !== all[i - 1]).join(' → ')
+  return lines
+    .map((l) => LINES[l]?.name || l)
+    .filter((n, i, all) => n !== all[i - 1])
+    .join(' → ')
 }

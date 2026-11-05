@@ -127,7 +127,7 @@ export function travel(a, b, opts = {}) {
     minutes: t.minutes,
     walk_min: walk,
     distance_m,
-    detail: `MRT ${t.from} → ${t.to} · ${lineColours(t.lines)}`
+    detail: `MRT ${t.from} → ${t.to} · ${lineNames(t.lines)}`
   }
   const byTaxi = (why) => ({
     mode: 'taxi',
@@ -138,9 +138,9 @@ export function travel(a, b, opts = {}) {
   })
   // Budget travellers ride the MRT; others take a cab when it saves 20+ min.
   const mrtOrTaxi = () =>
-    (opts.style !== 'budget' && taxi + 20 < t.minutes
+    opts.style !== 'budget' && taxi + 20 < t.minutes
       ? byTaxi(`saves ${t.minutes - taxi} min vs MRT`)
-      : byMrt)
+      : byMrt
 
   // The traveller said how they get around.
   if (opts.transport === 'car') return byTaxi(`${(distance_m / 1000).toFixed(1)} km by road`)

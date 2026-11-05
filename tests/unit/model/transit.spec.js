@@ -32,7 +32,9 @@ describe('MRT network', () => {
   })
 
   it('describes MRT legs by line name, not code', () => {
-    expect(travel(CHANGI, ORCHARD).detail).toBe('MRT Changi Airport → Orchard · East West Line → North South Line')
+    expect(travel(CHANGI, ORCHARD).detail).toBe(
+      'MRT Changi Airport → Orchard · East West Line → North South Line'
+    )
   })
 })
 
@@ -98,8 +100,8 @@ describe('transitSteps', () => {
 
   it('pins where to board, change and get off', () => {
     expect(transferPoints(parts).map((p) => p.label)).toEqual([
-      'Board · Green line',
-      'Change · Red line',
+      'Board · East West Line',
+      'Change · North South Line',
       'Get off · Orchard'
     ])
   })
@@ -129,8 +131,8 @@ describe('findDirectBus', () => {
     const data = {
       stops: {
         '01012': [103.8545, 1.2967, 'Hotel Grand Pacific', 'Victoria St', ['7']],
-        '01013': [103.8560, 1.2990, 'St. Joseph\'s Ch', 'Victoria St', ['7']],
-        '09047': [103.8350, 1.3040, 'Orchard Stn', 'Orchard Rd', ['7']]
+        '01013': [103.856, 1.299, "St. Joseph's Ch", 'Victoria St', ['7']],
+        '09047': [103.835, 1.304, 'Orchard Stn', 'Orchard Rd', ['7']]
       },
       services: { 7: { name: 'A ⇄ B', routes: [['01012', '01013', '09047']], lines: [] } }
     }
@@ -200,7 +202,7 @@ describe('which way to ride', () => {
         to: { name: 'Paya Lebar' }
       }
     ])
-    expect(step.title).toBe('Take the Orange line clockwise')
+    expect(step.title).toBe('Take the Circle Line clockwise')
     expect(step.detail).toBe('Next stop Caldecott · 9 stops · get off at Paya Lebar')
   })
 })

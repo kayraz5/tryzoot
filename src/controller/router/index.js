@@ -11,8 +11,16 @@ import { useMissionStore } from '../../model/stores/mission.js'
 const routes = [
   // The landing page is "The Layover Flight": one continuous scroll-driven world
   // (src/view/components/story/).
-  { path: '/', name: 'landing', component: () => import('../../view/views/StoryView.vue') },
-  { path: '/auth', name: 'auth', component: () => import('../../view/views/AuthView.vue') },
+  {
+    path: '/',
+    name: 'landing',
+    component: () => import('../../view/views/StoryView.vue')
+  },
+  {
+    path: '/auth',
+    name: 'auth',
+    component: () => import('../../view/views/AuthView.vue')
+  },
   {
     path: '/onboard',
     name: 'onboard',
@@ -107,10 +115,10 @@ const routes = [
           path: '/wardrobe',
           name: 'wardrobe',
           component: () => import('../../view/views/WardrobeView.vue')
-        },
+        }
       ]
     : []),
-  { path: '/:pathMatch(.*)*', redirect: '/' },
+  { path: '/:pathMatch(.*)*', redirect: '/' }
 ]
 
 export const router = createRouter({

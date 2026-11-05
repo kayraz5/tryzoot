@@ -7,8 +7,6 @@ const SOURCE_URL =
   'https://raw.githubusercontent.com/cheeaun/sgraildata/master/data/v1/sg-rail.geojson'
 const OUT_FILE = new URL('../src/model/data/mrtLines.sg.json', import.meta.url)
 
-// 'CG' (Changi branch) and 'CE' (Circle Line extension) are physically part of the
-// East West / Circle Line tracks in this dataset, not separate lines.
 const LINE_ALIASES = {
   'East West Line': ['EW', 'CG'],
   'North South Line': ['NS'],
@@ -17,8 +15,6 @@ const LINE_ALIASES = {
   'Downtown Line': ['DT'],
   'Thomson-East Coast Line': ['TE']
 }
-// Sentosa Express ('SE') is outside this dataset - run by Sentosa Leisure Group, no
-// geometry source found. transit/mrt.js handles that gap.
 const KNOWN_GAP_CODES = ['SE']
 
 const res = await fetch(SOURCE_URL)
@@ -35,7 +31,11 @@ for (const f of geo.features) {
   if (!codes) continue
   const parts = f.geometry.type === 'LineString' ? [f.geometry.coordinates] : f.geometry.coordinates
   for (const code of codes)
-    lines[code] = { name: f.properties.name, color: f.properties.line_color, parts }
+    lines[code] = {
+      name: f.properties.name,
+      color: f.properties.line_color,
+      parts
+    }
 }
 
 const expected = Object.values(LINE_ALIASES).flat()

@@ -1,5 +1,4 @@
 // EDITOR: KAYRA
-import { readdirSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig, loadEnv } from 'vite'
@@ -34,11 +33,11 @@ function vercelApiDev() {
           req.body = {}
         }
         res.status = (code) => {
-          res.statusCode = code;
+          res.statusCode = code
           return res
         }
         res.json = (data) => {
-          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify(data))
         }
         try {
@@ -47,22 +46,13 @@ function vercelApiDev() {
           res.status(500).json({ error: String(err.message || err) })
         }
       })
-    }
+    },
   }
 }
 
-// Stamp art lives in public/stamps/ (served as /stamps/<name>.png). The file names are baked in
-// at start-up so the app knows which places have art; restart the dev server after adding one.
-const stampIds = readdirSync(fileURLToPath(new URL('./public/stamps', import.meta.url)))
-  .filter((file) => file.endsWith('.png'))
-  .map((file) => file.slice(0, -4))
-
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue(), vueDevTools(), vercelApiDev(),],
-  define: {
-    __STAMP_IDS__: JSON.stringify(stampIds),
-  },
+  plugins: [vue(), vueDevTools(), vercelApiDev()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

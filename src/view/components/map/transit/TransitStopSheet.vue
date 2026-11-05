@@ -61,7 +61,7 @@ const when = (m) => (m <= 0 ? 'Arr' : `${m} min`)
       <div class="title">{{ stop.name }}</div>
       <div class="chips">
         <span v-for="l in lines" :key="l.code" class="line-chip" :style="{ background: l.hex }"
-          >{{ l.code }} · {{ l.colour }} line</span
+          >{{ l.code }} · {{ l.name }}</span
         >
       </div>
       <p class="note">

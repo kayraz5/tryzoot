@@ -50,7 +50,13 @@ for (const f of rail.features) {
   if (!codes.length) continue
   const id = slug(p.name)
   const [lng, lat] = f.geometry.coordinates
-  stations[id] = { name: p.name, codes, lat: round(lat), lng: round(lng), exits: [] }
+  stations[id] = {
+    name: p.name,
+    codes,
+    lat: round(lat),
+    lng: round(lng),
+    exits: []
+  }
   for (const c of codes) byCode[c] = id
 }
 

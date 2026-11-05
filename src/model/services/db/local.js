@@ -22,17 +22,17 @@ const state = {
 // read cookies
 function read(key, fallback) {
   try {
-    return JSON.parse(localStorage.getItem(key)) ?? fallback
+    return JSON.parse(localStorage.getItem(key)) ?? fallback;
   } catch (err) {
     console.error(err);
-    return fallback
+    return fallback;
   }
 }
 
 // write to cookies
 function write(key, value) {
   try {
-    localStorage.setItem(key, JSON.stringify(value))
+    localStorage.setItem(key, JSON.stringify(value));
   } catch (err) {
     console.error(err);
   }
@@ -42,7 +42,7 @@ export const localDb = {
   kind: 'local',
 
   async getSession() {
-    return read(state.session, null)
+    return read(state.session, null);
   },
   onAuthChange() {
     return () => {};
@@ -77,13 +77,10 @@ export const localDb = {
         email: null,
       },
       guest: true,
-    }
+    };
 
     write(state.session, session);
     return session;
-  },
-  async signInWithEmail() {
-    throw new Error('Email sign-in needs Supabase keys. Use guest mode for now.');
   },
   async signInWithPassword() {
     throw new Error('Password sign-in needs Supabase keys. Use guest mode for now.');
@@ -104,7 +101,7 @@ export const localDb = {
       ...read(state.profile, {}),
       ...patch,
       id,
-    }
+    };
 
     write(state.profile, profile);
     return profile;
@@ -123,7 +120,7 @@ export const localDb = {
   },
 
   async listPlaces() {
-    return []
+    return [];
   },
 
   async saveTrip(trip) {
@@ -132,9 +129,9 @@ export const localDb = {
       ...trip,
       id: trip.id || crypto.randomUUID(),
       created_at: new Date().toISOString(),
-    }
+    };
 
-    write(state.trips, [row, ...trips.filter(t => t.id !== row.id).slice(0, 20)])
+    write(state.trips, [row, ...trips.filter(t => t.id !== row.id).slice(0, 20)]);
 
     return row;
   },
@@ -153,7 +150,7 @@ export const localDb = {
   async listMissions() {
     return Object.values(read(state.missions, {})).sort((a, b) =>
       b.created_at.localeCompare(a.created_at)
-    )
+    );
   },
 
   async stampPlace({ userId, place, position, fake, missionId, xp, dev }) {
@@ -165,13 +162,15 @@ export const localDb = {
     }
 
     const stamps = read(state.stamps, []);
-    const now = Date.now()
+    const now = Date.now();
 
     if (
       stamps.some(s => {
-        return s.user_id === userId &&
+        return (
+          s.user_id === userId &&
           s.place_id === place.id &&
           sameSgDay(Date.parse(s.stamped_at), now)
+        );
       })
     ) {
       throw new Error('Already stamped here today. One chop per place per day.');
@@ -186,8 +185,8 @@ export const localDb = {
       accuracy_m: position?.accuracy ?? null,
       xp,
       area: place.area,
-      stamped_at: new Date(now).toISOString()
-    }
+      stamped_at: new Date(now).toISOString(),
+    };
 
     stamps.push(stamp);
     write(state.stamps, stamps);
@@ -208,5 +207,5 @@ export const localDb = {
     pages[userId] = { ...pages[userId], ...updates, user_id: userId };
     write(state.passport, pages);
     return pages[userId];
-  }
-}
+  },
+};

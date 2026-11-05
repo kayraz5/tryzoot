@@ -1,9 +1,11 @@
 // EDITOR: SHREY
 // Stamp artwork in public/stamps/, named <place id>.png or area-<area>.png (e.g. area-civic-district.png).
-// Add a file with the right name and it shows up (restart the dev server); anything without one keeps the drawn chop.
-// vite.config.js bakes the file names into __STAMP_IDS__; the pictures are served from /stamps/.
-const ids = new Set(typeof __STAMP_IDS__ === 'undefined' ? [] : __STAMP_IDS__)
-const urlFor = (id) => (ids.has(id) ? `${import.meta.env.BASE_URL}stamps/${id}.png` : null)
+// Add a file, run `pnpm gen:stamps` to re-index it, and it shows up; anything without one keeps the
+// drawn chop. The index is what lets these return null synchronously, which is the signal callers
+// use to fall back — a bare /stamps/<id>.png URL would only fail later, as a broken image.
+import { STAMP_NAMES } from './stampIndex.js'
 
-export const placeStamp = (placeId) => urlFor(placeId)
-export const areaStamp = (areaId) => urlFor(`area-${areaId.toLowerCase().replace(/\s+/g, '-')}`)
+const url = (name) => (STAMP_NAMES.has(name) ? `/stamps/${name}.png` : null)
+
+export const placeStamp = (placeId) => url(placeId)
+export const areaStamp = (areaId) => url(`area-${areaId.toLowerCase().replace(/\s+/g, '-')}`)

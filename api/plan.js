@@ -2,8 +2,8 @@
 import { groqConfig, groqJson, tooLarge } from './_lib/groq.js'
 
 /**
- * POST /api/plan — Groq chooses places and writes copy. It never outputs minutes
- * or coordinates; the client validates the reply (zoot.choice.v1) and times
+ * POST /api/plan — Groq chooses places and writes copy.
+ * It never outputs minutes or coordinates; the client validates the reply (zoot.choice.v1) and times
  * every leg with Turf + the MRT matrix. Any failure → client falls back.
  */
 const SYSTEM = `You are the itinerary chooser for Zoot, a layover side-quest app in Singapore.

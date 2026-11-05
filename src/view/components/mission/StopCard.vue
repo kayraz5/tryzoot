@@ -7,6 +7,7 @@ import { usePartyStore } from '../../../model/stores/party.js'
 import { placeById } from '../../../model/services/catalog.js'
 import { formatTime } from '../../../model/services/hours.js'
 import StopGallery from '../../common/StopGallery.vue'
+import { useCooldown } from '../../common/useCooldown.js'
 import PlacePicker from './PlacePicker.vue'
 
 /**
@@ -50,6 +51,10 @@ function openAdd() {
   }
   if (!visit) emit('toggle')
 }
+// A fast double-tap used to skip this stop and the next one, so hold the button briefly.
+const { cooling: skipping, run: runSkip } = useCooldown()
+const skip = () => runSkip(() => store.skip(props.leg))
+
 function closePicker() {
   picker.value = null
   if (props.leg.kind === 'return') emit('close')
@@ -67,10 +72,10 @@ async function run(action) {
 function onPick(p) {
   const { leg } = props
   run(() =>
-    (picker.value.mode === 'swap'
+    picker.value.mode === 'swap'
       ? store.swapStop(leg, p)
       : store.addStop(p, leg.kind === 'visit' ? leg.place_id : null)
-  ))
+  )
 }
 </script>
 
@@ -145,7 +150,9 @@ function onPick(p) {
         >
           <i class="bi bi-pencil"></i> Change stop
         </button>
-        <button class="btn btn-sm btn-link text-muted" @click="store.skip(leg)">Skip</button>
+        <button class="btn btn-sm btn-link text-muted" :disabled="skipping" @click="skip">
+          Skip
+        </button>
       </div>
       <div v-if="open" class="edit-panel mt-3">
         <div class="tiny fw-800 mb-2">Change this stop</div>

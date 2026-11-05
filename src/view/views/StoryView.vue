@@ -794,6 +794,14 @@ html.zt-story-route body {
    Shapes are the app's own (zt-card, zt-pill, zt-band, zt-display in
    view/styles/app.css), so this reads as the rest of Zoot rather than as a
    second design system. The names added here only describe arrangement. */
+/* The spacer starts at zero until ScrollCraft measures the track. Keep this
+   later, higher layer from flashing over the hero and intercepting its CTA
+   during that startup window. */
+html:not(.sc-ready) .zt-debrief {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .zt-debrief {
   /* The yellow surfaces below are brand colours that stay put in dark mode, so
 	   the ink on them must too. app.css exposes --zt-on-yellow for exactly this. */

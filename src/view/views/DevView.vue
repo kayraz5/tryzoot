@@ -11,6 +11,7 @@ import { HAS_SUPABASE } from '../../model/services/config.js'
 import { useMissionStore } from '../../model/stores/mission.js'
 import { useUiStore } from '../../model/stores/ui.js'
 import { useUserStore } from '../../model/stores/user.js'
+import { useCooldown } from '../common/useCooldown.js'
 
 /** God mode for demos and grading (stripped from production unless VITE_DEV_PANEL=1). */
 const store = useMissionStore()
@@ -53,16 +54,20 @@ function near(meters) {
   ui.toast(meters ? `Teleported ${meters} m from ${n.name}` : `Standing at ${n.name}`, 'dark')
 }
 
-async function grant() {
-  const n = next.value
-  if (!n || n.kind !== 'visit') return ui.toast('No stop to grant', 'warning')
-  try {
-    if (!geo.fake) setFake(true)
-    teleport({ lat: n.lat, lng: n.lng })
-    await store.stamp(n, { dev: true })
-  } catch (err) {
-    ui.toast(err.message, 'warning')
-  }
+const { cooling: granting, run: runGrant } = useCooldown()
+function grant() {
+  // Held briefly between taps, otherwise a demo tap-tap-tap grants several stops.
+  return runGrant(async () => {
+    const n = next.value
+    if (!n || n.kind !== 'visit') return ui.toast('No stop to grant', 'warning')
+    try {
+      if (!geo.fake) setFake(true)
+      teleport({ lat: n.lat, lng: n.lng })
+      await store.stamp(n, { dev: true })
+    } catch (err) {
+      ui.toast(err.message, 'warning')
+    }
+  })
 }
 
 async function resetLocal() {
@@ -139,7 +144,8 @@ async function resetLocal() {
     </section>
 
     <section class="zt-card p-3 mb-3">
-      <b>Clock</b> <span class="mono ms-2">{{ clock }} SGT</span> <span v-if="clockOffsetMin()" class="zt-pill pale ms-1">+{{ clockOffsetMin() }} min</span>
+      <b>Clock</b> <span class="mono ms-2">{{ clock }} SGT</span>
+      <span v-if="clockOffsetMin()" class="zt-pill pale ms-1">+{{ clockOffsetMin() }} min</span>
       <div class="d-flex flex-wrap gap-2 mt-2">
         <button class="btn btn-soft btn-sm" @click="skipMinutes(15)">Skip 15 min</button>
         <button class="btn btn-soft btn-sm" @click="skipMinutes(60)">Skip 1 h</button>
@@ -209,7 +215,7 @@ async function resetLocal() {
       <div class="d-flex flex-wrap gap-2">
         <button
           class="btn btn-pop btn-sm"
-          :disabled="!next || next.kind !== 'visit'"
+          :disabled="granting || !next || next.kind !== 'visit'"
           @click="grant"
         >
           Grant next stamp
