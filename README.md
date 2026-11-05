@@ -214,10 +214,9 @@ Then run `pnpm test:supabase`. Use `pnpm test:env` to see which test variables a
 --- 
 
 ## AI declaration:
-
-We used Claude to help create the 3D assets, stop designs, and otter design and costume, as this was outside the scope of our study. 3D buildings are pre-loaded using MapLibre API.
-The Dev Panel add-on and Demo walk plan feature were built with agentic coding in Claude. Both are demo-only and not core deliverables.
-We used AI to quickly understand how to route the MapLibre layout and feature API for the 3D map and manipulate it for different features
-Claude was used to mock up the initial landing page design. The current landing page used a Claude Skill to help design the page flow and layout.
-We used AI to diagnose the weather chip’s positioning on the 3D map and make its sizing responsive across mobile and laptop screens.
-We used AI to generate more test cases covering different functions and methods in the app, and to separate test folders for repo clarity.
+We used AI to:
+1. To help create the 3D assets, stop designs, and otter design and costume, as this was outside the scope of our study. 3D buildings are pre-loaded using MapLibre API.
+2. To add the dev panel and Demo walk plan feature. Both are demo-only and not core deliverables.
+3. To quickly understand how to route the MapLibre layout and feature API for the 3D map and manipulate it for different features
+4. To mock up the initial landing page design. The current landing page used a Claude Skill to help design the page flow and layout.
+5. To generate more test cases covering different functions and methods in the app, and to separate test folders for repo clarity.
