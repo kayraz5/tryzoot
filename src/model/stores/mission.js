@@ -143,6 +143,21 @@ export const useMissionStore = defineStore('mission', {
       return null
     },
 
+    /** Load the newest mission that has not been completed for the current account. */
+    async loadUnfinished() {
+      const db = await getDb()
+      const missions = await db.listMissions()
+      const unfinished = missions.find((mission) => mission && !mission.completed)
+      if (!unfinished) return null
+
+      // Use the payload returned by the account-scoped query. This avoids reusing
+      // a mission left in the Pinia store after a different account signed in.
+      this.mission = unfinished
+      this.status = 'ready'
+      try { localStorage.setItem(ACTIVE_KEY, unfinished.id) } catch {}
+      return unfinished
+    },
+
     here() {
       if (hasFix()) return { lat: geo.lat, lng: geo.lng }
       const lastStamped = [...this.visitLegs].reverse().find((l) => l.status === 'stamped')
