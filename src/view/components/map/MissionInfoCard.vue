@@ -2,28 +2,17 @@
 <script setup>
 import { computed } from 'vue'
 import { placeStampUrl } from '../../../model/services/stampArt.js'
-// Social quests: "With Mei until 15:40", Go solo (renders nothing when not in a quest).
 import QuestCoopChip from '../quests/QuestCoopChip.vue'
 import QuestChatButton from '../quests/QuestChatButton.vue' // "Chat with Mei" (only while in a social quest)
 import QuestGoSolo from '../quests/QuestGoSolo.vue'         // "Go solo" link (only after joining someone's quest)
 import TransitSteps from './transit/TransitSteps.vue'               // MRT/bus step-by-step for the current leg
 
-/**
- * Next-stop card ("center console") shown at the bottom of the map.
+/*
+ * Next-stop card ("center console") at the bottom of the map. Presentational only:
+ * MapView owns navigation and map state.
  *
- * Purely presentational: the map view computes mission/GPS values (it needs them
- * for drawing too) and passes them in as props. Actions are emitted as events, so
- * the map view remains the single owner of navigation and map state.
- *
- * Two things in the markup that are not obvious from reading it:
- *
- * The close button is the only way to dismiss the card. MapView hides the old
- * nav-bar toggle while the card is open, so without it there is no route back
- * to the floating flag button.
- *
- * `check.message` is suppressed for code 'far', because that message reads
- * "868 m away. Get within 80 m" and simply restates the distance already shown
- * above it. Every other code — GPS trouble, in range — still comes through.
+ * The close button is the only way to dismiss the card - MapView hides the nav-bar
+ * toggle while it is open, so without it there is no route back to the flag button.
  */
 const props = defineProps({
   mission: { type: Object, default: null },       // the active mission, or null if none
@@ -46,8 +35,6 @@ const props = defineProps({
 
 defineEmits(['plan', 'open-passport', 'stamp', 'change-map-style', 'need-help', 'close'])
 
-// The next place's pre-generated stamp art, matched by PNG filename. Null for the
-// return leg or a place without art — the generic stamp icon is the fallback.
 const stampArt = computed(() => placeStampUrl(props.next?.name))
 </script>
 
@@ -92,7 +79,7 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
           <span v-else class="ontime">on time</span>
         </div>
         <div v-if="guidance && !steps.length" class="stop-guide"><i class="bi" :class="guidance.icon"></i> {{ guidance.text }}</div>
-        <!-- "868 m away. Get within 80 m" repeats the distance above; GPS / in-range messages still show. -->
+<!-- 'far' reads "868 m away. Get within 80 m", restating the distance above. -->
         <div v-if="check?.code !== 'far'" class="stop-near">{{ check?.message }}</div>
       </div>
       <div class="col-4 d-flex justify-content-end">
@@ -106,7 +93,6 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
         </button>
       </div>
 
-      <!-- Train/bus legs: what to do now, then every step, full width under the stop. -->
       <div v-if="steps.length || busAlternative" class="col-12">
         <TransitSteps :steps="steps" :index="stepIndex" :bus-alternative="busAlternative" />
       </div>
@@ -124,16 +110,12 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
 </template>
 
 <style scoped>
-/* Text and button sizes use container queries (cqw = % of this card's rendered
-   width) rather than vw. On a 320–430px phone, a vw-based clamp stays pinned to its
-   floor, so the card looked identical on every device; sizing against the card
-   itself scales properly within its 300–600px range. */
+/* Sizes use container queries (cqw), not vw: on a 320-430px phone a vw clamp stays
+   pinned to its floor, so the card looked identical on every device. */
 .mission-card {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  /* Shared nav-dock offset: nav inset + height + breathing gap. Keeps the card
-     clearly separated from the nav instead of overlapping it. */
   bottom: var(--zt-nav-dock);
   max-width: 600px;
   width: 90%;
@@ -145,19 +127,14 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
   padding: clamp(12px, 4vw, 18px) clamp(14px, 4.6vw, 20px);
   container-type: inline-size;
 
-  /* The close button's footprint, published so anything that has to stay clear
-     of it reserves exactly the right room. Declared here but never *used* here:
-     cqw resolves against the using element's container, which for a descendant
-     is this card — an element cannot query itself. */
+/* Declared here but never used here: cqw resolves against the using element's
+   container, which for a descendant is this card - an element cannot query itself. */
   --close-size: clamp(34px, 8cqw, 42px);
   --close-inset: clamp(6px, 1.6cqw, 10px);
 }
 
-/* Scales with the card like everything else here. Pinned at 26px it was a
-   thumbnail on a 570px card, and under the 44px thumb target on a phone.
-   The disc is opaque rather than `none` because the stamp dial's top-right arc
-   runs under this corner: a bare glyph sat on the dashed ring and vanished. It
-   is the card's own black, so it is invisible wherever nothing is behind it. */
+/* Opaque rather than `none`: the stamp dial's top-right arc runs under this corner,
+   and a bare glyph sat on the dashed ring and vanished. */
 .card-close {
   position: absolute;
   top: var(--close-inset);
@@ -180,7 +157,6 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
 .card-close:hover .bi,
 .card-close:active .bi { opacity: 1; }
 
-/* Keeps the quest chip clear of the close button now that it scales. */
 .card-chip { margin-right: calc(var(--close-size) + var(--close-inset)); }
 
 .stop-meta {
@@ -260,7 +236,6 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
   font-size: clamp(16px, 4.8cqw, 20px);
 }
 
-/* The location's own stamp art replaces the generic icon inside the button. */
 .stamp-circle.has-art,
 .stamp-btn.ready .stamp-circle.has-art { background: transparent; }
 .stamp-circle .stamp-art { width: 100%; height: 100%; object-fit: contain; }
@@ -273,7 +248,6 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
   letter-spacing: 0.05em;
 }
 
-/* Small underlined text links spread to the corners (Go solo · Map style · Need help?). */
 .card-links {
   display: flex;
   justify-content: space-between;
@@ -294,10 +268,7 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
 .card-link--map { color: var(--zt-yellow-pale); opacity: 0.7; }
 .card-link--help { color: #ff6b6b; }
 
-/* Phones: a smaller, denser card so it covers less of the map.
-   Type steps through three levels only — title 0.95, body 0.72, supporting 0.66.
-   The card previously ran six sizes between 0.6 and 1.05rem, which is what made
-   it read as cluttered: no two rows agreed on how important they were. */
+/* Phones: three type levels only - title 0.95, body 0.72, supporting 0.66. */
 @media (max-width: 575.98px) {
   .mission-card { padding: 9px 11px; }
   .stop-title { font-size: 0.95rem; margin: 0; line-height: 1.15; }
@@ -305,8 +276,7 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
   .stop-dist, .stop-guide { font-size: 0.72rem; }
   .stop-guide, .stop-near { margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .stop-near { font-size: 0.66rem; }
-  /* The stamp is the card's one call to action, so it keeps its size while
-     everything around it gives way. */
+/* The stamp is the card's one call to action, so it keeps its size. */
   .stamp-btn { width: 64px; height: 64px; gap: 2px; }
   .stamp-circle { width: 28px; height: 28px; font-size: 15px; }
   .stamp-label { font-size: 0.58rem; }

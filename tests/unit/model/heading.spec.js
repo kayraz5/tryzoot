@@ -5,15 +5,13 @@ useCleanSlate()
 
 const loadGeo = () => import('../../../src/model/services/geo.js')
 
-/** Pose the browser as a device held at `angle` degrees of screen rotation. */
 function screenAt(angle) {
   vi.stubGlobal('screen', { orientation: { angle } })
 }
 
 beforeEach(() => {
   vi.resetModules()
-  // jsdom has no DeviceOrientationEvent; the listener only needs the constructor
-  // to exist, and no requestPermission (that is the Android / desktop path).
+// jsdom has no DeviceOrientationEvent; the listener only needs the constructor.
   vi.stubGlobal('DeviceOrientationEvent', function DeviceOrientationEvent() {})
 })
 
@@ -22,11 +20,8 @@ afterEach(async () => {
   stopHeading()
 })
 
-/**
- * Fire an orientation reading and return the heading geo settled on.
- * `deviceorientationabsolute` is north-referenced by definition, so it is trusted
- * without an `absolute` flag; plain `deviceorientation` needs the flag.
- */
+// `deviceorientationabsolute` is north-referenced by definition, so it is trusted
+// without an `absolute` flag; plain `deviceorientation` needs the flag.
 async function headingFrom(event, type = 'deviceorientationabsolute') {
   const { startHeading, geo } = await loadGeo()
   await startHeading()
@@ -46,8 +41,7 @@ describe('compass heading', () => {
   })
 
   it('corrects for a landscape screen, so the cone tracks the phone', async () => {
-    // Device top points north, but the page is rotated 90°: the top of the screen
-    // — where the user is actually looking — points east.
+// Device top points north, page rotated 90: the top of the SCREEN points east.
     screenAt(90)
     expect(await headingFrom({ webkitCompassHeading: 0 })).toBe(90)
   })

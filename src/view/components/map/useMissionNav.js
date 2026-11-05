@@ -6,21 +6,12 @@ import { tick } from '../../../model/services/clock.js'
 import { checkInStatus } from '../../../model/services/checkin.js'
 import { distanceM, travel } from '../../../model/services/travel.js'
 
-/**
- * Mission navigation state shared by the map view and the next-stop card.
- *
- * Everything here is *derived*: it reads the mission store, the GPS service and the
- * clock, and never touches the MapLibre instance. Keeping it separate means the map
- * view can stay focused on drawing and gestures, and the same values can be reused
- * by another screen later.
- *
- * `tick` is a reactive clock; referencing it inside a computed makes that value
- * recompute as time passes even when nothing else changes.
- */
+// All derived: reads the mission store, GPS and clock, never the MapLibre instance.
+// `tick` is a reactive clock - referencing it inside a computed makes that value
+// recompute as time passes even when nothing else changes.
 export function useMissionNav() {
   const store = useMissionStore()
 
-  /** "Back at the airport/hotel" counts within this radius. */
   const HOME_RADIUS_M = 300
   const modeIcon = { walk: 'bi-person-walking', mrt: 'bi-train-front-fill', taxi: 'bi-taxi-front-fill' }
 
@@ -41,10 +32,6 @@ export function useMissionNav() {
     return `${visits.indexOf(next.value) + 1}/${visits.length}`
   })
 
-  /**
-   * Can the traveller stamp right now?
-   * Visits use the real geofence rules; the trip home uses the wider home radius.
-   */
   const check = computed(() => {
     tick.value // recompute as the clock advances
     const target = next.value
@@ -69,14 +56,12 @@ export function useMissionNav() {
     })
   })
 
-  /** Minutes you would arrive after the planned time if you set off now (negative = early). */
   const lateBy = computed(() => {
     if (!next.value || !liveTravel.value) return null
     const eta = tick.value + liveTravel.value.minutes * 60000
     return Math.round((eta - Date.parse(next.value.arrive_iso)) / 60000)
   })
 
-  /** Next instruction: a walking/MRT/taxi hint (no turn-by-turn steps are available). */
   const guidance = computed(() => {
     const travelInfo = liveTravel.value
     if (!travelInfo || !here.value) return null
@@ -99,13 +84,10 @@ export function useMissionNav() {
     return mission.value && next.value ? store.leaveBy()?.ms ?? null : null
   })
 
-  // Two named thresholds rather than one ternary chain, so the badge colours are
-  // explicit wherever they are used.
   const minutesToDeadline = computed(() => (store.mustReturnMs - tick.value) / 60000)
   const isTimeCritical = computed(() => minutesToDeadline.value < 45) // under 45 min → red
   const isTimeWarning = computed(() => minutesToDeadline.value < 90 && !isTimeCritical.value) // under 90 → amber
 
-  /** Format metres as "120 m" or "1.2 km". */
   function formatDistance(meters) {
     if (meters == null) return ''
     return meters >= 1000 ? `${(meters / 1000).toFixed(1)} km` : `${Math.round(meters / 10) * 10} m`

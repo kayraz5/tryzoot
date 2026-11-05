@@ -1,19 +1,13 @@
 // EDITOR: MATTHEW
-// pnpm sync:mrt-lines -> refreshes src/model/data/mrtLines.sg.json from cheeaun/sgraildata's
-// sg-rail.geojson (community-maintained; built from LTA DataMall + OpenStreetMap). This is a
-// one-off/occasional run, not a live dependency of the app — see src/model/services/transit/mrt.js
-// for how the written file gets used to draw real track geometry for MRT legs.
-//
-// Overpass (the usual way to pull OSM transit-route relations directly) was unreachable when
-// this was written, so this goes through sgraildata's already-built-and-reviewed extract instead.
+// pnpm sync:mrt-lines -> rewrites src/model/data/mrtLines.sg.json from cheeaun/sgraildata.
+// Occasional manual run, not a live dependency; transit/mrt.js consumes the output.
 import { writeFileSync } from 'node:fs'
 
 const SOURCE_URL = 'https://raw.githubusercontent.com/cheeaun/sgraildata/master/data/v1/sg-rail.geojson'
 const OUT_FILE = new URL('../src/model/data/mrtLines.sg.json', import.meta.url)
 
-// EDGES in travel.js labels some rides 'CG' (the Changi Airport branch) and 'CE' (the Circle
-// Line extension to Marina Bay/Bayfront) — both are physically part of the East West / Circle
-// Line tracks in this dataset, not separate named lines, so they alias to the same geometry.
+// 'CG' (Changi branch) and 'CE' (Circle Line extension) are physically part of the
+// East West / Circle Line tracks in this dataset, not separate lines.
 const LINE_ALIASES = {
   'East West Line': ['EW', 'CG'],
   'North South Line': ['NS'],
@@ -22,9 +16,8 @@ const LINE_ALIASES = {
   'Downtown Line': ['DT'],
   'Thomson-East Coast Line': ['TE']
 }
-// Sentosa Express ('SE' in travel.js) isn't part of the public MRT/LRT network this dataset
-// covers (it's run separately, by Sentosa Leisure Group) — no real-geometry source found for
-// it yet, so SE legs fall outside this file on purpose. transit/mrt.js handles that gap.
+// Sentosa Express ('SE') is outside this dataset - run by Sentosa Leisure Group, no
+// geometry source found. transit/mrt.js handles that gap.
 const KNOWN_GAP_CODES = ['SE']
 
 const res = await fetch(SOURCE_URL)
