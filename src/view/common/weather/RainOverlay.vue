@@ -2,37 +2,47 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUiStore } from '../../../model/stores/ui.js'
+import { rainLevel } from '../../../model/services/weather.js'
 
-// Draws falling raindrops over the whole screen when it is raining.
-const DROP_COUNT = 100; // how many raindrops to draw
+const DEV_RAIN_MM = 10;
+const MAX_DROPS = 220;
 
-const ui = useUiStore();
-
-// The pages where rain should appear (route names from the router file).
+const LOOK = {
+	light: { drops: 35, speed: 1.4, opacityScale: 0.7 },
+	moderate: { drops: 100, speed: 1, opacityScale: 1 },
+	heavy: { drops: 220, speed: 0.6, opacityScale: 1.2 }
+}
 const RAIN_PAGES = ['map']
 
+const ui = useUiStore();
 const route = useRoute();
 const onRainPage = computed(() => RAIN_PAGES.includes(route.name));
 
-// Rain only falls when it is heavy rain right now (4.0 mm/h or more). The hourly chance of rain is just a forecast, so it is not used here.
-const HEAVY_RAIN_MM = 4;
-const rainingNow = computed(() => ui.forceRain || (ui.weather?.current?.mm ?? 0) >= HEAVY_RAIN_MM);
+const level = computed(() => rainLevel(ui.forceRain ? DEV_RAIN_MM : (ui.weather?.current?.mm ?? 0)));
+const isRaining = computed(() => onRainPage.value && level.value !== 'dry');
 
-const isRaining = computed(() => onRainPage.value && rainingNow.value);
-
-// Make each raindrop slightly different so the rain looks natural. This runs once, not on every update.
-const drops = Array.from({ length: DROP_COUNT }, () => {
+const allDrops = Array.from({ length: MAX_DROPS }, () => {
 	return {
-		left: Math.random() * 100, // position across the screen (%)
-		delay: Math.random() * 2, // start time offset (seconds)
-		duration: 0.6 + Math.random() * 0.6, // fall speed (seconds)
+		left: Math.random() * 100,
+		delay: Math.random() * 2,
+		duration: 0.6 + Math.random() * 0.6,
 		opacity: 0.3 + Math.random() * 0.4
 	};
+})
+
+const drops = computed(() => {
+	const look = LOOK[level.value] ?? LOOK.moderate
+	return allDrops.slice(0, look.drops).map((d) => ({
+		left: d.left,
+		delay: d.delay,
+		duration: d.duration * look.speed,
+		opacity: Math.min(d.opacity * look.opacityScale, 1)
+	}))
 })
 </script>
 
 <template>
-	<div v-if="isRaining" class="rain" aria-hidden="true">
+	<div v-if="isRaining" class="rain" :class="`rain-${level}`" aria-hidden="true">
 		<span v-for="(drop, i) in drops" :key="i" class="drop" :style="{
 			left: drop.left + '%',
 			animationDelay: drop.delay + 's',
@@ -43,16 +53,14 @@ const drops = Array.from({ length: DROP_COUNT }, () => {
 </template>
 
 <style scoped>
-/* A layer covering the screen that does not block clicks. */
 .rain {
 	position: fixed;
 	inset: 0;
-	pointer-events: none; /* clicks go through to the page underneath */
+	pointer-events: none;
 	overflow: hidden;
 	z-index: 50;
 }
 
-/* One raindrop: a thin vertical line. */
 .drop {
 	position: absolute;
 	top: -20px;
@@ -64,14 +72,15 @@ const drops = Array.from({ length: DROP_COUNT }, () => {
 	animation-iteration-count: infinite;
 }
 
-/* Move from above the screen to below it. */
+.rain-light .drop { width: 2px; height: 12px; }
+.rain-heavy .drop { width: 5px; height: 32px; }
+
 @keyframes fall {
 	to {
 		transform: translateY(110vh);
 	}
 }
 
-/* Respect users who ask their device to reduce motion. */
 @media (prefers-reduced-motion: reduce) {
 	.rain {
 		display: none;
