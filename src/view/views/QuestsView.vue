@@ -7,6 +7,7 @@ import { useMissionStore } from '../../model/stores/mission.js'
 import { useUserStore } from '../../model/stores/user.js'
 import { stopsFit, airportBy } from '../../model/services/social.js'
 import QuestCard from '../components/quests/QuestCard.vue'
+import OpenToCompanySheet from '../components/quests/OpenToCompanySheet.vue'
 
 /** Open Quests feed: windows other travellers have opened, with a fit badge for my layover. */
 const party = usePartyStore()
@@ -14,6 +15,7 @@ const mission = useMissionStore()
 const user = useUserStore()
 const onlyFits = ref(false)
 const soon = ref(false)
+const companyOpen = ref(false) // the same "Open to company" sheet the mission screen uses
 
 onMounted(async () => {
   await mission.loadActive()
@@ -39,8 +41,24 @@ const visible = computed(() => rows.value
 <template>
   <main class="zt-page">
     <header class="mb-3">
-      <h1 class="mb-0" style="font-size: 2.4rem">Open quests</h1>
-      <p class="text-muted small mb-0">Join someone for a stop or two. Your own return-by always comes first.</p>
+      <div class="d-flex align-items-start justify-content-between gap-2">
+        <h1 class="mb-0" style="font-size: 2.4rem">Open quests</h1>
+        <!-- Opens the very same sheet as the mission screen's "Open to company",
+             so a quest can be started from here without the detour through
+             /mission. Hidden without a live layover (the sheet needs a mission to
+             read stops from) and while I have joined someone else's quest — one
+             quest at a time, the rule the host flow enforces anyway. -->
+        <button
+          v-if="hasPlan && !joinedId"
+          type="button"
+          class="btn btn-pop btn-sm flex-shrink-0 new-quest"
+          aria-label="Open my stops as a new quest"
+          @click="companyOpen = true"
+        >
+          <i class="bi bi-plus-lg" aria-hidden="true"></i><span class="d-none d-sm-inline"> New quest</span>
+        </button>
+      </div>
+      <p class="text-muted mb-0 subtitle">Join a stop or two — your return-by comes first.</p>
     </header>
 
     <div v-if="!hasPlan && !party.openStatus.guest" class="alert alert-warning small d-flex gap-2 align-items-center">
@@ -95,10 +113,32 @@ const visible = computed(() => rows.value
         <i class="bi bi-arrow-clockwise"></i> {{ party.openStatus.loading ? 'Refreshing…' : 'Refresh' }}
       </button>
     </div>
+
+    <!-- Only mounted with a real mission: the sheet treats it as required and
+         reads mission.id straight off it. Cheap to keep mounted — its loader
+         bails out while `open` is false. -->
+    <OpenToCompanySheet
+      v-if="hasPlan"
+      :mission="mission.mission"
+      :open="companyOpen"
+      @close="companyOpen = false"
+    />
   </main>
 </template>
 
 <style scoped>
+/* Keeps the button on the heading's line on narrow screens, where it collapses
+   to just the + icon. */
+.new-quest { white-space: nowrap; align-self: center; }
+
+/* Capped in ch rather than px so it breaks on a sensible word count at any font
+   size, instead of running the full width of the page under the heading. */
+.subtitle {
+  font-size: 0.78rem;
+  line-height: 1.35;
+  max-width: 34ch;
+}
+
 .filters { display: flex; flex-wrap: wrap; gap: 8px; }
 .filters .zt-chip { white-space: nowrap; }
 .skeleton { height: 150px; background: linear-gradient(100deg, var(--zt-card) 30%, var(--zt-yellow-pale) 50%, var(--zt-card) 70%); background-size: 300% 100%; animation: shimmer 1.2s linear infinite; }
