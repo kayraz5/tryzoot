@@ -84,6 +84,7 @@ import { useCharacterStore } from '../../model/stores/character.js'
 import {
   geo,
   hasFix,
+  hasHeading,
   startGps,
   setFake,
   teleport,
@@ -91,7 +92,7 @@ import {
   stopHeading
 } from '../../model/services/geo.js'
 import { distanceM } from '../../model/services/travel.js'
-import { addQuestLayers, createPlayerMarker, setFence, setQuestColors, syncStopMarkers } from '../components/map/questLayers.js'
+import { addQuestLayers, createPlayerMarker, setFence, setPlayerFacing, setQuestColors, syncStopMarkers } from '../components/map/questLayers.js'
 import { applyMapLabelStyle } from '../components/map/mapLabels.js'
 import { applyBuildingLayers, BUILDING_LAYERS } from '../components/map/mapBuildings.js'
 import { loadCatalog } from '../../model/services/catalog.js'
@@ -142,6 +143,9 @@ const OTTER_VIEW = {
 
 // Time constant for turning the character/camera. ~95% of a turn settles in ~3×.
 const HEADING_SMOOTH_MS = 160
+// Flat view's compass lock turns the whole map, so it eases slower than the
+// character does — matching HEADING_SMOOTH_MS here reads as the world twitching.
+const FLAT_BEARING_SMOOTH_MS = 420
 
 /** Pick the right route resolver for a leg's travel mode. */
 const ROUTE_BY_MODE = { walk: getWalkRoute, taxi: getDriveRoute, mrt: getTransitRoute }
@@ -415,7 +419,9 @@ function onMapLoad() {
  * jumpTo calls carry no `originalEvent`, so they never fight the camera.
  */
 function onMapMoveStart(event) {
-  if (event.originalEvent && !flatMode.value) following.value = false
+  // A real drag releases the camera. In 3D that stops the chase; in flat view it
+  // also drops the compass lock, so the map stops rotating under the user's hand.
+  if (event.originalEvent) following.value = false
 }
 
 /** When a real gesture ends, settle back onto the traveller (unless free-roaming). */
@@ -1063,7 +1069,35 @@ function updateFacing(deltaMs) {
   // compass or from a change of walking direction.
   traveller3D?.setBearing(displayHeading)
 
+  // The flat dot gets the view cone instead, plus the compass lock when followed.
+  if (!showTraveller3D.value) updateFlatFacing(deltaMs)
+
   if (otterView.value && following.value && here.value) updateOtterCamera(deltaMs)
+}
+
+/**
+ * Flat-view facing: aim the dot's view cone, and when the camera is following,
+ * turn the map so the way you face is up the screen (Google Maps' compass lock).
+ *
+ * With the lock on, the cone ends up pointing straight up — which is the point:
+ * the cone shows where you look, and the map agrees with it.
+ */
+function updateFlatFacing(deltaMs) {
+  if (!player || !map || displayHeading == null) return
+
+  // Only claim to know the facing when something real backs it: the compass, a
+  // Demo-Walk direction, or recent movement. Otherwise facingHeading() is falling
+  // back to the next stop or the camera, which is a guess, not a direction.
+  const known = hasHeading() || geo.fake || travellerHeading != null
+  setPlayerFacing(player, displayHeading - map.getBearing(), known)
+
+  if (!flatMode.value || !following.value || !known) return
+
+  const current = map.getBearing()
+  const blend = 1 - Math.exp(-deltaMs / FLAT_BEARING_SMOOTH_MS)
+  const next = lerpAngle(current, displayHeading, blend)
+  // Below a fifth of a degree the turn is invisible but still costs a repaint.
+  if (Math.abs(((next - current + 540) % 360) - 180) > 0.2) map.setBearing(next)
 }
 
 /**
@@ -1494,7 +1528,15 @@ function writeMissionCardFlag(open) {
         <i class="bi bi-arrows-fullscreen"></i>
       </div>
 
-      <div id="RealGps" class="map-btn" @click="centerOnMe()">
+      <!-- Recentre, and in flat view engage the compass lock (the map turns to face
+           the way you do). Lights up while that lock is holding; a drag releases it. -->
+      <div
+        id="RealGps"
+        class="map-btn"
+        :class="{ active: flatMode && following }"
+        :title="flatMode ? 'Centre on me, and face the way I am facing' : 'Centre on me'"
+        @click="centerOnMe()"
+      >
         <i class="bi bi-crosshair"></i>
       </div>
 
@@ -1983,6 +2025,43 @@ function writeMissionCardFlag(open) {
 	border-radius: 50%;
 	background: rgba(255, 204, 0, 0.45);
 	animation: zt-player-pulse 1.8s ease-out infinite;
+}
+
+/* Field-of-view wedge, the way Google Maps shows which way you hold the phone.
+   A 70° slice of a conic gradient, masked by a radial fade so it dissolves at the
+   far edge instead of ending on a hard arc. `from -35deg` centres the slice on
+   straight up, so setPlayerFacing can rotate it by the heading directly.
+   Rotation is set inline from the frame loop; everything else lives here. */
+.zt-player-marker .cone {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: clamp(88px, 28vw, 132px);
+	height: clamp(88px, 28vw, 132px);
+	transform: translate(-50%, -50%) rotate(0deg);
+	border-radius: 50%;
+	/* Deep amber rather than the dot's bright yellow: it has to stay legible on the
+	   pale "Simple" basemap as well as the dark one, so it reads darker than the
+	   dot it sits under instead of washing into it. */
+	background: conic-gradient(
+		from -35deg,
+		rgba(217, 119, 6, 0.88) 0deg,
+		rgba(234, 140, 10, 0.66) 42deg,
+		rgba(245, 158, 11, 0.3) 62deg,
+		transparent 70deg
+	);
+	/* Hold full strength well past the dot before fading, so the beam is solid
+	   where it matters and only dissolves at the far edge. */
+	-webkit-mask-image: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 1) 32%, rgba(0, 0, 0, 0.8) 58%, transparent 84%);
+	mask-image: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 1) 32%, rgba(0, 0, 0, 0.8) 58%, transparent 84%);
+	opacity: 0; /* no heading yet; setPlayerFacing fades it in */
+	pointer-events: none;
+	transition: opacity 0.25s ease;
+}
+
+/* The cone is decoration, and a 60 fps rotation is exactly what this asks to stop. */
+@media (prefers-reduced-motion: reduce) {
+	.zt-player-marker .cone { transition: none; }
 }
 
 .psi-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid #111; margin-left: 2px; }
