@@ -16,7 +16,6 @@ export const MIN_LAYOVER_H = 5
 /** Roughly: Arrival immigration + bags */
 const EXIT_MIN = 30
 
-
 /**
  * SCENARIO: Whether the traveller is already landside, so the planner can skip the exit buffer.
  * They can say so ("I'm landside already"); otherwise it's worked out: Jewel is landside, and
@@ -24,161 +23,177 @@ const EXIT_MIN = 30
  * (GPS can't tell airside from landside, so location alone never decides it.)
  */
 export function isCleared(originId, arrivalMs, startMs, landside = false) {
-	return landside || originId === 'jewel' || startMs - arrivalMs >= EXIT_MIN * 60000
+  return landside || originId === 'jewel' || startMs - arrivalMs >= EXIT_MIN * 60000
 }
 
 /**
  * SCENARIO MESSAGES: Why an arrival/departure pair can't be planned
  */
 export function layoverError(arrivalMs, departureMs, nowMs = now()) {
-	if (!Number.isFinite(arrivalMs) || !Number.isFinite(departureMs)) 
-		return 'Enter both times.'
-	if (departureMs <= nowMs) 
-		return 'That flight has already left.'
-	if (departureMs <= arrivalMs) 
-		return 'Your next flight has to leave after you land.'
-	if (departureMs - arrivalMs < MIN_LAYOVER_H * 3600e3) 
-		return `Layovers need at least ${MIN_LAYOVER_H} h to leave the airport safely.`
-	if (departureMs - arrivalMs > MAX_LAYOVER_H * 3600e3) 
-		return `Layovers are up to ${MAX_LAYOVER_H} h. Longer than that is a stopover.`
-	if (arrivalMs - nowMs > MAX_AHEAD_DAYS * 86400e3) 
-		return 'You can plan up to a year ahead.'
-	return ''
+  if (!Number.isFinite(arrivalMs) || !Number.isFinite(departureMs)) return 'Enter both times.'
+  if (departureMs <= nowMs) return 'That flight has already left.'
+  if (departureMs <= arrivalMs) return 'Your next flight has to leave after you land.'
+  if (departureMs - arrivalMs < MIN_LAYOVER_H * 3600e3)
+    return `Layovers need at least ${MIN_LAYOVER_H} h to leave the airport safely.`
+  if (departureMs - arrivalMs > MAX_LAYOVER_H * 3600e3)
+    return `Layovers are up to ${MAX_LAYOVER_H} h. Longer than that is a stopover.`
+  if (arrivalMs - nowMs > MAX_AHEAD_DAYS * 86400e3) return 'You can plan up to a year ahead.'
+  return ''
 }
 
 //  PINIA STATE MANAGEMENT
 // Planner form draft + saved trip rows (Kayra: form + trips table). */
 
 export const useTripStore = defineStore('trip', {
-	state: () => ({
-		draft: defaultDraft(),
-		current: null
-	}),
-	getters: {
-		/** Where the trip starts: the arrival terminal, Jewel, or wherever "My location" snapped to. */
-		origin: (s) => ORIGINS.find((o) => o.id === s.draft.originId) || ORIGINS[0],
-		/** The terminal they land at, and the one their next flight leaves from (the trip ends there). */
-		arrivalTerminal: (s) => ORIGINS.find((o) => o.id === s.draft.arrivalTerminal) || ORIGINS[0],
-		returnTo: (s) => ORIGINS.find((o) => o.id === s.draft.departureTerminal) || ORIGINS[0],
-		arrivalMs: (s) => fromSgLocalInput(s.draft.arrivalLocal),
-		/** The departure (gate) time: the planner's must-return time. */
-		mustReturnMs: (s) => fromSgLocalInput(s.draft.mustReturnLocal),
-		/**
-		 * When the trip starts: at landing, or now if they've already landed. The "Heading out"
-		 * override picks a later time instead
-		 */
-		startMs(s) {
-			tick.value // re-evaluate as the clock moves
-			if (!s.draft.startAtLanding) return fromSgLocalInput(s.draft.startLocal)
-			return Math.max(this.arrivalMs, now())
-		},
-		layoverMin() {
-			return Math.round((this.mustReturnMs - this.arrivalMs) / 60000)
-		},
-		landed() {
-			return (tick.value, this.arrivalMs <= now())
-		},
-		/** Already through immigration (see isCleared). */
-		cleared(s) {
-			return isCleared(s.draft.originId, this.arrivalMs, this.startMs, s.draft.landside)
-		}
-	},
-	actions: {
-		/**
-		 * Arrival + departure (times and terminals) from the layover form.
-		 * Returns '' or the reason it was refused.
-		 */
-		setLayover(arrivalLocal, departureLocal, {
-			arrivalTerminal = this.draft.arrivalTerminal,
-			departureTerminal = this.draft.departureTerminal,
-			originId = arrivalTerminal, // where they head out from: the arrival terminal, or Jewel via "My location"
-			landside = this.draft.landside
-		} = {}) {
-			const error = layoverError(fromSgLocalInput(arrivalLocal), fromSgLocalInput(departureLocal))
-			if (error) return error
-			this.draft.originId = originId
-			this.draft.landside = landside
-			this.draft.arrivalTerminal = arrivalTerminal
-			this.draft.departureTerminal = departureTerminal
-			this.draft.arrivalLocal = arrivalLocal
-			this.draft.mustReturnLocal = departureLocal
-			this.draft.layoverSet = true
-			// An override outside the new layover no longer makes sense: go back to "at landing".
-			if (!this.draft.startAtLanding && (this.startMs < this.arrivalMs || this.startMs >= this.mustReturnMs)) {
-				this.draft.startAtLanding = true
-			}
-			return ''
-		},
-		/** "Heading out": at landing (default) or a later time inside the layover. */
-		setStart(atLanding, startLocal = this.draft.startLocal) {
-			this.draft.startAtLanding = atLanding
-			if (atLanding) return
-			const ms = fromSgLocalInput(startLocal)
-			const earliest = Math.max(this.arrivalMs, now())
-			this.draft.startLocal = toSgLocalInput(Math.min(this.mustReturnMs - 60 * 60000, Math.max(earliest, ms || earliest + 3600e3)))
-		},
-		/** Interests shown as pre-picked until the traveller changes them. */
-		setInterests(ids, { touched = true } = {}) {
-			this.draft.interests = [...new Set(ids)]
-			if (touched) this.draft.interestsTouched = true
-		},
-		/** "Plan a new layover": forget the last layover, keep their preferences (interests, pace, walking…). */
-		startNewLayover() {
-			const fresh = defaultDraft()
-			for (const key of ['originId', 'arrivalTerminal', 'departureTerminal', 'landside', 'arrivalLocal', 'mustReturnLocal', 'layoverSet', 'startAtLanding', 'startLocal', 'entryDismissed']) {
-				this.draft[key] = fresh[key]
-			}
-			this.current = null
-		},
-		async saveTrip() {
-			const user = useUserStore()
-			const db = await getDb()
-			const d = this.draft
-			this.current = await db.saveTrip({
-				user_id: user.userId,
-				origin: { ...this.origin },
-				returnTo: { ...this.returnTo },
-				start_at: new Date(this.startMs).toISOString(),
-				must_return_at: new Date(this.mustReturnMs).toISOString(),
-				style: user.profile?.style || 'budget',
-				interests: [...d.interests],
-				energy: d.energy,
-				indoorPref: d.indoorPref,
-				maxWalk: d.maxWalk,
-				transport: d.transport,
-				partySize: d.partySize,
-				foodNeeds: d.foodNeeds,
-				cleared: this.cleared
-			})
-			return this.current
-		}
-	}
+  state: () => ({
+    draft: defaultDraft(),
+    current: null
+  }),
+  getters: {
+    /** Where the trip starts: the arrival terminal, Jewel, or wherever "My location" snapped to. */
+    origin: (s) => ORIGINS.find((o) => o.id === s.draft.originId) || ORIGINS[0],
+    /** The terminal they land at, and the one their next flight leaves from (the trip ends there). */
+    arrivalTerminal: (s) => ORIGINS.find((o) => o.id === s.draft.arrivalTerminal) || ORIGINS[0],
+    returnTo: (s) => ORIGINS.find((o) => o.id === s.draft.departureTerminal) || ORIGINS[0],
+    arrivalMs: (s) => fromSgLocalInput(s.draft.arrivalLocal),
+    /** The departure (gate) time: the planner's must-return time. */
+    mustReturnMs: (s) => fromSgLocalInput(s.draft.mustReturnLocal),
+    /**
+     * When the trip starts: at landing, or now if they've already landed. The "Heading out"
+     * override picks a later time instead
+     */
+    startMs(s) {
+      tick.value // re-evaluate as the clock moves
+      if (!s.draft.startAtLanding) return fromSgLocalInput(s.draft.startLocal)
+      return Math.max(this.arrivalMs, now())
+    },
+    layoverMin() {
+      return Math.round((this.mustReturnMs - this.arrivalMs) / 60000)
+    },
+    landed() {
+      return (tick.value, this.arrivalMs <= now())
+    },
+    /** Already through immigration (see isCleared). */
+    cleared(s) {
+      return isCleared(s.draft.originId, this.arrivalMs, this.startMs, s.draft.landside)
+    }
+  },
+  actions: {
+    /**
+     * Arrival + departure (times and terminals) from the layover form.
+     * Returns '' or the reason it was refused.
+     */
+    setLayover(
+      arrivalLocal,
+      departureLocal,
+      {
+        arrivalTerminal = this.draft.arrivalTerminal,
+        departureTerminal = this.draft.departureTerminal,
+        originId = arrivalTerminal, // where they head out from: the arrival terminal, or Jewel via "My location"
+        landside = this.draft.landside
+      } = {}
+    ) {
+      const error = layoverError(fromSgLocalInput(arrivalLocal), fromSgLocalInput(departureLocal))
+      if (error) return error
+      this.draft.originId = originId
+      this.draft.landside = landside
+      this.draft.arrivalTerminal = arrivalTerminal
+      this.draft.departureTerminal = departureTerminal
+      this.draft.arrivalLocal = arrivalLocal
+      this.draft.mustReturnLocal = departureLocal
+      this.draft.layoverSet = true
+      // An override outside the new layover no longer makes sense: go back to "at landing".
+      if (
+        !this.draft.startAtLanding &&
+        (this.startMs < this.arrivalMs || this.startMs >= this.mustReturnMs)
+      ) {
+        this.draft.startAtLanding = true
+      }
+      return ''
+    },
+    /** "Heading out": at landing (default) or a later time inside the layover. */
+    setStart(atLanding, startLocal = this.draft.startLocal) {
+      this.draft.startAtLanding = atLanding
+      if (atLanding) return
+      const ms = fromSgLocalInput(startLocal)
+      const earliest = Math.max(this.arrivalMs, now())
+      this.draft.startLocal = toSgLocalInput(
+        Math.min(this.mustReturnMs - 60 * 60000, Math.max(earliest, ms || earliest + 3600e3))
+      )
+    },
+    /** Interests shown as pre-picked until the traveller changes them. */
+    setInterests(ids, { touched = true } = {}) {
+      this.draft.interests = [...new Set(ids)]
+      if (touched) this.draft.interestsTouched = true
+    },
+    /** "Plan a new layover": forget the last layover, keep their preferences (interests, pace, walking…). */
+    startNewLayover() {
+      const fresh = defaultDraft()
+      for (const key of [
+        'originId',
+        'arrivalTerminal',
+        'departureTerminal',
+        'landside',
+        'arrivalLocal',
+        'mustReturnLocal',
+        'layoverSet',
+        'startAtLanding',
+        'startLocal',
+        'entryDismissed'
+      ]) {
+        this.draft[key] = fresh[key]
+      }
+      this.current = null
+    },
+    async saveTrip() {
+      const user = useUserStore()
+      const db = await getDb()
+      const d = this.draft
+      this.current = await db.saveTrip({
+        user_id: user.userId,
+        origin: { ...this.origin },
+        returnTo: { ...this.returnTo },
+        start_at: new Date(this.startMs).toISOString(),
+        must_return_at: new Date(this.mustReturnMs).toISOString(),
+        style: user.profile?.style || 'budget',
+        interests: [...d.interests],
+        energy: d.energy,
+        indoorPref: d.indoorPref,
+        maxWalk: d.maxWalk,
+        transport: d.transport,
+        partySize: d.partySize,
+        foodNeeds: d.foodNeeds,
+        cleared: this.cleared
+      })
+      return this.current
+    }
+  }
 })
 
 function roundTo5(ms) {
-	return Math.ceil(ms / 300000) * 300000
+  return Math.ceil(ms / 300000) * 300000
 }
 
 function defaultDraft() {
-	const landing = roundTo5(now() + 3600e3)
-	return {
-		originId: 'changi-t3', // where the trip starts (see the origin getter)
-		arrivalTerminal: 'changi-t3',
-		departureTerminal: 'changi-t3',
-		landside: false, // "I'm landside already": past immigration, so no exit buffer
-		arrivalLocal: toSgLocalInput(landing),
-		mustReturnLocal: toSgLocalInput(landing + 8 * 3600e3), // departure
-		layoverSet: false, // the plan page asks for arrival + departure first
-		startAtLanding: true,
-		startLocal: toSgLocalInput(landing + 3600e3),
-		interests: ['hawker', 'gardens', 'photo'],
-		interestsTouched: false,
-		energy: 'med',
-		indoorPref: 'any',
-		maxWalk: 15,
-		transport: 'transit', // transit (MRT & bus) | car (taxi / Grab)
-		partySize: 1,
-		foodNeeds: 'none', // none | halal | vegetarian | vegan
-		entryDismissed: false // entry-check banner closed for this plan
-	}
+  const landing = roundTo5(now() + 3600e3)
+  return {
+    originId: 'changi-t3', // where the trip starts (see the origin getter)
+    arrivalTerminal: 'changi-t3',
+    departureTerminal: 'changi-t3',
+    landside: false, // "I'm landside already": past immigration, so no exit buffer
+    arrivalLocal: toSgLocalInput(landing),
+    mustReturnLocal: toSgLocalInput(landing + 8 * 3600e3), // departure
+    layoverSet: false, // the plan page asks for arrival + departure first
+    startAtLanding: true,
+    startLocal: toSgLocalInput(landing + 3600e3),
+    interests: ['hawker', 'gardens', 'photo'],
+    interestsTouched: false,
+    energy: 'med',
+    indoorPref: 'any',
+    maxWalk: 15,
+    transport: 'transit', // transit (MRT & bus) | car (taxi / Grab)
+    partySize: 1,
+    foodNeeds: 'none', // none | halal | vegetarian | vegan
+    entryDismissed: false // entry-check banner closed for this plan
+  }
 }

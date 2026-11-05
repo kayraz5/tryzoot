@@ -22,11 +22,12 @@ beforeEach(() => {
   vi.stubEnv('GROQ_API_KEY', 'test-groq-key')
 })
 
-const request = (method = 'POST', body = {}) => mockReq({
-  method,
-  url: '/api/summary',
-  body,
-})
+const request = (method = 'POST', body = {}) =>
+  mockReq({
+    method,
+    url: '/api/summary',
+    body,
+  })
 
 const validBody = (overrides = {}) => ({
   place: {

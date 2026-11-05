@@ -1,13 +1,13 @@
 <!-- EDITOR: MATTHEW -->
 <script setup>
 const items = [
-  { to: "/map", icon: "bi-geo-alt-fill", label: "Map" },
-  { to: "/mission", icon: "bi-signpost-split-fill", label: "Mission" },
-  { to: "/explore", icon: "bi-compass-fill", label: "Explore" },
-  { to: "/quests", icon: "bi-people-fill", label: "Quests" },
-  { to: "/passport", icon: "bi-journal-bookmark-fill", label: "Passport" },
-  { to: "/me", icon: "bi-person-circle", label: "Me" },
-];
+  { to: '/map', icon: 'bi-geo-alt-fill', label: 'Map' },
+  { to: '/mission', icon: 'bi-signpost-split-fill', label: 'Mission' },
+  { to: '/explore', icon: 'bi-compass-fill', label: 'Explore' },
+  { to: '/quests', icon: 'bi-people-fill', label: 'Quests' },
+  { to: '/passport', icon: 'bi-journal-bookmark-fill', label: 'Passport' },
+  { to: '/me', icon: 'bi-person-circle', label: 'Me' }
+]
 </script>
 
 <template>

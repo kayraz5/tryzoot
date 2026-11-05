@@ -11,11 +11,11 @@ import { computed } from 'vue'
  * map's one-line guidance - the card keeps its shape whatever the leg is.
  */
 const props = defineProps({
-  steps: { type: Array, default: () => [] },  // transitSteps(): { icon, colour, badge, title, detail, mode, minutes }
-  index: { type: Number, default: 0 },        // the step the traveller is on
-  busAlternative: { type: Object, default: null },    // { service, stop, minutes } when a taxi leg has a bus option
-  fallback: { type: Object, default: null },          // { icon, text } shown when there are no transit steps
-  fallbackMinutes: { type: Number, default: null },   // whole-leg travel time, for that same case
+  steps: { type: Array, default: () => [] }, // transitSteps(): { icon, colour, badge, title, detail, mode, minutes }
+  index: { type: Number, default: 0 }, // the step the traveller is on
+  busAlternative: { type: Object, default: null }, // { service, stop, minutes } when a taxi leg has a bus option
+  fallback: { type: Object, default: null }, // { icon, text } shown when there are no transit steps
+  fallbackMinutes: { type: Number, default: null }, // whole-leg travel time, for that same case
   fallbackMode: { type: String, default: 'walk' },
   modeIcon: { type: Object, default: () => ({}) },
   // Which panel is open. The card owns this, because its triggers sit down in the
@@ -90,7 +90,12 @@ const now = computed(() => {
       </div>
 
       <ol v-if="showAll" class="all">
-        <li v-for="(s, i) in steps" :key="i" class="step" :class="{ done: i < index, now: i === index }">
+        <li
+          v-for="(s, i) in steps"
+          :key="i"
+          class="step"
+          :class="{ done: i < index, now: i === index }"
+        >
           <span class="mode-badge sm" :style="{ background: s.colour }">
             <template v-if="s.badge">{{ s.badge }}</template>
             <i v-else class="bi" :class="s.icon" aria-hidden="true"></i>
@@ -104,13 +109,23 @@ const now = computed(() => {
     </div>
 
     <div v-if="busAlternative && !current" class="bus-alt">
-      <i class="bi bi-bus-front-fill"></i> Or take bus {{ busAlternative.service }} from {{ busAlternative.stop }} · about {{ busAlternative.minutes }} min
+      <i class="bi bi-bus-front-fill"></i> Or take bus {{ busAlternative.service }} from
+      {{ busAlternative.stop }} · about {{ busAlternative.minutes }} min
     </div>
 
     <ul v-if="showTips" class="tips">
-      <li><b>Paying:</b> tap a contactless Visa or Mastercard (or your phone) on the gate or the bus reader. No ticket needed. Use the same card all day.</li>
-      <li><b>Tap out too:</b> at the station gate, and on the bus reader at the back door when you get off.</li>
-      <li><b>Which platform:</b> follow the line colour, then the sign with the end station ("towards …").</li>
+      <li>
+        <b>Paying:</b> tap a contactless Visa or Mastercard (or your phone) on the gate or the bus
+        reader. No ticket needed. Use the same card all day.
+      </li>
+      <li>
+        <b>Tap out too:</b> at the station gate, and on the bus reader at the back door when you get
+        off.
+      </li>
+      <li>
+        <b>Which platform:</b> follow the line colour, then the sign with the end station ("towards
+        …").
+      </li>
       <li><b>On the bus:</b> board at the front, press the red bell before your stop.</li>
       <li><b>Hours:</b> trains and most buses run about 5:30 am to midnight, every few minutes.</li>
       <li><b>Rules:</b> no eating or drinking on trains or in stations. Fines are real.</li>
@@ -119,14 +134,20 @@ const now = computed(() => {
 
   <div v-else-if="busAlternative" class="transit">
     <div class="bus-alt">
-      <i class="bi bi-bus-front-fill"></i> Or take bus {{ busAlternative.service }} from {{ busAlternative.stop }} · about {{ busAlternative.minutes }} min
+      <i class="bi bi-bus-front-fill"></i> Or take bus {{ busAlternative.service }} from
+      {{ busAlternative.stop }} · about {{ busAlternative.minutes }} min
     </div>
   </div>
 </template>
 
 <style scoped>
 /* cqi resolves against .mission-card, which declares container-type. */
-.transit { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gap); color: var(--zt-yellow-pale); }
+.transit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--gap);
+  color: var(--zt-yellow-pale);
+}
 
 /* The one thing to do right now, so it carries the card's only yellow outline. */
 .now-card {
@@ -155,11 +176,30 @@ const now = computed(() => {
   row-gap: 2px;
   align-items: start;
 }
-.now-label { grid-column: 2; grid-row: 1; color: var(--zt-yellow); opacity: 1; }
-.mode-badge { grid-column: 1; grid-row: 2 / span 2; align-self: start; }
-.now-title { grid-column: 2; grid-row: 2; }
-.now-detail { grid-column: 2; grid-row: 3; }
-.now-time { grid-column: 3; grid-row: 1 / span 3; align-self: center; }
+.now-label {
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--zt-yellow);
+  opacity: 1;
+}
+.mode-badge {
+  grid-column: 1;
+  grid-row: 2 / span 2;
+  align-self: start;
+}
+.now-title {
+  grid-column: 2;
+  grid-row: 2;
+}
+.now-detail {
+  grid-column: 2;
+  grid-row: 3;
+}
+.now-time {
+  grid-column: 3;
+  grid-row: 1 / span 3;
+  align-self: center;
+}
 
 .mode-badge {
   min-width: var(--badge);
@@ -223,7 +263,9 @@ const now = computed(() => {
   padding-top: var(--gap);
   border-top: 1px solid rgba(255, 244, 194, 0.14);
 }
-.next-row .mode-badge { background: rgba(255, 255, 255, 0.1) !important; }
+.next-row .mode-badge {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
 .next-title {
   min-width: 0;
   color: var(--zt-yellow-pale);
@@ -247,19 +289,37 @@ const now = computed(() => {
   overflow-y: auto;
   overscroll-behavior: contain;
 }
-.step { display: flex; gap: var(--gap); align-items: flex-start; }
-.min-w-0 { min-width: 0; }
+.step {
+  display: flex;
+  gap: var(--gap);
+  align-items: flex-start;
+}
+.min-w-0 {
+  min-width: 0;
+}
 .step-title {
   font-weight: 800;
   line-height: 1.22;
   font-size: var(--t-sm);
   color: var(--zt-yellow-pale);
 }
-.step-detail { font-size: var(--t-xs); opacity: 0.75; line-height: 1.3; margin-top: 1px; }
-.all .now .step-title { color: var(--zt-yellow); }
-.all .done { opacity: 0.45; }
+.step-detail {
+  font-size: var(--t-xs);
+  opacity: 0.75;
+  line-height: 1.3;
+  margin-top: 1px;
+}
+.all .now .step-title {
+  color: var(--zt-yellow);
+}
+.all .done {
+  opacity: 0.45;
+}
 
-.bus-alt { font-size: var(--t-sm); opacity: 0.78; }
+.bus-alt {
+  font-size: var(--t-sm);
+  opacity: 0.78;
+}
 
 .tips {
   margin: 0;
@@ -278,7 +338,13 @@ const now = computed(() => {
 /* Phones: the step block is the tallest thing in the card, so it tightens most, and
    the full list is capped shorter so opening it scrolls instead of eating the map. */
 @media (max-width: 575.98px) {
-  .now-detail { margin-top: 1px; }
-  .next-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .now-detail {
+    margin-top: 1px;
+  }
+  .next-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 </style>

@@ -63,7 +63,9 @@ export async function openToCompany(page, hostAccount, title) {
   // the label does not reach the input. The title input is the sheet's first text box.
   await sheet.getByRole('textbox').first().fill(title)
   await sheet.getByRole('button', { name: /^Open (this stop|these \d+ stops)$/ }).click()
-  await expect(sheet.getByRole('link', { name: 'View as guests see it' })).toBeVisible({ timeout: 20_000 })
+  await expect(sheet.getByRole('link', { name: 'View as guests see it' })).toBeVisible({
+    timeout: 20_000
+  })
   await sheet.getByRole('button', { name: 'Close' }).click()
   return latestHostedQuest(hostAccount)
 }
@@ -80,7 +82,9 @@ export async function joinQuest(page, questId, hostName) {
   await expect(sheet).toBeVisible()
   await expect(sheet).toContainText('Added')
   await expect(sheet).toContainText('Removed from your plan')
-  const removed = (await sheet.locator('.row-del s').allTextContents()).map((name) => name.trim()).filter(Boolean)
+  const removed = (await sheet.locator('.row-del s').allTextContents())
+    .map((name) => name.trim())
+    .filter(Boolean)
   expect(removed.length, 'the join removed none of the guest stops').toBeGreaterThan(0)
 
   await sheet.getByRole('button', { name: 'Join & update my plan' }).click()
@@ -118,4 +122,5 @@ export const questChip = (page) => page.getByRole('button', { name: 'Open my pla
 export const escapeRe = (text) => String(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /** Milliseconds to move the browser clock so it is `extraMs` past `iso`. */
-export const msUntil = (iso, extraMs = 60_000) => Math.max(0, Date.parse(iso) - Date.now() + extraMs)
+export const msUntil = (iso, extraMs = 60_000) =>
+  Math.max(0, Date.parse(iso) - Date.now() + extraMs)

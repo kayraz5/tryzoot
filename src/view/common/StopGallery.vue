@@ -1,8 +1,8 @@
 <!-- EDITOR: EUDALE -->
 <script setup>
-import { nextTick, onBeforeUnmount, ref, watch } from "vue";
-import { getPlaceImages } from "../../model/services/placeImages.js";
-import PlaceArt from "./PlaceArt.vue";
+import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { getPlaceImages } from '../../model/services/placeImages.js'
+import PlaceArt from './PlaceArt.vue'
 
 /**
  * Photo strip for a mission stop: 1–3 swipeable photos of the place; tap one to open it full screen.
@@ -10,76 +10,76 @@ import PlaceArt from "./PlaceArt.vue";
  */
 const props = defineProps({
   place: { type: Object, required: true },
-  height: { type: Number, default: 180 },
-});
+  height: { type: Number, default: 180 }
+})
 
-const images = ref([]);
-const loading = ref(true);
-const active = ref(0); // slide showing in the strip
-const open = ref(-1); // slide showing in the lightbox, -1 = closed
-const strip = ref(null);
-const closeBtn = ref(null);
+const images = ref([])
+const loading = ref(true)
+const active = ref(0) // slide showing in the strip
+const open = ref(-1) // slide showing in the lightbox, -1 = closed
+const strip = ref(null)
+const closeBtn = ref(null)
 
 watch(
   () => props.place?.id,
   async () => {
-    loading.value = true;
-    images.value = [];
-    active.value = 0;
-    images.value = await getPlaceImages(props.place);
-    loading.value = false;
+    loading.value = true
+    images.value = []
+    active.value = 0
+    images.value = await getPlaceImages(props.place)
+    loading.value = false
   },
-  { immediate: true },
-);
+  { immediate: true }
+)
 
 function onScroll() {
-  const el = strip.value;
-  if (el) active.value = Math.round(el.scrollLeft / el.clientWidth);
+  const el = strip.value
+  if (el) active.value = Math.round(el.scrollLeft / el.clientWidth)
 }
 function goTo(i) {
   strip.value?.scrollTo({
     left: i * strip.value.clientWidth,
-    behavior: "smooth",
-  });
+    behavior: 'smooth'
+  })
 }
 
 async function show(i) {
-  open.value = i;
-  document.body.style.overflow = "hidden";
-  window.addEventListener("keydown", onKey);
-  await nextTick();
-  closeBtn.value?.focus();
+  open.value = i
+  document.body.style.overflow = 'hidden'
+  window.addEventListener('keydown', onKey)
+  await nextTick()
+  closeBtn.value?.focus()
 }
 function close() {
-  if (open.value < 0) return;
-  goTo(open.value); // leave the strip on the photo they were last looking at
-  open.value = -1;
-  document.body.style.overflow = "";
-  window.removeEventListener("keydown", onKey);
+  if (open.value < 0) return
+  goTo(open.value) // leave the strip on the photo they were last looking at
+  open.value = -1
+  document.body.style.overflow = ''
+  window.removeEventListener('keydown', onKey)
 }
 function step(d) {
-  const n = images.value.length;
-  open.value = (open.value + d + n) % n;
+  const n = images.value.length
+  open.value = (open.value + d + n) % n
 }
 function onKey(e) {
-  if (e.key === "Escape") close();
-  else if (e.key === "ArrowRight") step(1);
-  else if (e.key === "ArrowLeft") step(-1);
+  if (e.key === 'Escape') close()
+  else if (e.key === 'ArrowRight') step(1)
+  else if (e.key === 'ArrowLeft') step(-1)
 }
 
 // Swipe left/right inside the lightbox.
-let touchX = null;
+let touchX = null
 const onTouchStart = (e) => {
-  touchX = e.touches[0].clientX;
-};
+  touchX = e.touches[0].clientX
+}
 function onTouchEnd(e) {
-  if (touchX === null) return;
-  const dx = e.changedTouches[0].clientX - touchX;
-  if (Math.abs(dx) > 40 && images.value.length > 1) step(dx < 0 ? 1 : -1);
-  touchX = null;
+  if (touchX === null) return
+  const dx = e.changedTouches[0].clientX - touchX
+  if (Math.abs(dx) > 40 && images.value.length > 1) step(dx < 0 ? 1 : -1)
+  touchX = null
 }
 
-onBeforeUnmount(close);
+onBeforeUnmount(close)
 </script>
 
 <template>
@@ -101,9 +101,7 @@ onBeforeUnmount(close);
           <img :src="img.src" :alt="img.alt" loading="lazy" />
         </button>
       </div>
-      <span class="hint" aria-hidden="true"
-        ><i class="bi bi-arrows-angle-expand"></i
-      ></span>
+      <span class="hint" aria-hidden="true"><i class="bi bi-arrows-angle-expand"></i></span>
       <span class="area-tag">{{ place.area }}</span>
       <div v-if="images.length > 1" class="dots">
         <button
@@ -161,16 +159,9 @@ onBeforeUnmount(close);
                 >{{ open + 1 }} / {{ images.length }}</span
               >
             </div>
-            <a
-              :href="images[open].page"
-              target="_blank"
-              rel="noopener"
-              class="lb-credit"
-            >
+            <a :href="images[open].page" target="_blank" rel="noopener" class="lb-credit">
               Photo: {{ images[open].credit
-              }}<template v-if="images[open].license">
-                · {{ images[open].license }}</template
-              >
+              }}<template v-if="images[open].license"> · {{ images[open].license }}</template>
               · Wikimedia Commons
             </a>
           </figcaption>

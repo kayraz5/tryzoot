@@ -44,7 +44,11 @@ const visit = (p, overrides = {}) => ({
 
 describe('planner budget, scoring and candidate selection', () => {
   it('computes airport and hotel budgets with the correct buffers', () => {
-    const airport = computeBudget({ origin: ctx().origin, startMs: T('10:00'), mustReturnMs: T('20:00') })
+    const airport = computeBudget({
+      origin: ctx().origin,
+      startMs: T('10:00'),
+      mustReturnMs: T('20:00')
+    })
     expect(airport).toMatchObject({
       airport: true,
       exit_min: 30,
@@ -56,7 +60,12 @@ describe('planner budget, scoring and candidate selection', () => {
       arriveByMs: T('18:30'),
     })
 
-    const cleared = computeBudget({ origin: ctx().origin, startMs: T('10:00'), mustReturnMs: T('20:00'), cleared: true })
+    const cleared = computeBudget({
+      origin: ctx().origin,
+      startMs: T('10:00'),
+      mustReturnMs: T('20:00'),
+      cleared: true
+    })
     expect(cleared).toMatchObject({ exit_min: 0, usable_min: 510, departMs: T('10:00') })
 
     const hotel = computeBudget({
@@ -64,7 +73,13 @@ describe('planner budget, scoring and candidate selection', () => {
       startMs: T('10:00'),
       mustReturnMs: T('20:00'),
     })
-    expect(hotel).toMatchObject({ airport: false, exit_min: 0, reentry_min: 0, safety_min: 20, usable_min: 580 })
+    expect(hotel).toMatchObject({
+      airport: false,
+      exit_min: 0,
+      reentry_min: 0,
+      safety_min: 20,
+      usable_min: 580
+    })
   })
 
   it('rounds stays up for low energy and larger parties', () => {
@@ -77,9 +92,21 @@ describe('planner budget, scoring and candidate selection', () => {
 
   it('scores an interested place above an unrelated place and preserves the score floor', () => {
     const budget = computeBudget(ctx())
-    const interested = scorePlace(place('merlion-park'), planningContext({ interests: ['photo'] }), budget)
-    const unrelated = scorePlace(place('merlion-park'), planningContext({ interests: ['museum'], style: 'party' }), budget)
-    const floor = scorePlace({ ...place('merlion-park'), tags: [], captions: [], cost_band: 3 }, planningContext({ interests: [], style: 'budget' }), budget)
+    const interested = scorePlace(
+      place('merlion-park'),
+      planningContext({ interests: ['photo'] }),
+      budget
+    )
+    const unrelated = scorePlace(
+      place('merlion-park'),
+      planningContext({ interests: ['museum'], style: 'party' }),
+      budget
+    )
+    const floor = scorePlace(
+      { ...place('merlion-park'), tags: [], captions: [], cost_band: 3 },
+      planningContext({ interests: [], style: 'budget' }),
+      budget
+    )
 
     expect(interested).toBeGreaterThan(unrelated)
     expect(floor).toBe(0.2)
@@ -87,7 +114,9 @@ describe('planner budget, scoring and candidate selection', () => {
 
   it('refuses only a severity-four city danger alert', () => {
     expect(dangerRefusal({ cityRisk: { severity: 3, headline: 'Warning' } })).toBeNull()
-    expect(dangerRefusal({ cityRisk: { severity: 4, headline: 'Severe weather' } })).toContain('Danger alert: Severe weather')
+    expect(dangerRefusal({ cityRisk: { severity: 4, headline: 'Severe weather' } })).toContain(
+      'Danger alert: Severe weather'
+    )
   })
 
   it('filters candidates for indoor-only planning and exclusions', () => {
@@ -112,12 +141,22 @@ describe('planner budget, scoring and candidate selection', () => {
     const clusters = radiusClusters(candidates)
 
     expect(clusters.length).toBeGreaterThan(0)
-    expect(clusters.flatMap((cluster) => cluster.members).map((p) => p.id).sort()).toEqual(candidates.map((p) => p.id).sort())
+    expect(
+      clusters
+        .flatMap((cluster) => cluster.members)
+        .map((p) => p.id)
+        .sort()
+    ).toEqual(candidates.map((p) => p.id).sort())
     for (const cluster of clusters) {
-      expect(cluster.members.every((member) => {
-        const distance = Math.hypot((member.lat - cluster.leader.lat) * 111000, (member.lng - cluster.leader.lng) * 111000)
-        return distance <= 1200
-      })).toBe(true)
+      expect(
+        cluster.members.every((member) => {
+          const distance = Math.hypot(
+            (member.lat - cluster.leader.lat) * 111000,
+            (member.lng - cluster.leader.lng) * 111000
+          )
+          return distance <= 1200
+        })
+      ).toBe(true)
     }
   })
 })
@@ -151,7 +190,10 @@ describe('planner route construction and scoring', () => {
 
   it('calculates plan value from scores and travel time, with zero for no visits', () => {
     const first = visit(place('cloud-forest'), { stay: 60 })
-    const second = visit(place('merlion-park'), { stay: 25, tr: { mode: 'walk', minutes: 8, detail: '640 m on foot' } })
+    const second = visit(place('merlion-park'), {
+      stay: 25,
+      tr: { mode: 'walk', minutes: 8, detail: '640 m on foot' }
+    })
 
     expect(planValue([])).toBe(0)
     expect(planValue([first, second])).toBeGreaterThan(0)
@@ -167,7 +209,10 @@ describe('planner route construction and scoring', () => {
     const context = planningContext()
     const budget = computeBudget(context)
     const p = place('jewel-rain-vortex')
-    const mission = assembleMission(context, budget, [visit(p)], { id: 'mission-test', source: 'groq' })
+    const mission = assembleMission(context, budget, [visit(p)], {
+      id: 'mission-test',
+      source: 'groq'
+    })
 
     expect(mission).toMatchObject({ schema: 'zoot.mission.v1', id: 'mission-test', source: 'groq' })
     expect(mission.legs).toHaveLength(2)
@@ -187,26 +232,38 @@ describe('planner public plan and replanning helpers', () => {
 
   // Feature: test-coverage-expansion, Property 7: Plans always beat the clock
   it('keeps generated planning contexts feasible and returns by the deadline', () => {
-    forAll((r) => planningContext({
-      style: pick(r, ['budget', 'adventurous', 'party', 'conservative']),
-      interests: pick(r, [['hawker', 'gardens'], ['photo', 'heritage'], ['museum', 'food'], ['nature', 'views']]),
-      energy: pick(r, ['low', 'med', 'high']),
-      maxWalk: pick(r, [15, 30]),
-      partySize: int(r, 1, 4),
-      indoorPref: pick(r, [undefined, 'prefer']),
-      cleared: pick(r, [false, true]),
-    }), (context) => {
-      const result = planDeterministic(context)
+    forAll(
+      (r) =>
+        planningContext({
+          style: pick(r, ['budget', 'adventurous', 'party', 'conservative']),
+          interests: pick(r, [
+            ['hawker', 'gardens'],
+            ['photo', 'heritage'],
+            ['museum', 'food'],
+            ['nature', 'views']
+          ]),
+          energy: pick(r, ['low', 'med', 'high']),
+          maxWalk: pick(r, [15, 30]),
+          partySize: int(r, 1, 4),
+          indoorPref: pick(r, [undefined, 'prefer']),
+          cleared: pick(r, [false, true]),
+        }),
+      (context) => {
+        const result = planDeterministic(context)
 
-      expect(result.ok).toBe(true)
-      const returnLeg = result.mission.legs.at(-1)
-      const returnedAt = Date.parse(returnLeg.arrive_iso)
-      const arriveBy = Date.parse(returnLeg.arrive_by)
+        expect(result.ok).toBe(true)
+        const returnLeg = result.mission.legs.at(-1)
+        const returnedAt = Date.parse(returnLeg.arrive_iso)
+        const arriveBy = Date.parse(returnLeg.arrive_by)
 
-      expect(slackMinutes(result.mission, context.origin, context.startMs, placeById.value)).toBeGreaterThanOrEqual(0)
-      expect(returnedAt).toBeLessThanOrEqual(arriveBy)
-      expect(returnedAt).toBeLessThanOrEqual(result.budget.arriveByMs)
-    }, { n: 30, seed: 216 })
+        expect(
+          slackMinutes(result.mission, context.origin, context.startMs, placeById.value)
+        ).toBeGreaterThanOrEqual(0)
+        expect(returnedAt).toBeLessThanOrEqual(arriveBy)
+        expect(returnedAt).toBeLessThanOrEqual(result.budget.arriveByMs)
+      },
+      { n: 30, seed: 216 }
+    )
   }, 60_000)
 
   // **Validates: Requirements 2.2, 2.5**
@@ -214,10 +271,12 @@ describe('planner public plan and replanning helpers', () => {
   it('reports the documented message when every selected place id is unknown', () => {
     const result = sequencePicks(planningContext(), ['not-a-real-place'])
 
-    expect(result).toEqual(expect.objectContaining({
-      ok: false,
-      reason: 'None of the chosen places fit the clock.',
-    }))
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: false,
+        reason: 'None of the chosen places fit the clock.',
+      })
+    )
   })
 
   it('limits the Groq catalog slice and returns its exact public keys', () => {
@@ -226,9 +285,9 @@ describe('planner public plan and replanning helpers', () => {
     expect(slice.length).toBeLessThanOrEqual(3)
     expect(slice.length).toBeGreaterThan(0)
     for (const item of slice) {
-      expect(Object.keys(item).sort()).toEqual([
-        'area', 'cost_band', 'duration_min', 'id', 'indoor', 'name', 'tags',
-      ].sort())
+      expect(Object.keys(item).sort()).toEqual(
+        ['area', 'cost_band', 'duration_min', 'id', 'indoor', 'name', 'tags',].sort()
+      )
     }
   })
 
@@ -239,14 +298,27 @@ describe('planner public plan and replanning helpers', () => {
       origin: ctx().origin,
       legs: [
         {
-          kind: 'visit', place_id: p.id, status: 'stamped', stamped_at: new Date(T('13:00')).toISOString(),
-          arrive_iso: new Date(T('13:00')).toISOString(), depart_iso: new Date(T('13:45')).toISOString(),
-          stay_min: 45, travel_mode: 'walk', travel_min: 5, travel_detail: 'walk',
+          kind: 'visit',
+          place_id: p.id,
+          status: 'stamped',
+          stamped_at: new Date(T('13:00')).toISOString(),
+          arrive_iso: new Date(T('13:00')).toISOString(),
+          depart_iso: new Date(T('13:45')).toISOString(),
+          stay_min: 45,
+          travel_mode: 'walk',
+          travel_min: 5,
+          travel_detail: 'walk',
         },
         {
-          kind: 'visit', place_id: other.id, status: 'pending',
-          arrive_iso: new Date(T('14:00')).toISOString(), depart_iso: new Date(T('15:00')).toISOString(),
-          stay_min: 60, travel_mode: 'mrt', travel_min: 20, travel_detail: 'MRT',
+          kind: 'visit',
+          place_id: other.id,
+          status: 'pending',
+          arrive_iso: new Date(T('14:00')).toISOString(),
+          depart_iso: new Date(T('15:00')).toISOString(),
+          stay_min: 60,
+          travel_mode: 'mrt',
+          travel_min: 20,
+          travel_detail: 'MRT',
         },
         { kind: 'return', arrive_by: new Date(T('18:30')).toISOString() },
       ],

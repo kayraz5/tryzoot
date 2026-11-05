@@ -134,7 +134,8 @@ describe('ui store preferences and notifications', () => {
     vi.useFakeTimers()
     const store = useUiStore()
 
-    for (const message of ['one', 'two', 'three', 'four', 'five']) store.toast(message, 'dark', 5000)
+    for (const message of ['one', 'two', 'three', 'four', 'five'])
+      store.toast(message, 'dark', 5000)
 
     expect(store.toasts).toHaveLength(3)
     expect(store.toasts.map((t) => t.message)).toEqual(['three', 'four', 'five'])

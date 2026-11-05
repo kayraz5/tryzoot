@@ -68,7 +68,8 @@ export function airportPlan({ from, mission = null, nowMs = Date.now(), places =
   if (!from) {
     return {
       ok: false,
-      reason: 'Waiting for GPS… Allow location access, or turn on Demo-Walk to get directions from here.'
+      reason:
+        'Waiting for GPS… Allow location access, or turn on Demo-Walk to get directions from here.'
     }
   }
 

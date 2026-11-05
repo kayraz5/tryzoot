@@ -1,25 +1,25 @@
 <!-- EDITOR: EUDALE -->
 <script setup>
-import { nextTick, ref, watch } from "vue";
-import { usePartyStore } from "../../model/stores/party.js";
+import { nextTick, ref, watch } from 'vue'
+import { usePartyStore } from '../../model/stores/party.js'
 
 /**
  * A prompt in the middle of the screen; everything behind it is blurred until the traveller answers.
  * Opened with party.ask({...}) / party.notice({...}) (e.g. "Go solo?", "Your stops with Mei are done").
  * Mounted once in App.vue.
  */
-const party = usePartyStore();
-const okBtn = ref(null);
+const party = usePartyStore()
+const okBtn = ref(null)
 
 watch(
   () => party.dialog,
   async (d) => {
-    if (!d) return;
-    await nextTick();
-    okBtn.value?.focus();
-  },
-);
-const cancel = () => party.answer(false);
+    if (!d) return
+    await nextTick()
+    okBtn.value?.focus()
+  }
+)
+const cancel = () => party.answer(false)
 </script>
 
 <template>
@@ -56,9 +56,7 @@ const cancel = () => party.answer(false);
             ref="okBtn"
             type="button"
             class="btn flex-grow-1"
-            :class="
-              party.dialog.tone === 'danger' ? 'btn-danger' : 'btn-primary'
-            "
+            :class="party.dialog.tone === 'danger' ? 'btn-danger' : 'btn-primary'"
             @click="party.answer(true)"
           >
             {{ party.dialog.confirmText }}

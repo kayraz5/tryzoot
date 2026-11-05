@@ -3,16 +3,8 @@
 
 import { describe, expect, it } from 'vitest'
 import { entryStatus } from '../../../src/model/services/immigration.js'
-import {
-  stubFetch,
-  textResponse,
-  useCleanSlate,
-} from '../../support/unit/index.js'
-import {
-  fetchIcaSlugs,
-  fetchIndexRules,
-  fetchIso3Codes,
-} from '../../../api/_lib/immigration.js'
+import { stubFetch, textResponse, useCleanSlate, } from '../../support/unit/index.js'
+import { fetchIcaSlugs, fetchIndexRules, fetchIso3Codes, } from '../../../api/_lib/immigration.js'
 
 useCleanSlate()
 
@@ -20,27 +12,25 @@ const INDEX_URL = 'passport-index-tidy-iso2.csv'
 const ISO2_URL = 'passport-index-matrix-iso2.csv'
 const ISO3_URL = 'passport-index-matrix-iso3.csv'
 
-const csv = (rows) => [
-  'passport,destination,requirement',
-  ...rows.map(([passport, destination = 'SG', requirement = '30']) => (
-    `${passport},${destination},${requirement}`
-  )),
-].join('\n')
+const csv = (rows) =>
+  [
+    'passport,destination,requirement',
+    ...rows.map(
+      ([passport, destination = 'SG', requirement = '30']) =>
+        (`${passport},${destination},${requirement}`
+    )),
+  ].join('\n')
 
-const matrixCsv = (codes) => [
-  'passport',
-  ...codes,
-].join('\n')
+const matrixCsv = (codes) => ['passport', ...codes,].join('\n')
 
-const sufficientRules = () => csv([
-  ['IN', 'SG', 'e-visa'],
-  ...Array.from({ length: 149 }, (_, index) => [`X${String(index).padStart(2, '0')}`]),
-])
+const sufficientRules = () =>
+  csv([
+    ['IN', 'SG', 'e-visa'],
+    ...Array.from({ length: 149 }, (_, index) => [`X${String(index).padStart(2, '0')}`]),
+  ])
 
-const sufficientCodes = () => Array.from(
-  { length: 150 },
-  (_, index) => `C${String(index).padStart(2, '0')}`,
-)
+const sufficientCodes = () =>
+  Array.from({ length: 150 }, (_, index) => `C${String(index).padStart(2, '0')}`,)
 
 describe('api/_lib/immigration', () => {
   describe('fetchIcaSlugs', () => {
@@ -58,8 +48,9 @@ describe('api/_lib/immigration', () => {
     })
 
     it('rejects an ICA response with a suspiciously short slug list', async () => {
-      const html = Array.from({ length: 5 }, (_, index) => (
-        `<a href="/visa-detail-page/country-${index}">country</a>`
+      const html = Array.from(
+        { length: 5 },
+        (_, index) => (`<a href="/visa-detail-page/country-${index}">country</a>`
       )).join('\n')
       stubFetch([['ica.gov.sg', () => textResponse(html)]])
 
@@ -85,10 +76,18 @@ describe('api/_lib/immigration', () => {
     })
 
     it('rejects an incomplete Singapore rules CSV', async () => {
-      stubFetch([[INDEX_URL, () => textResponse(csv([
-        ['IN', 'SG', 'e-visa'],
-        ...Array.from({ length: 8 }, (_, index) => [`X${index}`]),
-      ]))]])
+      stubFetch([
+        [
+          INDEX_URL,
+          () =>
+            textResponse(
+              csv([
+                ['IN', 'SG', 'e-visa'],
+                ...Array.from({ length: 8 }, (_, index) => [`X${index}`]),
+              ])
+            )
+        ]
+      ])
 
       await expect(fetchIndexRules()).rejects.toThrow(/Passport Index data looks incomplete/)
     })
@@ -97,7 +96,13 @@ describe('api/_lib/immigration', () => {
   describe('fetchIso3Codes', () => {
     it('pairs ISO2 and ISO3 columns by row', async () => {
       const iso2 = ['IN', 'US', ...sufficientCodes().slice(2)]
-      const iso3 = ['IND', 'USA', ...sufficientCodes().slice(2).map((code) => `Z${code}`)]
+      const iso3 = [
+        'IND',
+        'USA',
+        ...sufficientCodes()
+          .slice(2)
+          .map((code) => `Z${code}`)
+      ]
       stubFetch([
         [ISO2_URL, () => textResponse(matrixCsv(iso2))],
         [ISO3_URL, () => textResponse(matrixCsv(iso3))],
@@ -133,20 +138,21 @@ describe('api/_lib/immigration', () => {
         [INDEX_URL, () => textResponse(rulesCsv)],
       ])
 
-      const [parsedSlugs, parsedRules] = await Promise.all([
-        fetchIcaSlugs(),
-        fetchIndexRules(),
-      ])
+      const [parsedSlugs, parsedRules] = await Promise.all([fetchIcaSlugs(), fetchIndexRules(),])
 
-      expect(entryStatus('IN', {
-        icaSlugs: parsedSlugs,
-        indexRule: parsedRules.IN,
-      })).toBe('vftf-visa')
+      expect(
+        entryStatus('IN', {
+          icaSlugs: parsedSlugs,
+          indexRule: parsedRules.IN,
+        })
+      ).toBe('vftf-visa')
       // ZZ is absent from the parsed rules and ICA list, so it follows the free fallback.
-      expect(entryStatus('ZZ', {
-        icaSlugs: parsedSlugs,
-        indexRule: parsedRules.ZZ,
-      })).toBe('free')
+      expect(
+        entryStatus('ZZ', {
+          icaSlugs: parsedSlugs,
+          indexRule: parsedRules.ZZ,
+        })
+      ).toBe('free')
     })
   })
 })

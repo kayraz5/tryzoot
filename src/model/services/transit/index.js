@@ -26,7 +26,10 @@ export { loadBusData, nearbyStops, getBusArrivals } from './bus.js'
 const cache = new Map()
 
 async function fromLocal(from, to) {
-  const [mrt, bus] = await Promise.all([getMrtRoute(from, to).catch(() => null), findDirectBus(from, to).catch(() => null)])
+  const [mrt, bus] = await Promise.all([
+    getMrtRoute(from, to).catch(() => null),
+    findDirectBus(from, to).catch(() => null)
+  ])
   // Prefer the train unless the bus saves real time: trains are easier for first-timers.
   const best = mrt && (!bus || mrt.minutes <= bus.minutes + 5) ? mrt : bus
   return best && { ...best, source: 'local' }
@@ -37,7 +40,9 @@ export function getTransitRoute(from, to) {
   if (!cache.has(key)) {
     const job = fromOneMap(from, to).then((r) => r || fromLocal(from, to))
     cache.set(key, job)
-    job.then((r) => { if (!r) cache.delete(key) })
+    job.then((r) => {
+      if (!r) cache.delete(key)
+    })
   }
   return cache.get(key)
 }

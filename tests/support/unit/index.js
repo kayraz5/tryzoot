@@ -35,8 +35,8 @@ export const textResponse = (text, status = 200) => ({
 export function stubFetch(routes = []) {
   const fn = vi.fn(async (input, init) => {
     const url = String(input instanceof Request ? input.url : input)
-    const hit = routes.find(([matcher]) => (
-      matcher instanceof RegExp ? matcher.test(url) : url.includes(matcher)
+    const hit = routes.find(([matcher]) =>
+      (matcher instanceof RegExp ? matcher.test(url) : url.includes(matcher)
     ))
     if (!hit) throw new Error(`Unexpected fetch in test: ${redact(url)}`)
     return hit[1](url, init)

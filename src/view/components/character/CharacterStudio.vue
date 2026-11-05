@@ -30,9 +30,27 @@ function chooseOutfit(key) {
 
 const slots = computed(() => [
   { key: 'outfit', label: 'Outfit', options: outfits, value: props.outfit, choose: chooseOutfit },
-  { key: 'hat', label: 'Hat', options: hats, value: props.hat, choose: (k) => emit('update:hat', k) },
-  { key: 'eyewear', label: 'Eyewear', options: eyewears, value: props.eyewear, choose: (k) => emit('update:eyewear', k) },
-  { key: 'fur', label: 'Fur', options: furs, value: props.fur, choose: (k) => emit('update:fur', k) }
+  {
+    key: 'hat',
+    label: 'Hat',
+    options: hats,
+    value: props.hat,
+    choose: (k) => emit('update:hat', k)
+  },
+  {
+    key: 'eyewear',
+    label: 'Eyewear',
+    options: eyewears,
+    value: props.eyewear,
+    choose: (k) => emit('update:eyewear', k)
+  },
+  {
+    key: 'fur',
+    label: 'Fur',
+    options: furs,
+    value: props.fur,
+    choose: (k) => emit('update:fur', k)
+  }
 ])
 
 const walking = ref(false)
@@ -41,43 +59,64 @@ let traveller = null
 let renderer = null
 let frame = 0
 
-watch(() => props.outfit, (v) => {
-// setOutfit() rebuilds every slot, head and face included, so hat and glasses
-  // must be re-applied after it or they vanish on an outfit change.
-  traveller?.setOutfit(v)
-  traveller?.setHat(props.hat)
-  traveller?.setEyewear(props.eyewear)
-})
-watch(() => props.fur, (v) => traveller?.setFur(v))
-watch(() => props.hat, (v) => traveller?.setHat(v))
-watch(() => props.eyewear, (v) => traveller?.setEyewear(v))
+watch(
+  () => props.outfit,
+  (v) => {
+    // setOutfit() rebuilds every slot, head and face included, so hat and glasses
+    // must be re-applied after it or they vanish on an outfit change.
+    traveller?.setOutfit(v)
+    traveller?.setHat(props.hat)
+    traveller?.setEyewear(props.eyewear)
+  }
+)
+watch(
+  () => props.fur,
+  (v) => traveller?.setFur(v)
+)
+watch(
+  () => props.hat,
+  (v) => traveller?.setHat(v)
+)
+watch(
+  () => props.eyewear,
+  (v) => traveller?.setEyewear(v)
+)
 
 onMounted(() => {
-// alpha: true leaves the canvas transparent so the card behind shows through.
+  // alpha: true leaves the canvas transparent so the card behind shows through.
   renderer = new THREE.WebGLRenderer({ canvas: canvas.value, antialias: true, alpha: true })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
 
   const scene = new THREE.Scene()
   scene.add(new THREE.HemisphereLight(0xffffff, 0xbfd2a8, 2.0))
-  const sun = new THREE.DirectionalLight(0xfff3dd, 2.4); sun.position.set(3, 6, 4); scene.add(sun)
-  const rim = new THREE.DirectionalLight(0xcfe3ff, 0.8); rim.position.set(-3, 2, -4); scene.add(rim)
+  const sun = new THREE.DirectionalLight(0xfff3dd, 2.4);
+  sun.position.set(3, 6, 4);
+  scene.add(sun)
+  const rim = new THREE.DirectionalLight(0xcfe3ff, 0.8);
+  rim.position.set(-3, 2, -4);
+  scene.add(rim)
 
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100)
 
-  traveller = createTraveller({ outfit: props.outfit, fur: props.fur, hat: props.hat, eyewear: props.eyewear })
+  traveller = createTraveller({
+    outfit: props.outfit,
+    fur: props.fur,
+    hat: props.hat,
+    eyewear: props.eyewear
+  })
   let bearing = 195 // facing you, turned slightly so he reads as 3D rather than flat
   traveller.setBearing(bearing)
   scene.add(traveller.group)
 
-// Keep the drawing buffer matching the element's CSS size, or the render
+  // Keep the drawing buffer matching the element's CSS size, or the render
   // stretches on resize - they are two different things.
   function resize() {
     const el = canvas.value
     if (!el || !el.clientWidth) return
     renderer.setSize(el.clientWidth, el.clientHeight, false)
     camera.aspect = el.clientWidth / el.clientHeight
-// Framed for the TALLEST outfit: the monsoon umbrella reaches about y 2.9, well
-  // above his own 2.25, and a body-framed camera crops it.
+    // Framed for the TALLEST outfit: the monsoon umbrella reaches about y 2.9, well
+    // above his own 2.25, and a body-framed camera crops it.
     camera.position.set(0, 1.7, 6.2)
     camera.lookAt(0, 1.35, 0)
     camera.updateProjectionMatrix()
@@ -85,23 +124,29 @@ onMounted(() => {
   resize()
   window.addEventListener('resize', resize)
 
-// Pointer capture keeps the drag alive when the finger slides off the canvas.
+  // Pointer capture keeps the drag alive when the finger slides off the canvas.
   let dragging = false
   let lastX = 0
-  const down = (e) => { dragging = true; lastX = e.clientX; canvas.value.setPointerCapture?.(e.pointerId) }
+  const down = (e) => {
+    dragging = true;
+    lastX = e.clientX;
+    canvas.value.setPointerCapture?.(e.pointerId)
+  }
   const move = (e) => {
     if (!dragging) return
     bearing = (bearing - (e.clientX - lastX) * 0.6 + 360) % 360
     lastX = e.clientX
     traveller.setBearing(bearing)
   }
-  const up = () => { dragging = false }
+  const up = () => {
+    dragging = false
+  }
   canvas.value.addEventListener('pointerdown', down)
   canvas.value.addEventListener('pointermove', move)
   canvas.value.addEventListener('pointerup', up)
   canvas.value.addEventListener('pointercancel', up)
 
-// performance.now() rather than THREE.Clock - Clock is deprecated as of three r186.
+  // performance.now() rather than THREE.Clock - Clock is deprecated as of three r186.
   const start = performance.now()
   function loop() {
     traveller.update((performance.now() - start) / 1000, walking.value)
@@ -146,14 +191,21 @@ onMounted(() => {
             :class="{ active: slot.value === o.key }"
             :aria-pressed="slot.value === o.key"
             @click="slot.choose(o.key)"
-          >{{ o.label }}</button>
+          >
+            {{ o.label }}
+          </button>
         </div>
       </div>
 
       <div class="rack-row">
         <span class="rack-label">Pose</span>
         <div class="rack-opts">
-          <button class="zt-chip" :class="{ active: walking }" :aria-pressed="walking" @click="walking = !walking">
+          <button
+            class="zt-chip"
+            :class="{ active: walking }"
+            :aria-pressed="walking"
+            @click="walking = !walking"
+          >
             <i class="bi" :class="walking ? 'bi-person-walking' : 'bi-person-standing'"></i>
             {{ walking ? 'Walking' : 'Standing' }}
           </button>
@@ -175,10 +227,20 @@ onMounted(() => {
   touch-action: none; /* the drag-to-spin handler owns horizontal drags */
   cursor: grab;
 }
-.stage:active { cursor: grabbing; }
+.stage:active {
+  cursor: grabbing;
+}
 
-.rack { display: grid; gap: 0.6rem; margin-top: 0.9rem; }
-.rack-row { display: flex; align-items: baseline; gap: 0.5rem; }
+.rack {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+.rack-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
 .rack-label {
   font-family: var(--zt-font-head);
   font-size: 0.72rem;
@@ -188,13 +250,21 @@ onMounted(() => {
   flex: 0 0 4.2rem;
   padding-top: 0.35rem;
 }
-.rack-opts { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.rack-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
 
-.rack-select-wrap { display: none; }
+.rack-select-wrap {
+  display: none;
+}
 
 @media (max-width: 767px) {
-/* Wardrobe slots only - Pose is a single toggle and must not be caught by this. */
-  .rack-row--slot .rack-opts { display: none; }
+  /* Wardrobe slots only - Pose is a single toggle and must not be caught by this. */
+  .rack-row--slot .rack-opts {
+    display: none;
+  }
 
   .rack-select-wrap {
     display: block;
@@ -203,7 +273,7 @@ onMounted(() => {
     min-width: 0; /* a flex child must be allowed to shrink, or long labels overflow */
   }
 
-/* Inherits currentColor: --zt-line flips between themes, and a fixed-colour
+  /* Inherits currentColor: --zt-line flips between themes, and a fixed-colour
    arrow would disappear in one of them. */
   .rack-select-wrap::after {
     content: '';
@@ -235,12 +305,23 @@ onMounted(() => {
     letter-spacing: 0.02em;
   }
 
-  .rack-select:focus-visible { outline: 3px solid var(--zt-pink); outline-offset: 2px; }
+  .rack-select:focus-visible {
+    outline: 3px solid var(--zt-pink);
+    outline-offset: 2px;
+  }
 
-/* The open menu is drawn by the OS, which otherwise ignores the theme. */
-  .rack-select option { background: var(--zt-card); color: var(--zt-ink); text-transform: none; }
+  /* The open menu is drawn by the OS, which otherwise ignores the theme. */
+  .rack-select option {
+    background: var(--zt-card);
+    color: var(--zt-ink);
+    text-transform: none;
+  }
 
-  .rack-row { align-items: center; }
-  .rack-label { padding-top: 0; }
+  .rack-row {
+    align-items: center;
+  }
+  .rack-label {
+    padding-top: 0;
+  }
 }
 </style>

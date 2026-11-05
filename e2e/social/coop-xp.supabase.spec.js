@@ -10,25 +10,49 @@
  * co-op stamp only on the first visit to a place by both members (first_stamp_here in
  * stamps_after_insert_social). A persistent test account and the demo travellers use up that first
  * visit on the first run, so the scenario cannot repeat.
- * 
+ *
  */
 import { gatedDraft } from '../fixtures/draft.js'
 import {
-  cleanupSocial, ensureOnboarded, expect, installSupabaseHarness, requireSeed, requireSupabase, simulate, test
+  cleanupSocial,
+  ensureOnboarded,
+  expect,
+  installSupabaseHarness,
+  requireSeed,
+  requireSupabase,
+  simulate,
+  test
 } from '../fixtures/supabase.js'
 import {
-  layoverTimes, msUntil, openMapCard, openToCompany, planLayover, SOCIAL_TIMEOUT_MS, TIMEZONE
+  layoverTimes,
+  msUntil,
+  openMapCard,
+  openToCompany,
+  planLayover,
+  SOCIAL_TIMEOUT_MS,
+  TIMEZONE
 } from '../fixtures/social.js'
 
 test.describe('co-op stamps', () => {
-  gatedDraft(test, 'Blocked: co-op stamps need a first visit at the place for both members, so the scenario cannot repeat on a persistent project')
+  gatedDraft(
+    test,
+    'Blocked: co-op stamps need a first visit at the place for both members, so the scenario cannot repeat on a persistent project'
+  )
   requireSupabase(test, ['seed'])
   test.use({ timezoneId: TIMEZONE })
 
-  test.beforeEach(async ({ testAccount }) => { await cleanupSocial(testAccount) })
-  test.afterEach(async ({ testAccount }) => { await cleanupSocial(testAccount) })
+  test.beforeEach(async ({ testAccount }) => {
+    await cleanupSocial(testAccount)
+  })
+  test.afterEach(async ({ testAccount }) => {
+    await cleanupSocial(testAccount)
+  })
 
-  test('shows the co-op stamp notice when a member stamps the same stop', async ({ page, context, testAccount }) => {
+  test('shows the co-op stamp notice when a member stamps the same stop', async ({
+    page,
+    context,
+    testAccount
+  }) => {
     test.setTimeout(SOCIAL_TIMEOUT_MS)
     await requireSeed(testAccount)
     await ensureOnboarded(testAccount, 'E2E Host')
@@ -38,7 +62,11 @@ test.describe('co-op stamps', () => {
     const quest = await openToCompany(page, testAccount, 'E2E co-op quest')
     await simulate(testAccount.client, quest.id, 'guest_joins')
 
-    const { data: row } = await testAccount.client.from('parties').select('stops').eq('id', quest.id).single()
+    const { data: row } = await testAccount.client
+      .from('parties')
+      .select('stops')
+      .eq('id', quest.id)
+      .single()
     const first = row.stops[0]
     await context.grantPermissions(['geolocation'])
     await context.setGeolocation({ latitude: first.lat, longitude: first.lng, accuracy: 10 })
@@ -50,6 +78,8 @@ test.describe('co-op stamps', () => {
 
     const notice = page.getByRole('alertdialog', { name: 'Co-op stamp!' })
     await expect(notice).toBeVisible({ timeout: 30_000 })
-    await expect(notice).toContainText(/You and .+ were both at .+ for the first time\. \+\d+ bonus XP each\./)
+    await expect(notice).toContainText(
+      /You and .+ were both at .+ for the first time\. \+\d+ bonus XP each\./
+    )
   })
 })

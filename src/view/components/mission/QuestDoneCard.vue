@@ -22,22 +22,32 @@ function newLayover() {
       <div class="flex-grow-1">
         <div class="zt-label">Quest complete</div>
         <div class="fw-800">
-          {{ store.stampedCount }} of {{ store.visitLegs.length }} stops stamped<span v-if="store.mission.ended_early"> · finished early</span>
+          {{ store.stampedCount }} of {{ store.visitLegs.length }} stops stamped<span
+            v-if="store.mission.ended_early"
+          >
+            · finished early</span
+          >
         </div>
       </div>
     </div>
     <div class="d-flex gap-2 mt-3">
-      <button type="button" class="btn btn-primary flex-grow-1" @click="newLayover"><i class="bi bi-plus-lg"></i> Plan a new layover</button>
-      <RouterLink to="/passport" class="btn btn-soft"><i class="bi bi-journal-bookmark-fill"></i> Passport</RouterLink>
+      <button type="button" class="btn btn-primary flex-grow-1" @click="newLayover">
+        <i class="bi bi-plus-lg"></i> Plan a new layover
+      </button>
+      <RouterLink to="/passport" class="btn btn-soft"
+        ><i class="bi bi-journal-bookmark-fill"></i> Passport</RouterLink
+      >
     </div>
   </section>
 </template>
 
 <style scoped>
-.done-card { 
-  background: var(--zt-yellow-pale); 
-  color: #111; }
-.done-icon { 
-  font-size: 2rem; 
-  color: #b45309; }
+.done-card {
+  background: var(--zt-yellow-pale);
+  color: #111;
+}
+.done-icon {
+  font-size: 2rem;
+  color: #b45309;
+}
 </style>

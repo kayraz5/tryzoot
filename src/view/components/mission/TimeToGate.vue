@@ -41,7 +41,9 @@ const leaveSoon = computed(() => props.leaveByMs && props.leaveByMs - tick.value
   <div v-else class="ttg" :class="level" role="timer" :aria-label="`${label} ${text}`">
     <div class="lbl"><i class="bi bi-airplane-fill"></i> {{ label }}</div>
     <div class="val mono">{{ text }}</div>
-    <div v-if="leaveByMs" class="leave" :class="{ soon: leaveSoon }">Head back by {{ formatTime(leaveByMs) }}</div>
+    <div v-if="leaveByMs" class="leave" :class="{ soon: leaveSoon }">
+      Head back by {{ formatTime(leaveByMs) }}
+    </div>
   </div>
 </template>
 
@@ -77,11 +79,16 @@ const leaveSoon = computed(() => props.leaveByMs && props.leaveByMs - tick.value
 
 @keyframes ttg-alarm {
   0% {
-    box-shadow: 4px 4px 0 #111, 0 0 0 0 rgba(255, 77, 0, 0.7);
+    box-shadow:
+      4px 4px 0 #111,
+      0 0 0 0 rgba(255, 77, 0, 0.7);
   }
 
-  70%, 100% {
-    box-shadow: 4px 4px 0 #111, 0 0 0 16px rgba(255, 77, 0, 0);
+  70%,
+  100% {
+    box-shadow:
+      4px 4px 0 #111,
+      0 0 0 16px rgba(255, 77, 0, 0);
   }
 }
 

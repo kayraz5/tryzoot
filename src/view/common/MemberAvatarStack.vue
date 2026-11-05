@@ -1,26 +1,21 @@
 <!-- EDITOR: EUDALE -->
 <script setup>
-import { computed } from "vue";
-import UserAvatar from "./UserAvatar.vue";
+import { computed } from 'vue'
+import UserAvatar from './UserAvatar.vue'
 
 /** Overlapping member avatars + dashed empty seats up to the group size. Tap one to preview the profile. */
 const props = defineProps({
   members: { type: Array, default: () => [] }, // quest_roster rows (host first)
   capacity: { type: Number, default: 0 },
   size: { type: Number, default: 34 },
-  interactive: { type: Boolean, default: true },
-});
-const emit = defineEmits(["select"]);
-const empty = computed(() =>
-  Math.max(0, props.capacity - props.members.length),
-);
+  interactive: { type: Boolean, default: true }
+})
+const emit = defineEmits(['select'])
+const empty = computed(() => Math.max(0, props.capacity - props.members.length))
 </script>
 
 <template>
-  <div
-    class="stack"
-    :aria-label="`${members.length} of ${capacity || members.length} travellers`"
-  >
+  <div class="stack" :aria-label="`${members.length} of ${capacity || members.length} travellers`">
     <component
       :is="interactive ? 'button' : 'span'"
       v-for="m in members"
@@ -31,11 +26,7 @@ const empty = computed(() =>
       @click="interactive && emit('select', m)"
     >
       <UserAvatar :profile="m" :size="size" />
-      <i
-        v-if="m.role === 'host'"
-        class="bi bi-star-fill crown"
-        aria-hidden="true"
-      ></i>
+      <i v-if="m.role === 'host'" class="bi bi-star-fill crown" aria-hidden="true"></i>
     </component>
     <span
       v-for="n in empty"

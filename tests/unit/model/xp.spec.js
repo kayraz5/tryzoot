@@ -29,22 +29,25 @@ describe('levelFor: calculates levels and progress from XP', () => {
 
   // Feature: test-coverage-expansion, Property 2: Level bounds and monotonicity
   it('keeps generated XP within level bounds and orders levels monotonically', () => {
-    forAll((r) => {
-      const first = int(r, 0, 10 ** 7)
-      const second = int(r, first, 10 ** 7)
-      return { first, second }
-    }, ({ first, second }) => {
-      const result = levelFor(first)
-      const later = levelFor(second)
+    forAll(
+      (r) => {
+        const first = int(r, 0, 10 ** 7)
+        const second = int(r, first, 10 ** 7)
+        return { first, second }
+      },
+      ({ first, second }) => {
+        const result = levelFor(first)
+        const later = levelFor(second)
 
-      expect(result.level).toBeGreaterThanOrEqual(1)
-      expect(result.floor).toBeLessThanOrEqual(first)
-      expect(first).toBeLessThan(result.next)
-      expect(result.progress).toBeGreaterThanOrEqual(0)
-      expect(result.progress).toBeLessThan(1)
-      expect(TITLES).toContain(titleFor(result.level))
-      expect(later.level).toBeGreaterThanOrEqual(result.level)
-    })
+        expect(result.level).toBeGreaterThanOrEqual(1)
+        expect(result.floor).toBeLessThanOrEqual(first)
+        expect(first).toBeLessThan(result.next)
+        expect(result.progress).toBeGreaterThanOrEqual(0)
+        expect(result.progress).toBeLessThan(1)
+        expect(TITLES).toContain(titleFor(result.level))
+        expect(later.level).toBeGreaterThanOrEqual(result.level)
+      }
+    )
   })
 
   // **Validates: Requirements 2.2**

@@ -47,6 +47,9 @@ describe('hermetic unit env', () => {
     vi.stubEnv('VITE_SUPABASE_URL', 'x')
     expect(import.meta.env.VITE_SUPABASE_URL).toBe('x')
     vi.unstubAllEnvs()
-    expect(Boolean(import.meta.env.VITE_SUPABASE_URL), 'VITE_SUPABASE_URL is visible to the unit test').toBe(false)
+    expect(
+      Boolean(import.meta.env.VITE_SUPABASE_URL),
+      'VITE_SUPABASE_URL is visible to the unit test'
+    ).toBe(false)
   })
 })

@@ -3,7 +3,14 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Flipbook from 'flipbook-vue'
 import { StampSlam } from '../components/passport/stampSlam.js'
-import { drawCover, drawIdentity, drawAreaPage, drawBackPage, PAGE_W, PAGE_H } from '../components/passport/pageArt.js'
+import {
+  drawCover,
+  drawIdentity,
+  drawAreaPage,
+  drawBackPage,
+  PAGE_W,
+  PAGE_H
+} from '../components/passport/pageArt.js'
 import { AREAS, ORIGINS, STYLES } from '../../model/data/origins.js'
 import { catalog, placeById, loadCatalog } from '../../model/services/catalog.js'
 import { usePassportStore, CHOP_TARGET } from '../../model/stores/passport.js'
@@ -71,11 +78,14 @@ const stampsByPlace = computed(() => {
 })
 
 // Unstamped places: hand-picked (seed) places first, then ones with a Wikipedia article, then the rest
-const placeRank = (place) => (place.source === 'seed' ? 0 : place.blurb_source === 'wikipedia' ? 1 : 2)
+const placeRank = (place) =>
+  (place.source === 'seed' ? 0 : place.blurb_source === 'wikipedia' ? 1 : 2)
 
 // An area page's places: stamped ones first (oldest first), then the best-known unstamped ones
 function areaPlaces(areaId) {
-  const stamped = (passport.byArea[areaId] || []).map((stamp) => placeById.value.get(stamp.place_id)).filter(Boolean)
+  const stamped = (passport.byArea[areaId] || [])
+    .map((stamp) => placeById.value.get(stamp.place_id))
+    .filter(Boolean)
   const rest = catalog.value
     .filter((place) => place.area === areaId && !passport.stampedIds.has(place.id))
     .sort((a, b) => placeRank(a) - placeRank(b) || a.name.localeCompare(b.name))
@@ -86,7 +96,9 @@ function areaPlaces(areaId) {
 const openPages = computed(() => {
   const b = book.value
   if (!b) return []
-  return [b.showLeftPage && b.leftPage, b.showRightPage && b.rightPage].filter(Boolean).map((index) => index - 1)
+  return [b.showLeftPage && b.leftPage, b.showRightPage && b.rightPage]
+    .filter(Boolean)
+    .map((index) => index - 1)
 })
 
 // Same numbers as printed on the pages (the cover is 0)
@@ -102,7 +114,10 @@ const openAreas = computed(() =>
   openPages.value
     .map((page) => AREAS[page - FIRST_AREA_PAGE])
     .filter(Boolean)
-    .map((area) => ({ ...area, total: catalog.value.filter((place) => place.area === area.id).length }))
+    .map((area) => ({
+      ...area,
+      total: catalog.value.filter((place) => place.area === area.id).length
+    }))
 )
 
 // Latest trip's entry date (YYMMDD, Singapore time) and entry point, for the identity page's machine-readable line
@@ -111,11 +126,18 @@ const entry = computed(() => {
     .filter((m) => m?.start_iso)
     .sort((a, b) => String(b.start_iso).localeCompare(String(a.start_iso)))[0]
   if (!trip) return null
-  const parts = new Intl.DateTimeFormat('en-SG', { timeZone: 'Asia/Singapore', year: '2-digit', month: '2-digit', day: '2-digit' })
-    .formatToParts(Date.parse(trip.start_iso))
+  const parts = new Intl.DateTimeFormat('en-SG', {
+    timeZone: 'Asia/Singapore',
+    year: '2-digit',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(Date.parse(trip.start_iso))
   const part = (type) => parts.find((p) => p.type === type).value
   const via = ORIGINS.find((o) => o.label === trip.origin?.label)?.short || trip.origin?.label || ''
-  return { yymmdd: part('year') + part('month') + part('day'), code: via.toUpperCase().replace(/[^A-Z0-9]/g, '') }
+  return {
+    yymmdd: part('year') + part('month') + part('day'),
+    code: via.toUpperCase().replace(/[^A-Z0-9]/g, '')
+  }
 })
 
 const badges = computed(() => {
@@ -125,11 +147,36 @@ const badges = computed(() => {
   const allMissions = [...missions.value, mission.mission].filter(Boolean)
 
   return [
-    { glyph: '✦', title: 'First Chop', text: 'Stamp any place.', earned: passport.stamps.length >= 1 },
-    { glyph: '③', title: 'District Hopper', text: 'Chops from 3 areas.', earned: passport.chopCount >= 3 },
-    { glyph: '🍜', title: 'Hawker Hero', text: 'Stamp 2 hawker centres.', earned: hawkerStamps >= 2 },
-    { glyph: '☂', title: 'Rain Dancer', text: 'Survive a rain rewrite.', earned: allMissions.some((m) => (m.replans || 0) > 0) },
-    { glyph: '✈', title: 'Back to the Gate', text: 'Finish a quest on time.', earned: allMissions.some((m) => m.completed) },
+    {
+      glyph: '✦',
+      title: 'First Chop',
+      text: 'Stamp any place.',
+      earned: passport.stamps.length >= 1
+    },
+    {
+      glyph: '③',
+      title: 'District Hopper',
+      text: 'Chops from 3 areas.',
+      earned: passport.chopCount >= 3
+    },
+    {
+      glyph: '🍜',
+      title: 'Hawker Hero',
+      text: 'Stamp 2 hawker centres.',
+      earned: hawkerStamps >= 2
+    },
+    {
+      glyph: '☂',
+      title: 'Rain Dancer',
+      text: 'Survive a rain rewrite.',
+      earned: allMissions.some((m) => (m.replans || 0) > 0)
+    },
+    {
+      glyph: '✈',
+      title: 'Back to the Gate',
+      text: 'Finish a quest on time.',
+      earned: allMissions.some((m) => m.completed)
+    },
     { glyph: '◎', title: 'Scout', text: 'Discover 20 places.', earned: passport.seen.size >= 20 }
   ]
 })
@@ -147,7 +194,8 @@ function loadImage(url) {
 }
 
 async function loadArt() {
-  const urls = [...passport.stampedIds].map(placeStamp)
+  const urls = [...passport.stampedIds]
+    .map(placeStamp)
     .concat(passport.choppedAreas.map(areaStamp))
     .filter((url) => url && !artImages.has(url))
   await Promise.all(urls.map(async (url) => artImages.set(url, await loadImage(url))))
@@ -190,7 +238,9 @@ function paint(i, ctx) {
   const area = AREAS[i - FIRST_AREA_PAGE]
   if (area) {
     const waitingForSlam = passport.pendingSlams.includes(area.id)
-    const shownStamps = Object.fromEntries(Object.entries(stampsByPlace.value).filter(([id]) => !hiddenStamps.has(id)))
+    const shownStamps = Object.fromEntries(
+      Object.entries(stampsByPlace.value).filter(([id]) => !hiddenStamps.has(id))
+    )
     return drawAreaPage(ctx, {
       area,
       places: areaPlaces(area.id),
@@ -212,7 +262,9 @@ function pageImage(i) {
   canvas.width = PAGE_W
   canvas.height = PAGE_H
   paint(i, canvas.getContext('2d'))
-  return new Promise((resolve) => canvas.toBlob((blob) => resolve(URL.createObjectURL(blob)), 'image/png'))
+  return new Promise((resolve) =>
+    canvas.toBlob((blob) => resolve(URL.createObjectURL(blob)), 'image/png')
+  )
 }
 
 async function repaintAll() {
@@ -257,14 +309,27 @@ async function slamStamp(placeId) {
   const place = placeById.value.get(placeId)
   const page = areaPage(place?.area)
   const slot = areaPlaces(place.area).findIndex((p) => p.id === placeId)
-  const at = slot >= 0 && slot < CHOP_TARGET && pagePoint(page, 136 + (slot % 2) * 240, 262 + Math.floor(slot / 2) * 140)
+  const at =
+    slot >= 0 &&
+    slot < CHOP_TARGET &&
+    pagePoint(page, 136 + (slot % 2) * 240, 262 + Math.floor(slot / 2) * 140)
   const reveal = async () => {
     hiddenStamps.delete(placeId)
     passport.markShown(placeId)
     navigator.vibrate?.(40)
     await repaintPage(page)
   }
-  if (stampSlam && at) await stampSlam.slam({ x: at.x, y: at.y, size: 104 * at.scale, ink: AREAS[page - FIRST_AREA_PAGE].ink, image: artImages.get(placeStamp(placeId)) }, reveal)
+  if (stampSlam && at)
+    await stampSlam.slam(
+      {
+        x: at.x,
+        y: at.y,
+        size: 104 * at.scale,
+        ink: AREAS[page - FIRST_AREA_PAGE].ink,
+        image: artImages.get(placeStamp(placeId))
+      },
+      reveal
+    )
   else await reveal() // no WebGL: just show it
   await wait(300)
 }
@@ -278,14 +343,26 @@ async function slamChop(areaId) {
     navigator.vibrate?.(40)
     await repaintPage(page)
   }
-  if (stampSlam && at) await stampSlam.slam({ x: at.x, y: at.y, size: 128 * at.scale, ink: AREAS[page - FIRST_AREA_PAGE].ink, image: artImages.get(areaStamp(areaId)) }, reveal)
+  if (stampSlam && at)
+    await stampSlam.slam(
+      {
+        x: at.x,
+        y: at.y,
+        size: 128 * at.scale,
+        ink: AREAS[page - FIRST_AREA_PAGE].ink,
+        image: artImages.get(areaStamp(areaId))
+      },
+      reveal
+    )
   else await reveal()
   passport.consumeSlam(areaId)
   await wait(300)
 }
 
 // Open pages once a turn has settled (flipbook-vue clears its flip state only after the new page images load)
-const settledPages = computed(() => (book.value && !book.value.flip.direction ? openPages.value.join(',') : null))
+const settledPages = computed(() =>
+  (book.value && !book.value.flip.direction ? openPages.value.join(',') : null
+))
 watch(settledPages, (pages) => {
   if (!pages) return
   updatePageLabel()
@@ -298,7 +375,9 @@ async function slamOpenPages() {
   for (const areaId of passport.pendingSlams) if (areaPage(areaId) < 0) passport.consumeSlam(areaId)
 
   const open = openPages.value
-  const stamps = [...hiddenStamps].filter((placeId) => open.includes(areaPage(placeById.value.get(placeId)?.area)))
+  const stamps = [...hiddenStamps].filter((placeId) =>
+    open.includes(areaPage(placeById.value.get(placeId)?.area))
+  )
   const chops = passport.pendingSlams.filter((areaId) => open.includes(areaPage(areaId)))
   if (!stamps.length && !chops.length) return
 
@@ -319,7 +398,15 @@ async function loadMissions() {
 
 // Stamps, profile or badges can arrive after the pages were first drawn
 watch(
-  () => [passport.stamps.length, passport.seen.size, user.profile, catalog.value, badges.value, entry.value, passport.nationality],
+  () => [
+    passport.stamps.length,
+    passport.seen.size,
+    user.profile,
+    catalog.value,
+    badges.value,
+    entry.value,
+    passport.nationality
+  ],
   async () => {
     if (!pages.value.length || busy.value) return
     await loadArt()
@@ -385,7 +472,11 @@ async function flipToPage(page) {
   busy.value = true
   flipMs.value = 350
   await wait(500) // show the closed cover for a moment first
-  for (let turns = 0; turns < pageCount && book.value?.canFlipRight && !openPages.value.includes(page); turns++) {
+  for (
+    let turns = 0;
+    turns < pageCount && book.value?.canFlipRight && !openPages.value.includes(page);
+    turns++
+  ) {
     book.value.flipRight()
     while (book.value?.flip.direction) await wait(40) // settled once flipbook-vue clears it
   }
@@ -402,50 +493,125 @@ function jumpToArea(areaId) {
   <main class="zt-page">
     <div class="mb-2">
       <h1 class="title mb-0">Passport</h1>
-      <p class="text-muted small mb-0">{{ passport.stampedIds.size }} {{ passport.stampedIds.size === 1 ? 'place' : 'places' }} stamped · {{ passport.chopCount }} area {{ passport.chopCount === 1 ? 'chop' : 'chops' }}</p>
+      <p class="text-muted small mb-0">
+        {{ passport.stampedIds.size }}
+        {{ passport.stampedIds.size === 1 ? 'place' : 'places' }} stamped ·
+        {{ passport.chopCount }} area {{ passport.chopCount === 1 ? 'chop' : 'chops' }}
+      </p>
     </div>
 
     <div ref="stage" class="stage" :class="{ busy }">
-      <Flipbook v-if="pages.length" ref="book" class="book" :pages="bookPages" :click-to-zoom="false" :flip-duration="flipMs" aria-label="Passport. Drag a page corner or tap a side to turn the page." />
+      <Flipbook
+        v-if="pages.length"
+        ref="book"
+        class="book"
+        :pages="bookPages"
+        :click-to-zoom="false"
+        :flip-duration="flipMs"
+        aria-label="Passport. Drag a page corner or tap a side to turn the page."
+      />
       <canvas ref="slamCanvas" class="slam-canvas"></canvas>
     </div>
 
     <div class="d-flex justify-content-center align-items-center gap-3 mt-2">
-      <button class="btn btn-soft" :disabled="busy || !book?.canFlipLeft" @click="book.flipLeft()" aria-label="Previous page"><i class="bi bi-chevron-left"></i></button>
+      <button
+        class="btn btn-soft"
+        :disabled="busy || !book?.canFlipLeft"
+        @click="book.flipLeft()"
+        aria-label="Previous page"
+      >
+        <i class="bi bi-chevron-left"></i>
+      </button>
       <span class="small fw-800 mono">{{ pageLabel }}</span>
-      <button class="btn btn-soft" :disabled="busy || !book?.canFlipRight" @click="book.flipRight()" aria-label="Next page"><i class="bi bi-chevron-right"></i></button>
+      <button
+        class="btn btn-soft"
+        :disabled="busy || !book?.canFlipRight"
+        @click="book.flipRight()"
+        aria-label="Next page"
+      >
+        <i class="bi bi-chevron-right"></i>
+      </button>
     </div>
     <div v-if="openAreas.length" class="d-flex flex-wrap justify-content-center gap-2 mt-2">
-      <RouterLink v-for="a in openAreas" :key="a.id" :to="{ path: '/codex', query: { area: a.id } }" class="btn btn-soft btn-sm">
+      <RouterLink
+        v-for="a in openAreas"
+        :key="a.id"
+        :to="{ path: '/codex', query: { area: a.id } }"
+        class="btn btn-soft btn-sm"
+      >
         <span :style="{ color: a.ink }">{{ a.glyph }}</span> All {{ a.total }} {{ a.id }} places
       </RouterLink>
     </div>
 
     <div class="zt-section-title"><i class="bi bi-bookmark-star"></i> Jump to a page</div>
     <div class="d-flex flex-wrap gap-2">
-      <button v-for="a in AREAS" :key="a.id" class="zt-chip" :disabled="busy" @click="jumpToArea(a.id)">
+      <button
+        v-for="a in AREAS"
+        :key="a.id"
+        class="zt-chip"
+        :disabled="busy"
+        @click="jumpToArea(a.id)"
+      >
         <span :style="{ color: a.ink }">{{ a.glyph }}</span> {{ a.id }}
-        <span v-if="passport.byArea[a.id]" class="badge rounded-pill text-bg-danger">{{ passport.byArea[a.id].length }}</span>
+        <span v-if="passport.byArea[a.id]" class="badge rounded-pill text-bg-danger">{{
+          passport.byArea[a.id].length
+        }}</span>
       </button>
     </div>
     <p v-if="!passport.stamps.length" class="small text-muted mt-3">
-      No stamps yet. Walk into a stop’s ring on the <RouterLink to="/map">map</RouterLink> and tap Stamp. Stamp {{ CHOP_TARGET }} places in an area to earn its chop.
+      No stamps yet. Walk into a stop’s ring on the <RouterLink to="/map">map</RouterLink> and tap
+      Stamp. Stamp {{ CHOP_TARGET }} places in an area to earn its chop.
     </p>
   </main>
 </template>
 
 <style scoped>
-.title { font-size: 2.4rem; }
-.stage {
-  position: relative; width: 100%; aspect-ratio: 4 / 3.3; max-height: 62vh; border-radius: 24px; overflow: hidden;
-  border: var(--zt-bw) solid var(--zt-line); box-shadow: var(--zt-shadow);
-  background-color: var(--zt-yellow);
-  background-image: repeating-conic-gradient(from 0deg at 50% 55%, rgba(255, 255, 255, 0.32) 0deg 9deg, rgba(255, 255, 255, 0) 9deg 18deg);
+.title {
+  font-size: 2.4rem;
 }
-[data-bs-theme='dark'] .stage { background-color: #1b1b1b; background-image: repeating-conic-gradient(from 0deg at 50% 55%, rgba(255, 204, 0, 0.1) 0deg 9deg, rgba(255, 204, 0, 0) 9deg 18deg); }
+.stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3.3;
+  max-height: 62vh;
+  border-radius: 24px;
+  overflow: hidden;
+  border: var(--zt-bw) solid var(--zt-line);
+  box-shadow: var(--zt-shadow);
+  background-color: var(--zt-yellow);
+  background-image: repeating-conic-gradient(
+    from 0deg at 50% 55%,
+    rgba(255, 255, 255, 0.32) 0deg 9deg,
+    rgba(255, 255, 255, 0) 9deg 18deg
+  );
+}
+[data-bs-theme='dark'] .stage {
+  background-color: #1b1b1b;
+  background-image: repeating-conic-gradient(
+    from 0deg at 50% 55%,
+    rgba(255, 204, 0, 0.1) 0deg 9deg,
+    rgba(255, 204, 0, 0) 9deg 18deg
+  );
+}
 /* Portrait on phones, so flipbook-vue shows one large page instead of two small ones */
-@media (max-width: 600px) { .stage { aspect-ratio: 3 / 4.1; max-height: 72vh; } }
-.book { width: 100%; height: 100%; }
-.stage.busy .book { pointer-events: none; }
-.slam-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+@media (max-width: 600px) {
+  .stage {
+    aspect-ratio: 3 / 4.1;
+    max-height: 72vh;
+  }
+}
+.book {
+  width: 100%;
+  height: 100%;
+}
+.stage.busy .book {
+  pointer-events: none;
+}
+.slam-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
 </style>

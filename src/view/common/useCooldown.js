@@ -18,7 +18,9 @@ export function useCooldown(ms = 700) {
       return await fn()
     } finally {
       clearTimeout(timer)
-      timer = setTimeout(() => { cooling.value = false }, ms)
+      timer = setTimeout(() => {
+        cooling.value = false
+      }, ms)
     }
   }
 

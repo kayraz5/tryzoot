@@ -1,39 +1,39 @@
 <!-- EDITOR: EUDALE -->
 <script setup>
-import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
-import UserAvatar from "./UserAvatar.vue";
-import { levelFor, titleFor } from "../../model/services/xp.js";
-import { STYLES } from "../../model/data/origins.js";
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import UserAvatar from './UserAvatar.vue'
+import { levelFor, titleFor } from '../../model/services/xp.js'
+import { STYLES } from '../../model/data/origins.js'
 
 /**
  * Public profile preview (what other travellers can see before questing with you).
  * Only public profile fields: no location, no contact details.
  * The `actions` slot is for things like Report / Block (added with chat).
  */
-const props = defineProps({ profile: { type: Object, default: null } });
-const emit = defineEmits(["close"]);
-const closeBtn = ref(null);
+const props = defineProps({ profile: { type: Object, default: null } })
+const emit = defineEmits(['close'])
+const closeBtn = ref(null)
 
-const level = computed(() => levelFor(props.profile?.xp || 0));
-const style = computed(() => STYLES[props.profile?.style]);
+const level = computed(() => levelFor(props.profile?.xp || 0))
+const style = computed(() => STYLES[props.profile?.style])
 
 function onKey(e) {
-  if (e.key === "Escape") emit("close");
+  if (e.key === 'Escape') emit('close')
 }
 watch(
   () => props.profile,
   async (p) => {
     if (p) {
-      window.addEventListener("keydown", onKey);
-      await nextTick();
-      closeBtn.value?.focus();
+      window.addEventListener('keydown', onKey)
+      await nextTick()
+      closeBtn.value?.focus()
     } else {
-      window.removeEventListener("keydown", onKey);
+      window.removeEventListener('keydown', onKey)
     }
   },
-  { immediate: true },
-);
-onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
+  { immediate: true }
+)
+onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 </script>
 
 <template>
@@ -55,9 +55,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
           <i class="bi bi-x-lg"></i>
         </button>
         <UserAvatar :profile="profile" :size="84" show-level class="mb-3" />
-        <h2
-          class="h4 mb-0 d-flex align-items-center justify-content-center gap-2"
-        >
+        <h2 class="h4 mb-0 d-flex align-items-center justify-content-center gap-2">
           {{ profile.display_name }}
           <i
             v-if="profile.is_verified"
@@ -67,8 +65,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKey));
           ></i>
         </h2>
         <div class="text-muted small mb-3">
-          {{ titleFor(level.level) }} ·
-          {{ (profile.xp || 0).toLocaleString() }} XP
+          {{ titleFor(level.level) }} · {{ (profile.xp || 0).toLocaleString() }} XP
         </div>
         <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
           <span v-if="profile.role === 'host'" class="zt-pill pink"

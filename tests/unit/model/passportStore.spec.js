@@ -117,7 +117,9 @@ describe('passport store loading', () => {
     expect(passport.userId).toBe('user-1')
     expect(passport.stamps).toEqual(stamps)
     expect(passport.stampedIds).toEqual(new Set(stamps.map(({ place_id }) => place_id)))
-    expect(passport.seen).toEqual(new Set(['previously-seen', ...stamps.map(({ place_id }) => place_id)]))
+    expect(passport.seen).toEqual(
+      new Set(['previously-seen', ...stamps.map(({ place_id }) => place_id)])
+    )
     expect(passport.slammed).toEqual(new Set(['central']))
     expect(passport.choppedAreas).toEqual(['central'])
     expect(passport.nationality).toBe('IN')

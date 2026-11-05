@@ -54,15 +54,26 @@ function tap(i) {
     </div>
     <ol class="stop-list">
       <li v-for="(s, idx) in stops" :key="s.place_id || idx">
-        <button type="button" class="stop" :class="{ in: idx + 1 >= from && idx + 1 <= to, locked: locked(idx + 1) }"
-          :aria-pressed="idx + 1 >= from && idx + 1 <= to" :disabled="locked(idx + 1)" @click="tap(idx + 1)">
-          <span class="time mono" :aria-label="`${formatTime(s.arrive_iso)} to ${formatTime(s.depart_iso)}`">
+        <button
+          type="button"
+          class="stop"
+          :class="{ in: idx + 1 >= from && idx + 1 <= to, locked: locked(idx + 1) }"
+          :aria-pressed="idx + 1 >= from && idx + 1 <= to"
+          :disabled="locked(idx + 1)"
+          @click="tap(idx + 1)"
+        >
+          <span
+            class="time mono"
+            :aria-label="`${formatTime(s.arrive_iso)} to ${formatTime(s.depart_iso)}`"
+          >
             <span class="from">{{ formatTime(s.arrive_iso) }}</span>
             <span class="to">{{ formatTime(s.depart_iso) }}</span>
           </span>
           <span class="flex-grow-1 text-start min-w-0">
             <span class="d-block fw-800 text-truncate">{{ s.name }}</span>
-            <span class="d-block tiny text-truncate">{{ s.area }}<slot name="detail" :stop="s" :index="idx + 1" /></span>
+            <span class="d-block tiny text-truncate"
+              >{{ s.area }}<slot name="detail" :stop="s" :index="idx + 1"
+            /></span>
           </span>
           <span class="tag tiny">
             <template v-if="idx + 1 > limit"><i class="bi bi-airplane"></i> too late</template>
@@ -77,13 +88,53 @@ function tap(i) {
 </template>
 
 <style scoped>
-.stop-list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; } /* minmax: long names truncate instead of widening the list */
-.stop { width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; border: 2px dashed var(--zt-soft-line); background: transparent; color: var(--zt-muted); }
-.stop.in { border: 2px solid var(--zt-line); background: var(--zt-yellow-pale); color: #111; }
-.stop.locked { opacity: 0.55; }
-.stop .time { flex: none; width: 46px; display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; font-size: 0.8rem; }
-.stop .time .from { font-weight: 800; }
-.stop .time .to { opacity: 0.7; }
-.stop .tag { flex: none; font-weight: 700; }
-.min-w-0 { min-width: 0; }
+.stop-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+} /* minmax: long names truncate instead of widening the list */
+.stop {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 2px dashed var(--zt-soft-line);
+  background: transparent;
+  color: var(--zt-muted);
+}
+.stop.in {
+  border: 2px solid var(--zt-line);
+  background: var(--zt-yellow-pale);
+  color: #111;
+}
+.stop.locked {
+  opacity: 0.55;
+}
+.stop .time {
+  flex: none;
+  width: 46px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.15;
+  font-size: 0.8rem;
+}
+.stop .time .from {
+  font-weight: 800;
+}
+.stop .time .to {
+  opacity: 0.7;
+}
+.stop .tag {
+  flex: none;
+  font-weight: 700;
+}
+.min-w-0 {
+  min-width: 0;
+}
 </style>

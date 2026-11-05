@@ -12,15 +12,50 @@ let sent = []
 // No database in unit tests: a fake quest with a few messages.
 vi.mock('../../../src/model/services/social.js', async (orig) => ({
   ...(await orig()),
-  getQuest: vi.fn(async (id) => ({ id, title: 'Chinatown', status: 'open', ends_at: at(120), roster })),
+  getQuest: vi.fn(async (id) => ({
+    id,
+    title: 'Chinatown',
+    status: 'open',
+    ends_at: at(120),
+    roster
+  })),
   listMessages: vi.fn(async (id) => [
-    { id: 1, party_id: id, user_id: null, type: 'system', body: 'Eudale joined for Maxwell Food Centre', created_at: at(-30) },
-    { id: 2, party_id: id, user_id: 'mei', type: 'text', body: "I'm wearing a yellow cap", created_at: at(-20) },
-    { id: 3, party_id: id, user_id: null, type: 'system', body: '🤝 Mei & Eudale earned a co-op stamp at Maxwell Food Centre (+20% XP)', meta: { kind: 'coop' }, created_at: at(-10) }
+    {
+      id: 1,
+      party_id: id,
+      user_id: null,
+      type: 'system',
+      body: 'Eudale joined for Maxwell Food Centre',
+      created_at: at(-30)
+    },
+    {
+      id: 2,
+      party_id: id,
+      user_id: 'mei',
+      type: 'text',
+      body: "I'm wearing a yellow cap",
+      created_at: at(-20)
+    },
+    {
+      id: 3,
+      party_id: id,
+      user_id: null,
+      type: 'system',
+      body: '🤝 Mei & Eudale earned a co-op stamp at Maxwell Food Centre (+20% XP)',
+      meta: { kind: 'coop' },
+      created_at: at(-10)
+    }
   ]),
   watchMessages: vi.fn(async () => () => {}),
   sendMessage: vi.fn(async (partyId, body, type) => {
-    const m = { id: 100 + sent.length, party_id: partyId, user_id: 'me', type, body, created_at: new Date().toISOString() }
+    const m = {
+      id: 100 + sent.length,
+      party_id: partyId,
+      user_id: 'me',
+      type,
+      body,
+      created_at: new Date().toISOString()
+    }
     sent.push(m)
     return m
   }),
@@ -41,13 +76,22 @@ import { useUiStore } from '../../../src/model/stores/ui.js'
 function setup() {
   setActivePinia(createPinia())
   useUserStore().session = { user: { id: 'me' } }
-  try { localStorage.clear() } catch {}
+  try {
+    localStorage.clear()
+  } catch {}
   return usePartyStore()
 }
-const mountDrawer = () => mount(QuestChatDrawer, { props: { open: true, partyId: 'q1' }, global: { stubs: { Teleport: true } } })
+const mountDrawer = () =>
+  mount(QuestChatDrawer, {
+    props: { open: true, partyId: 'q1' },
+    global: { stubs: { Teleport: true } }
+  })
 
 describe('Quest chat drawer', () => {
-  beforeEach(() => { sent = []; vi.clearAllMocks() })
+  beforeEach(() => {
+    sent = [];
+    vi.clearAllMocks()
+  })
 
   it('shows messages, system lines (co-op highlighted) and who said what', async () => {
     setup()
@@ -62,17 +106,29 @@ describe('Quest chat drawer', () => {
     const party = setup()
     const w = mountDrawer()
     await flushPromises()
-    await w.findAll('.chips button').find((b) => b.text() === 'On my way').trigger('click')
+    await w
+      .findAll('.chips button')
+      .find((b) => b.text() === 'On my way')
+      .trigger('click')
     await w.find('input').setValue('See you at the queue')
     await w.find('form').trigger('submit')
     await flushPromises()
-    expect(sent.map((m) => [m.type, m.body])).toEqual([['chip', 'On my way'], ['text', 'See you at the queue']])
+    expect(sent.map((m) => [m.type, m.body])).toEqual([
+      ['chip', 'On my way'],
+      ['text', 'See you at the queue']
+    ])
     expect(party.chat.messages.at(-1).body).toBe('See you at the queue')
   })
 
   it('read-only once the quest has ended', async () => {
     setup()
-    social.getQuest.mockResolvedValueOnce({ id: 'q1', title: 'Chinatown', status: 'open', ends_at: at(-60), roster })
+    social.getQuest.mockResolvedValueOnce({
+      id: 'q1',
+      title: 'Chinatown',
+      status: 'open',
+      ends_at: at(-60),
+      roster
+    })
     const w = mountDrawer()
     await flushPromises()
     expect(w.find('form').exists()).toBe(false)
@@ -84,7 +140,14 @@ describe('Quest chat drawer', () => {
     await party.startChat('q1')
     expect(party.unread).toBe(1) // Mei's message (system lines don't count)
     party.markChatRead()
-    party.addMessage({ id: 9, party_id: 'q1', user_id: 'mei', type: 'chip', body: 'Running 5 min late', created_at: at(1) })
+    party.addMessage({
+      id: 9,
+      party_id: 'q1',
+      user_id: 'mei',
+      type: 'chip',
+      body: 'Running 5 min late',
+      created_at: at(1)
+    })
     expect(party.unread).toBe(1)
   })
 
@@ -118,13 +181,17 @@ describe('Centred prompts and co-op stamps', () => {
     const party = setup()
     const ui = useUiStore()
     ui.celebration = { place: { id: 'maxwell-food-centre' } }
-    social.coopUnseen.mockResolvedValueOnce([{ id: 7, place_name: 'Maxwell Food Centre', partners: 'Mei', bonus_xp: 14 }])
+    social.coopUnseen.mockResolvedValueOnce([
+      { id: 7, place_name: 'Maxwell Food Centre', partners: 'Mei', bonus_xp: 14 }
+    ])
     const done = party.checkCoop()
     await flushPromises()
     expect(party.dialog).toBe(null) // still celebrating
     ui.celebration = null
     await flushPromises()
-    expect(party.dialog.body).toBe('You and Mei were both at Maxwell Food Centre for the first time. +14 bonus XP each.')
+    expect(party.dialog.body).toBe(
+      'You and Mei were both at Maxwell Food Centre for the first time. +14 bonus XP each.'
+    )
     expect(social.markCoopSeen).toHaveBeenCalledWith([7])
     party.answer(true)
     await done
@@ -139,10 +206,24 @@ describe('App-wide chat: new-message banner', () => {
     const party = setup()
     const w = mount(QuestChatHost, { global: { stubs: { Teleport: true, QuestChatDrawer: true } } })
     await party.startChat('q1')
-    party.addMessage({ id: 20, party_id: 'q1', user_id: 'me', type: 'text', body: 'my own message', created_at: at(0) })
+    party.addMessage({
+      id: 20,
+      party_id: 'q1',
+      user_id: 'me',
+      type: 'text',
+      body: 'my own message',
+      created_at: at(0)
+    })
     await flushPromises()
     expect(w.find('.chat-banner').exists()).toBe(false) // not for my own messages
-    party.addMessage({ id: 21, party_id: 'q1', user_id: 'mei', type: 'chip', body: 'Running 5 min late', created_at: at(0) })
+    party.addMessage({
+      id: 21,
+      party_id: 'q1',
+      user_id: 'mei',
+      type: 'chip',
+      body: 'Running 5 min late',
+      created_at: at(0)
+    })
     await flushPromises()
     expect(w.find('.chat-banner').text()).toContain('Mei · Chinatown')
     expect(w.find('.chat-banner').text()).toContain('Running 5 min late')
@@ -154,7 +235,14 @@ describe('App-wide chat: new-message banner', () => {
     const party = setup()
     await party.startChat('q1')
     party.openChat('q1')
-    party.addMessage({ id: 22, party_id: 'q1', user_id: 'mei', type: 'text', body: 'hi', created_at: at(0) })
+    party.addMessage({
+      id: 22,
+      party_id: 'q1',
+      user_id: 'mei',
+      type: 'text',
+      body: 'hi',
+      created_at: at(0)
+    })
     expect(party.incoming).toBe(null)
   })
 })

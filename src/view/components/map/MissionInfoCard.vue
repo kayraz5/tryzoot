@@ -4,9 +4,9 @@ import { computed, ref } from 'vue'
 import { placeStampUrl } from '../../../model/services/stampArt.js'
 import QuestCoopChip from '../quests/QuestCoopChip.vue'
 import QuestChatButton from '../quests/QuestChatButton.vue' // "Chat with Mei" (only while in a social quest)
-import QuestGoSolo from '../quests/QuestGoSolo.vue'         // "Go solo" link (only after joining someone's quest)
-import TransportToggle from './TransportToggle.vue'                 // Public transport | Car (re-times + reroutes)
-import TransitSteps from './transit/TransitSteps.vue'               // MRT/bus step-by-step for the current leg
+import QuestGoSolo from '../quests/QuestGoSolo.vue' // "Go solo" link (only after joining someone's quest)
+import TransportToggle from './TransportToggle.vue' // Public transport | Car (re-times + reroutes)
+import TransitSteps from './transit/TransitSteps.vue' // MRT/bus step-by-step for the current leg
 
 /*
  * Next-stop card ("center console") at the bottom of the map. Presentational only:
@@ -19,21 +19,21 @@ import TransitSteps from './transit/TransitSteps.vue'               // MRT/bus s
  * toggle while it is open, so without it there is no route back to the flag button.
  */
 const props = defineProps({
-  mission: { type: Object, default: null },       // the active mission, or null if none
-  next: { type: Object, default: null },           // the stop you're heading to, or null if the quest is done
-  stopNumber: { type: String, default: '' },       // e.g. "2/5"
-  liveTravel: { type: Object, default: null },     // { mode, minutes, detail }
-  distance: { type: Number, default: null },       // metres to `next`
-  lateBy: { type: Number, default: null },         // minutes behind plan (negative = early)
-  guidance: { type: Object, default: null },       // { icon, text }
-  steps: { type: Array, default: () => [] },       // transit steps for this leg (empty when walking/taxi)
-  stepIndex: { type: Number, default: 0 },         // which of `steps` the traveller is on
-  busAlternative: { type: Object, default: null },         // a bus that replaces a taxi leg, if any
-  check: { type: Object, default: null },          // { ok, message } — can you stamp right now?
-  stamping: { type: Boolean, default: false },     // a stamp request is in flight
+  mission: { type: Object, default: null }, // the active mission, or null if none
+  next: { type: Object, default: null }, // the stop you're heading to, or null if the quest is done
+  stopNumber: { type: String, default: '' }, // e.g. "2/5"
+  liveTravel: { type: Object, default: null }, // { mode, minutes, detail }
+  distance: { type: Number, default: null }, // metres to `next`
+  lateBy: { type: Number, default: null }, // minutes behind plan (negative = early)
+  guidance: { type: Object, default: null }, // { icon, text }
+  steps: { type: Array, default: () => [] }, // transit steps for this leg (empty when walking/taxi)
+  stepIndex: { type: Number, default: 0 }, // which of `steps` the traveller is on
+  busAlternative: { type: Object, default: null }, // a bus that replaces a taxi leg, if any
+  check: { type: Object, default: null }, // { ok, message } — can you stamp right now?
+  stamping: { type: Boolean, default: false }, // a stamp request is in flight
   stampedCount: { type: Number, default: 0 },
   totalVisits: { type: Number, default: 0 },
-  modeIcon: { type: Object, required: true },      // { walk, mrt, taxi } -> bootstrap-icon class
+  modeIcon: { type: Object, required: true }, // { walk, mrt, taxi } -> bootstrap-icon class
   formatDistance: { type: Function, required: true } // metres -> "120 m" / "1.2 km"
 })
 
@@ -48,8 +48,14 @@ const showTips = ref(false)
 const stepsOpen = computed(() => showAllSteps.value || showTips.value)
 const hasSteps = computed(() => props.steps.length > 0)
 const usesTransit = computed(() => props.steps.some((x) => x.mode !== 'walk'))
-const toggleAllSteps = () => { showAllSteps.value = !showAllSteps.value; showTips.value = false }
-const toggleTips = () => { showTips.value = !showTips.value; showAllSteps.value = false }
+const toggleAllSteps = () => {
+  showAllSteps.value = !showAllSteps.value
+  showTips.value = false
+}
+const toggleTips = () => {
+  showTips.value = !showTips.value
+  showAllSteps.value = false
+}
 
 /*
  * Travel / Distance / Stay are reference numbers, not something you act on, so
@@ -59,11 +65,19 @@ const toggleTips = () => { showTips.value = !showTips.value; showAllSteps.value 
 const STATS_KEY = 'zoot.mapCardStats'
 const showStats = ref(readStatsFlag())
 function readStatsFlag() {
-  try { return localStorage.getItem(STATS_KEY) === '1' } catch { return false }
+  try {
+    return localStorage.getItem(STATS_KEY) === '1'
+  } catch {
+    return false
+  }
 }
 function toggleStats() {
   showStats.value = !showStats.value
-  try { localStorage.setItem(STATS_KEY, showStats.value ? '1' : '0') } catch { /* just won't persist */ }
+  try {
+    localStorage.setItem(STATS_KEY, showStats.value ? '1' : '0')
+  } catch {
+    /* just won't persist */
+  }
 }
 const travelMin = computed(() => props.liveTravel?.minutes ?? props.next?.travel_min ?? null)
 const isVisit = computed(() => props.next?.kind === 'visit')
@@ -101,18 +115,34 @@ const statsLabel = computed(() => {
       <div class="eyebrow">No active quest</div>
       <h2 class="empty-title">Plan a layover first</h2>
       <p class="empty-note">Your stops, route and stamps show up here once you build a quest.</p>
-      <button type="button" class="pill pill--go" @click="$emit('plan')"><i class="bi bi-magic"></i> Plan a layover</button>
-      <button type="button" class="head-btn card-close" aria-label="Hide next-stop card" @click="$emit('close')">
+      <button type="button" class="pill pill--go" @click="$emit('plan')">
+        <i class="bi bi-magic"></i> Plan a layover
+      </button>
+      <button
+        type="button"
+        class="head-btn card-close"
+        aria-label="Hide next-stop card"
+        @click="$emit('close')"
+      >
         <i class="bi bi-x-lg" aria-hidden="true"></i>
       </button>
     </div>
 
     <div v-else-if="!next" class="empty">
-      <div class="eyebrow">Quest complete &middot; {{ stampedCount }}/{{ totalVisits }} stamped</div>
+      <div class="eyebrow">
+        Quest complete &middot; {{ stampedCount }}/{{ totalVisits }} stamped
+      </div>
       <h2 class="empty-title">{{ mission.title }}</h2>
       <p class="empty-note">Nice run. Your chops are in the passport.</p>
-      <button type="button" class="pill pill--go" @click="$emit('open-passport')"><i class="bi bi-book"></i> Open passport</button>
-      <button type="button" class="head-btn card-close" aria-label="Hide next-stop card" @click="$emit('close')">
+      <button type="button" class="pill pill--go" @click="$emit('open-passport')">
+        <i class="bi bi-book"></i> Open passport
+      </button>
+      <button
+        type="button"
+        class="head-btn card-close"
+        aria-label="Hide next-stop card"
+        @click="$emit('close')"
+      >
         <i class="bi bi-x-lg" aria-hidden="true"></i>
       </button>
     </div>
@@ -121,32 +151,74 @@ const statsLabel = computed(() => {
       <header class="card-head">
         <!-- The stamp is still the card's one call to action: dashed while you're too
              far, filled yellow and pulsing the moment you're in range. -->
-        <button type="button" class="stamp-btn" :class="{ ready: check?.ok }" :disabled="stamping" @click="$emit('stamp')"
-          :aria-label="next.kind === 'return' ? 'Check in back home' : `Stamp ${next.name}`">
+        <button
+          type="button"
+          class="stamp-btn"
+          :class="{ ready: check?.ok }"
+          :disabled="stamping"
+          @click="$emit('stamp')"
+          :aria-label="next.kind === 'return' ? 'Check in back home' : `Stamp ${next.name}`"
+        >
           <img v-if="stampArt" :src="stampArt" alt="" class="stamp-art" />
-          <i v-else class="bi" :class="next.kind === 'return' ? 'bi-house-check-fill' : 'bi-patch-check-fill'"></i>
+          <i
+            v-else
+            class="bi"
+            :class="next.kind === 'return' ? 'bi-house-check-fill' : 'bi-patch-check-fill'"
+          ></i>
         </button>
 
         <h2 class="head-title">{{ next.name }}</h2>
 
         <div class="head-actions">
-          <button type="button" class="head-btn stats-toggle" :class="{ on: showStats, [planStatus.tone]: !showStats }"
-            :aria-expanded="showStats" aria-controls="zt-card-stats" :aria-label="statsLabel" :title="statsLabel"
-            @click="toggleStats">
-            <i class="bi" :class="showStats ? 'bi-chevron-up' : 'bi-sliders2'" aria-hidden="true"></i>
+          <button
+            type="button"
+            class="head-btn stats-toggle"
+            :class="{ on: showStats, [planStatus.tone]: !showStats }"
+            :aria-expanded="showStats"
+            aria-controls="zt-card-stats"
+            :aria-label="statsLabel"
+            :title="statsLabel"
+            @click="toggleStats"
+          >
+            <i
+              class="bi"
+              :class="showStats ? 'bi-chevron-up' : 'bi-sliders2'"
+              aria-hidden="true"
+            ></i>
             <!-- Behind plan is the one number worth seeing without opening the strip. -->
-            <span v-if="!showStats && planStatus.tone === 'behind'" class="warn-dot" aria-hidden="true"></span>
+            <span
+              v-if="!showStats && planStatus.tone === 'behind'"
+              class="warn-dot"
+              aria-hidden="true"
+            ></span>
           </button>
 
-          <button type="button" class="head-btn" aria-label="Map style" title="Map style" @click="$emit('change-map-style')">
+          <button
+            type="button"
+            class="head-btn"
+            aria-label="Map style"
+            title="Map style"
+            @click="$emit('change-map-style')"
+          >
             <i class="bi bi-layers-fill" aria-hidden="true"></i>
           </button>
 
-          <button type="button" class="head-btn head-btn--help" aria-label="Need help?" title="Need help?" @click="$emit('need-help')">
+          <button
+            type="button"
+            class="head-btn head-btn--help"
+            aria-label="Need help?"
+            title="Need help?"
+            @click="$emit('need-help')"
+          >
             <i class="bi bi-question-lg" aria-hidden="true"></i>
           </button>
 
-          <button type="button" class="head-btn card-close" aria-label="Hide next-stop card" @click="$emit('close')">
+          <button
+            type="button"
+            class="head-btn card-close"
+            aria-label="Hide next-stop card"
+            @click="$emit('close')"
+          >
             <i class="bi bi-x-lg" aria-hidden="true"></i>
           </button>
         </div>
@@ -160,27 +232,50 @@ const statsLabel = computed(() => {
           <span aria-hidden="true">{{ s.label }}</span>
           <span class="visually-hidden">{{ s.say || `${s.label} ${s.value}` }}</span>
         </div>
-        <div class="plan-pill" :class="planStatus.tone"><span class="dot" aria-hidden="true"></span>{{ planStatus.text }}</div>
+        <div class="plan-pill" :class="planStatus.tone">
+          <span class="dot" aria-hidden="true"></span>{{ planStatus.text }}
+        </div>
       </div>
 
       <p v-if="checkNote" class="check-note">{{ checkNote }}</p>
 
-      <TransitSteps :steps="steps" :index="stepIndex" :bus-alternative="busAlternative"
-        :fallback="guidance" :fallback-minutes="travelMin" :fallback-mode="liveTravel?.mode || next.travel_mode"
-        :mode-icon="modeIcon" :show-all="showAllSteps" :show-tips="showTips" />
+      <TransitSteps
+        :steps="steps"
+        :index="stepIndex"
+        :bus-alternative="busAlternative"
+        :fallback="guidance"
+        :fallback-minutes="travelMin"
+        :fallback-mode="liveTravel?.mode || next.travel_mode"
+        :mode-icon="modeIcon"
+        :show-all="showAllSteps"
+        :show-tips="showTips"
+      />
 
       <QuestChatButton class="chat-btn" />
 
       <div class="card-actions">
         <TransportToggle />
         <div class="action-links">
-          <button v-if="hasSteps" type="button" class="link" :aria-expanded="showAllSteps" @click="toggleAllSteps">
+          <button
+            v-if="hasSteps"
+            type="button"
+            class="link"
+            :aria-expanded="showAllSteps"
+            @click="toggleAllSteps"
+          >
             {{ showAllSteps ? 'Hide steps' : `All ${steps.length} steps` }}
           </button>
           <!-- The full phrase does not fit beside the transport toggle on a phone, so a
                short form takes over there. The accessible name stays the full one. -->
-          <button v-if="usesTransit" type="button" class="link link--tips" :aria-expanded="showTips"
-            aria-label="First time on public transport?" title="First time on public transport?" @click="toggleTips">
+          <button
+            v-if="usesTransit"
+            type="button"
+            class="link link--tips"
+            :aria-expanded="showTips"
+            aria-label="First time on public transport?"
+            title="First time on public transport?"
+            @click="toggleTips"
+          >
             <span class="tips-full" aria-hidden="true">First time on public transport?</span>
             <span class="tips-short" aria-hidden="true">First time?</span>
           </button>
@@ -236,13 +331,13 @@ const statsLabel = computed(() => {
   --sh: 1;
   --sw: 1;
   --s: calc(var(--sh) * var(--sw));
-  --t-xs: max(0.56rem, calc(clamp(0.58rem, 2.7cqi, 0.8rem) * var(--s)));   /* eyebrows, stat labels */
-  --t-sm: max(0.62rem, calc(clamp(0.66rem, 3.1cqi, 0.95rem) * var(--s)));  /* detail text, buttons */
-  --t-md: max(0.72rem, calc(clamp(0.8rem, 3.8cqi, 1.15rem) * var(--s)));   /* next-step title */
-  --t-lg: max(0.8rem, calc(clamp(0.92rem, 4.8cqi, 1.5rem) * var(--s)));    /* now-step title */
-  --t-xl: max(0.86rem, calc(clamp(1rem, 5.4cqi, 1.75rem) * var(--s)));     /* the stop name */
+  --t-xs: max(0.56rem, calc(clamp(0.58rem, 2.7cqi, 0.8rem) * var(--s))); /* eyebrows, stat labels */
+  --t-sm: max(0.62rem, calc(clamp(0.66rem, 3.1cqi, 0.95rem) * var(--s))); /* detail text, buttons */
+  --t-md: max(0.72rem, calc(clamp(0.8rem, 3.8cqi, 1.15rem) * var(--s))); /* next-step title */
+  --t-lg: max(0.8rem, calc(clamp(0.92rem, 4.8cqi, 1.5rem) * var(--s))); /* now-step title */
+  --t-xl: max(0.86rem, calc(clamp(1rem, 5.4cqi, 1.75rem) * var(--s))); /* the stop name */
   --t-stat: max(0.72rem, calc(clamp(0.82rem, 4.2cqi, 1.3rem) * var(--s))); /* stat values */
-  --t-big: max(0.9rem, calc(clamp(1rem, 5.6cqi, 1.85rem) * var(--s)));     /* the big duration */
+  --t-big: max(0.9rem, calc(clamp(1rem, 5.6cqi, 1.85rem) * var(--s))); /* the big duration */
   --pad: max(8px, calc(clamp(10px, 3cqi, 18px) * var(--s)));
   --gap: max(5px, calc(clamp(7px, 2.2cqi, 12px) * var(--s)));
   --pad-sm: max(6px, calc(clamp(8px, 2.6cqi, 14px) * var(--s)));
@@ -261,13 +356,33 @@ const statsLabel = computed(() => {
 
 /* Short screens shrink the card rather than letting it climb the map. Ordered
    tallest-first so the narrowest matching step wins. */
-@media (max-height: 960px) { .mission-card { --sh: 0.92; } }
-@media (max-height: 780px) { .mission-card { --sh: 0.86; } }
-@media (max-height: 690px) { .mission-card { --sh: 0.8; } }
-@media (max-height: 600px) { .mission-card { --sh: 0.74; } }
+@media (max-height: 960px) {
+  .mission-card {
+    --sh: 0.92;
+  }
+}
+@media (max-height: 780px) {
+  .mission-card {
+    --sh: 0.86;
+  }
+}
+@media (max-height: 690px) {
+  .mission-card {
+    --sh: 0.8;
+  }
+}
+@media (max-height: 600px) {
+  .mission-card {
+    --sh: 0.74;
+  }
+}
 /* Wide viewports: the card is at its 600px cap, where the width-driven type is
    at its largest and the card is tallest in absolute terms. */
-@media (min-width: 992px) { .mission-card { --sw: 0.9; } }
+@media (min-width: 992px) {
+  .mission-card {
+    --sw: 0.9;
+  }
+}
 
 /* ---- header: stamp, name, close ---- */
 .card-head {
@@ -279,7 +394,11 @@ const statsLabel = computed(() => {
 
 /* Map style and Need help? live here as icons rather than as pills in the bottom
    row: they are occasional, and two labelled buttons took a whole band of map. */
-.head-actions { display: flex; align-items: center; gap: calc(var(--gap) * 0.5); }
+.head-actions {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--gap) * 0.5);
+}
 
 .head-title {
   margin: 0;
@@ -306,12 +425,27 @@ const statsLabel = computed(() => {
   cursor: pointer;
   flex: none;
 }
-.head-btn .bi { opacity: 0.75; }
-.head-btn:hover .bi, .head-btn:active .bi { opacity: 1; }
-.stats-toggle.on { background: rgba(255, 244, 194, 0.12); border-color: rgba(255, 244, 194, 0.4); }
-.stats-toggle.on .bi { opacity: 1; }
-.head-btn--help { border-color: rgba(255, 107, 107, 0.5); color: #ff6b6b; }
-.head-btn--help .bi { opacity: 0.9; }
+.head-btn .bi {
+  opacity: 0.75;
+}
+.head-btn:hover .bi,
+.head-btn:active .bi {
+  opacity: 1;
+}
+.stats-toggle.on {
+  background: rgba(255, 244, 194, 0.12);
+  border-color: rgba(255, 244, 194, 0.4);
+}
+.stats-toggle.on .bi {
+  opacity: 1;
+}
+.head-btn--help {
+  border-color: rgba(255, 107, 107, 0.5);
+  color: #ff6b6b;
+}
+.head-btn--help .bi {
+  opacity: 0.9;
+}
 
 /* Collapsed and behind plan: a dot on the button instead of the whole strip. */
 .warn-dot {
@@ -341,7 +475,9 @@ const statsLabel = computed(() => {
   font-size: var(--t-lg);
   cursor: pointer;
 }
-.stamp-btn:disabled { cursor: wait; }
+.stamp-btn:disabled {
+  cursor: wait;
+}
 .stamp-btn.ready {
   border-style: solid;
   background: var(--zt-yellow);
@@ -349,12 +485,23 @@ const statsLabel = computed(() => {
   animation: stamp-ready 1.4s infinite;
 }
 @keyframes stamp-ready {
-  0% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0.7); }
-  70%, 100% { box-shadow: 0 0 0 14px rgba(255, 204, 0, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 204, 0, 0.7);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 14px rgba(255, 204, 0, 0);
+  }
 }
-.stamp-art { width: 100%; height: 100%; object-fit: contain; }
+.stamp-art {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 
-.card-chip { align-self: start; }
+.card-chip {
+  align-self: start;
+}
 
 /* ---- stats strip ---- */
 .stats {
@@ -403,10 +550,26 @@ const statsLabel = computed(() => {
   white-space: nowrap;
   font-size: var(--t-sm);
 }
-.plan-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
-.plan-pill.behind { background: rgba(255, 77, 0, 0.18); color: #ff7a3d; }
-.plan-pill.ontime { background: rgba(95, 211, 141, 0.16); color: #5fd38d; }
-.plan-pill.wait { background: rgba(255, 244, 194, 0.1); color: var(--zt-yellow-pale); opacity: 0.75; }
+.plan-pill .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+.plan-pill.behind {
+  background: rgba(255, 77, 0, 0.18);
+  color: #ff7a3d;
+}
+.plan-pill.ontime {
+  background: rgba(95, 211, 141, 0.16);
+  color: #5fd38d;
+}
+.plan-pill.wait {
+  background: rgba(255, 244, 194, 0.1);
+  color: var(--zt-yellow-pale);
+  opacity: 0.75;
+}
 
 .check-note {
   margin: 0;
@@ -416,7 +579,9 @@ const statsLabel = computed(() => {
   line-height: 1.3;
 }
 
-.chat-btn { display: block; }
+.chat-btn {
+  display: block;
+}
 
 /* ---- bottom controls ---- */
 .card-actions {
@@ -454,14 +619,28 @@ const statsLabel = computed(() => {
 }
 /* The one that gives way when the row is tight; the ellipsis is only a backstop,
    the short label below is what normally does the work. */
-.link--tips { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.tips-short { display: none; }
+.link--tips {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tips-short {
+  display: none;
+}
 @container (max-width: 430px) {
-  .tips-full { display: none; }
-  .tips-short { display: inline; }
+  .tips-full {
+    display: none;
+  }
+  .tips-short {
+    display: inline;
+  }
 }
 .link:hover,
-.link[aria-expanded='true'] { opacity: 1; color: var(--zt-yellow); }
+.link[aria-expanded='true'] {
+  opacity: 1;
+  color: var(--zt-yellow);
+}
 
 /* One pill recipe for every button on the card, so they line up at any width. */
 .pill {
@@ -475,11 +654,25 @@ const statsLabel = computed(() => {
   background: rgba(255, 255, 255, 0.06);
   color: var(--zt-yellow-pale);
 }
-.pill--go { background: var(--zt-yellow); color: var(--zt-black); justify-self: start; }
+.pill--go {
+  background: var(--zt-yellow);
+  color: var(--zt-black);
+  justify-self: start;
+}
 
 /* ---- empty / finished states ---- */
-.empty { position: relative; padding-right: calc(var(--close) + var(--gap)); display: grid; gap: 4px; justify-items: start; }
-.empty .head-btn { position: absolute; top: 0; right: 0; }
+.empty {
+  position: relative;
+  padding-right: calc(var(--close) + var(--gap));
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+}
+.empty .head-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
 .eyebrow {
   color: var(--zt-yellow-pale);
   opacity: 0.65;
@@ -495,13 +688,27 @@ const statsLabel = computed(() => {
   font-weight: 800;
   font-size: var(--t-xl);
 }
-.empty-note { margin: 0; color: var(--zt-yellow-pale); opacity: 0.7; font-size: var(--t-sm); }
-.empty .pill--go { margin-top: 6px; }
+.empty-note {
+  margin: 0;
+  color: var(--zt-yellow-pale);
+  opacity: 0.7;
+  font-size: var(--t-sm);
+}
+.empty .pill--go {
+  margin-top: 6px;
+}
 
 /* Phones: the map matters more than the card, so everything tightens a notch.
    Container queries already scale type; this trims the boxes around it. */
 @media (max-width: 575.98px) {
-  .mission-card { width: 94%; border-radius: 16px; }
-  .check-note { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mission-card {
+    width: 94%;
+    border-radius: 16px;
+  }
+  .check-note {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 </style>

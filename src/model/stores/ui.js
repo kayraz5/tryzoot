@@ -40,19 +40,27 @@ export const useUiStore = defineStore('ui', {
     toggleTheme() {
       this.theme = this.theme === 'dark' ? 'light' : 'dark'
       document.documentElement.setAttribute('data-bs-theme', this.theme)
-      try { localStorage.setItem('zoot.theme', this.theme) } catch {}
+      try {
+        localStorage.setItem('zoot.theme', this.theme)
+      } catch {}
     },
     setForceRain(on) {
       this.forceRain = on
-      try { localStorage.setItem('zoot.forceRain', on ? '1' : '0') } catch {}
+      try {
+        localStorage.setItem('zoot.forceRain', on ? '1' : '0')
+      } catch {}
     },
     setForceHaze(on) {
       this.forceHaze = on
-      try { localStorage.setItem('zoot.forceHaze', on ? '1' : '0') } catch {}
+      try {
+        localStorage.setItem('zoot.forceHaze', on ? '1' : '0')
+      } catch {}
     },
     setForceLightning(on) {
       this.forceLightning = on
-      try { localStorage.setItem('zoot.forceLightning', on ? '1' : '0') } catch {}
+      try {
+        localStorage.setItem('zoot.forceLightning', on ? '1' : '0')
+      } catch {}
     },
     /**
      * Show a toast. Repeats are folded into the one already on screen instead of
@@ -121,12 +129,15 @@ export const useUiStore = defineStore('ui', {
         this.lightningError = lightning.reason.message
       }
 
-
       return this.weather
     }
   }
 })
 
 function readFlag(key) {
-	try { return localStorage.getItem(key) === '1' } catch { return false }
+  try {
+    return localStorage.getItem(key) === '1'
+  } catch {
+    return false
+  }
 }

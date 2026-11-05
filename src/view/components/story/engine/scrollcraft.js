@@ -131,12 +131,23 @@
   var fineMQ = matchMedia('(hover: hover) and (pointer: fine)');
   var smallMQ = matchMedia('(max-width: 860px)');
   var coarse = matchMedia('(hover: none) and (pointer: coarse)').matches;
-  var isMobile = function () { return coarse || smallMQ.matches; };
+  var isMobile = function () {
+    return coarse || smallMQ.matches;
+  };
 
-  var clamp = function (x, a, b) { return x < a ? a : x > b ? b : x; };
-  var clamp01 = function (x) { return clamp(x, 0, 1); };
-  var smooth = function (x) { x = clamp01(x); return x * x * (3 - 2 * x); };
-  var lerp = function (a, b, t) { return a + (b - a) * t; };
+  var clamp = function (x, a, b) {
+    return x < a ? a : x > b ? b : x;
+  };
+  var clamp01 = function (x) {
+    return clamp(x, 0, 1);
+  };
+  var smooth = function (x) {
+    x = clamp01(x);
+    return x * x * (3 - 2 * x);
+  };
+  var lerp = function (a, b, t) {
+    return a + (b - a) * t;
+  };
 
   // Monotone dwell remap. Settles the camera mid-act (where the copy peaks) and
   // moves quicker at the edges. f(0)=0 and f(1)=1 always, so seam frames between
@@ -176,19 +187,30 @@
     if (m) {
       var h = m[1];
       if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
-      return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+      return [
+        parseInt(h.slice(0, 2), 16),
+        parseInt(h.slice(2, 4), 16),
+        parseInt(h.slice(4, 6), 16)
+      ];
     }
     m = str.match(/rgba?\(([^)]+)\)/i);
     if (m) {
-      var p = m[1].split(/[,\s/]+/).filter(Boolean).map(parseFloat);
+      var p = m[1]
+        .split(/[,\s/]+/)
+        .filter(Boolean)
+        .map(parseFloat);
       return [p[0], p[1], p[2]];
     }
     return null;
   }
   function mixColor(a, b, t) {
-    return 'rgb(' + Math.round(lerp(a[0], b[0], t)) + ',' +
-                    Math.round(lerp(a[1], b[1], t)) + ',' +
-                    Math.round(lerp(a[2], b[2], t)) + ')';
+    return 'rgb(' +
+      Math.round(lerp(a[0], b[0], t)) +
+      ',' +
+      Math.round(lerp(a[1], b[1], t)) +
+      ',' +
+      Math.round(lerp(a[2], b[2], t)) +
+      ')';
   }
 
   // text splitting
@@ -204,7 +226,10 @@
       var parts = mode === 'chars' ? Array.from(text) : text.split(/(\s+)/);
       el.textContent = '';
       parts.forEach(function (t) {
-        if (/^\s+$/.test(t)) { el.appendChild(document.createTextNode(t)); return; }
+        if (/^\s+$/.test(t)) {
+          el.appendChild(document.createTextNode(t));
+          return;
+        }
         var mask = document.createElement('span');
         mask.className = 'sc-split';
         var inner = document.createElement('span');
@@ -225,10 +250,16 @@
         if (i < words.length - 1) el.appendChild(document.createTextNode(' '));
         return s;
       });
-      var lines = [], cur = null, lastTop = null;
+      var lines = [],
+        cur = null,
+        lastTop = null;
       probes.forEach(function (s) {
         var top = s.offsetTop;
-        if (lastTop === null || Math.abs(top - lastTop) > 1) { cur = []; lines.push(cur); lastTop = top; }
+        if (lastTop === null || Math.abs(top - lastTop) > 1) {
+          cur = [];
+          lines.push(cur);
+          lastTop = top;
+        }
         cur.push(s.textContent);
       });
       el.textContent = '';
@@ -280,7 +311,8 @@
     // that never calls destroy() behaves exactly as before.
     var scListeners = [];
     var scDead = false;
-    var scTickFrame = 0, scPointerFrame = 0;
+    var scTickFrame = 0,
+      scPointerFrame = 0;
     function on(type, fn, o) {
       addEventListener(type, fn, o);
       scListeners.push([type, fn, o]);
@@ -291,29 +323,41 @@
     var drifts = [];
     var playheads = [];
     var scrollEls = [];
-    var vh = innerHeight, vw = innerWidth;
-    var y = 0, needsLayout = true;
+    var vh = innerHeight,
+      vw = innerWidth;
+    var y = 0,
+      needsLayout = true;
     var progressBar = root.querySelector('[data-sc-progress]');
     var docEl = document.documentElement;
 
     // One rate for the page, overridable per clip. Read from the mount root, the
     // document element, or the option bag, in that order.
-    var LERP = lerpRate(root.nodeType === 1 ? root : null) ||
-               lerpRate(docEl) ||
-               (opts.lerp > 0 ? clamp(opts.lerp, 0.02, 1) : 0) ||
-               0.18;
+    var LERP =
+      lerpRate(root.nodeType === 1 ? root : null) ||
+      lerpRate(docEl) ||
+      (opts.lerp > 0 ? clamp(opts.lerp, 0.02, 1) : 0) ||
+      0.18;
 
     // Every scrub clip on the page lives here, whatever drives it. tick() walks
     // this one list, so an act clip and a worldflight leg get the same playhead.
     function makeClip(v, host) {
       var rec = {
-        el: v, host: host || v,
-        ready: false, loading: false, painted: false,
-        cur: 0, target: 0, live: false, stuckAt: 0,
+        el: v,
+        host: host || v,
+        ready: false,
+        loading: false,
+        painted: false,
+        cur: 0,
+        target: 0,
+        live: false,
+        stuckAt: 0,
         lerp: lerpRate(v) || LERP
       };
-      v.muted = true; v.playsInline = true; v.preload = 'none';
-      v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
+      v.muted = true;
+      v.playsInline = true;
+      v.preload = 'none';
+      v.setAttribute('muted', '');
+      v.setAttribute('playsinline', '');
       playheads.push(rec);
       return rec;
     }
@@ -329,9 +373,18 @@
         span: parseFloat(el.getAttribute('data-sc-span')) || (pinned ? 1.5 : 0),
         dwell: parseFloat(el.getAttribute('data-sc-dwell')) || 0,
         clipTravel: pinned && el.getAttribute('data-sc-clip-map') === 'travel',
-        p: 0, raw: 0, top: 0, height: 0, live: false,
-        cues: [], parallax: [], reveals: [], counts: [],
-        video: null, seq: null, rail: null
+        p: 0,
+        raw: 0,
+        top: 0,
+        height: 0,
+        live: false,
+        cues: [],
+        parallax: [],
+        reveals: [],
+        counts: [],
+        video: null,
+        seq: null,
+        rail: null
       };
 
       if (pinned) {
@@ -349,9 +402,14 @@
       if (cv) {
         var spec = cv.getAttribute('data-sc-sequence').split(':');
         act.seq = {
-          el: cv, ctx: cv.getContext('2d', { alpha: false }),
-          tpl: spec[0], count: parseInt(spec[1], 10) || 1, start: parseInt(spec[2], 10) || 0,
-          frames: [], loaded: 0, drawn: -1
+          el: cv,
+          ctx: cv.getContext('2d', { alpha: false }),
+          tpl: spec[0],
+          count: parseInt(spec[1], 10) || 1,
+          start: parseInt(spec[2], 10) || 0,
+          frames: [],
+          loaded: 0,
+          drawn: -1
         };
       }
 
@@ -376,7 +434,8 @@
           rOut: nums.length > 3 && !isNaN(nums[3]) ? clamp01(nums[3]) : null,
           rise: parseFloat(c.getAttribute('data-sc-rise')),
           kinetic: c.getAttribute('data-sc-kinetic'),
-          units: null, state: -1
+          units: null,
+          state: -1
         };
         if (cue.rOut === null) cue.rOut = (nums.length > 2 && !isNaN(nums[2])) ? 0.3 : 0.3;
         if (isNaN(cue.rise)) cue.rise = 1;
@@ -390,103 +449,150 @@
 
       // reveals
       Array.prototype.forEach.call(el.querySelectorAll('[data-sc-reveal]'), function (c) {
-        var nums = (c.getAttribute('data-sc-reveal-at') || '0 0.5').trim().split(/\s+/).map(parseFloat);
-        act.reveals.push({ el: c, dir: c.getAttribute('data-sc-reveal') || 'up', from: nums[0] || 0, to: nums[1] || 0.5 });
+        var nums = (c.getAttribute('data-sc-reveal-at') || '0 0.5')
+          .trim()
+          .split(/\s+/)
+          .map(parseFloat);
+        act.reveals.push({
+          el: c,
+          dir: c.getAttribute('data-sc-reveal') || 'up',
+          from: nums[0] || 0,
+          to: nums[1] || 0.5
+        });
       });
 
       // counters
       Array.prototype.forEach.call(el.querySelectorAll('[data-sc-count]'), function (c) {
         var nums = (c.getAttribute('data-sc-count') || '').trim().split(/\s+/);
-        var at = (c.getAttribute('data-sc-count-at') || '0.1 0.55').trim().split(/\s+/).map(parseFloat);
+        var at = (c.getAttribute('data-sc-count-at') || '0.1 0.55')
+          .trim()
+          .split(/\s+/)
+          .map(parseFloat);
         // Strip separators before parsing so the author can write the target
         // exactly as it should render. Without this, "0 3,500" parses the target
         // as 3 (the comma stops parseFloat) and "0 3500" renders "3500", because
         // formatNum only adds separators above 10,000. So any real figure between
         // 1,000 and 9,999 could not be shown the way it is written everywhere
         // else on the page. The template still drives the formatting.
-        var num = function (s) { return parseFloat(String(s).replace(/,/g, '')) || 0; };
+        var num = function (s) {
+          return parseFloat(String(s).replace(/,/g, '')) || 0;
+        };
         act.counts.push({
-          el: c, a: num(nums[0]), b: num(nums[1]),
-          tpl: nums[1] || '0', from: at[0], to: at[1], last: null
+          el: c,
+          a: num(nums[0]),
+          b: num(nums[1]),
+          tpl: nums[1] || '0',
+          from: at[0],
+          to: at[1],
+          last: null
         });
       });
 
       acts.push(act);
 
       var d = el.getAttribute('data-sc-drift');
-      if (d) { var rgb = parseColor(d); if (rgb) drifts.push({ act: act, rgb: rgb }); }
+      if (d) {
+        var rgb = parseColor(d);
+        if (rgb) drifts.push({ act: act, rgb: rgb });
+      }
     });
 
     // collect worldflights
-    Array.prototype.forEach.call(root.querySelectorAll('[data-sc-mode="worldflight"]'), function (el) {
-      var W = {
-        el: el,
-        stage: el.querySelector('[data-sc-world]') || el.querySelector('.sc-world'),
-        copyLayer: el.querySelector('[data-sc-world-copy]') || el.querySelector('.sc-world__copy'),
-        spacer: el.querySelector('[data-sc-spacer]') || el.querySelector('.sc-world__spacer'),
-        seam: 0, segs: [], copies: [], total: 0, top: 0, index: -1, checked: false
-      };
-      var seam = parseFloat(el.getAttribute('data-sc-seam'));
-      // A seam wider than the shortest leg would have three clips dissolving at
-      // once and no leg ever fully present. Cap it well under that.
-      W.seam = isNaN(seam) || seam <= 0 ? 0.12 : clamp(seam, 0.02, 0.4);
-      if (W.stage) W.stage.classList.add('sc-world');
-      if (W.copyLayer) W.copyLayer.classList.add('sc-world__copy');
-      if (W.spacer) W.spacer.classList.add('sc-world__spacer');
-
-      Array.prototype.forEach.call(el.querySelectorAll('[data-sc-segment]'), function (s) {
-        var seg = {
-          el: s,
-          w: parseFloat(s.getAttribute('data-sc-w')) || 1.3,
-          linger: clamp(parseFloat(s.getAttribute('data-sc-linger')) || 0, 0, 0.6),
-          label: s.getAttribute('data-sc-waypoint') || '',
-          poster: s.querySelector('[data-sc-poster]') || s.querySelector('.sc-world__poster') || s.querySelector('img'),
-          c0: 0, c1: 0, local: 0, op: -1, z: -1, clip: null
+    Array.prototype.forEach.call(
+      root.querySelectorAll('[data-sc-mode="worldflight"]'),
+      function (el) {
+        var W = {
+          el: el,
+          stage: el.querySelector('[data-sc-world]') || el.querySelector('.sc-world'),
+          copyLayer:
+            el.querySelector('[data-sc-world-copy]') || el.querySelector('.sc-world__copy'),
+          spacer: el.querySelector('[data-sc-spacer]') || el.querySelector('.sc-world__spacer'),
+          seam: 0,
+          segs: [],
+          copies: [],
+          total: 0,
+          top: 0,
+          index: -1,
+          checked: false
         };
-        s.classList.add('sc-world__seg');
-        if (seg.poster) seg.poster.classList.add('sc-world__poster');
-        var v = s.querySelector('video');
-        if (v) {
-          // Mark it as a scrub clip whether or not the author did. Everything
-          // downstream, the stylesheet and the verification harness included,
-          // finds scrub media by this attribute.
-          v.setAttribute('data-sc-scrub', '');
-          seg.clip = makeClip(v, s);
-        }
-        W.segs.push(seg);
-      });
+        var seam = parseFloat(el.getAttribute('data-sc-seam'));
+        // A seam wider than the shortest leg would have three clips dissolving at
+        // once and no leg ever fully present. Cap it well under that.
+        W.seam = isNaN(seam) || seam <= 0 ? 0.12 : clamp(seam, 0.02, 0.4);
+        if (W.stage) W.stage.classList.add('sc-world');
+        if (W.copyLayer) W.copyLayer.classList.add('sc-world__copy');
+        if (W.spacer) W.spacer.classList.add('sc-world__spacer');
 
-      var run = 0;
-      W.segs.forEach(function (s) { s.c0 = run; run += Math.max(s.w, 0.1); s.c1 = run; });
-      W.total = Math.max(run, 0.001);
+        Array.prototype.forEach.call(el.querySelectorAll('[data-sc-segment]'), function (s) {
+          var seg = {
+            el: s,
+            w: parseFloat(s.getAttribute('data-sc-w')) || 1.3,
+            linger: clamp(parseFloat(s.getAttribute('data-sc-linger')) || 0, 0, 0.6),
+            label: s.getAttribute('data-sc-waypoint') || '',
+            poster:
+              s.querySelector('[data-sc-poster]') ||
+              s.querySelector('.sc-world__poster') ||
+              s.querySelector('img'),
+            c0: 0,
+            c1: 0,
+            local: 0,
+            op: -1,
+            z: -1,
+            clip: null
+          };
+          s.classList.add('sc-world__seg');
+          if (seg.poster) seg.poster.classList.add('sc-world__poster');
+          var v = s.querySelector('video');
+          if (v) {
+            // Mark it as a scrub clip whether or not the author did. Everything
+            // downstream, the stylesheet and the verification harness included,
+            // finds scrub media by this attribute.
+            v.setAttribute('data-sc-scrub', '');
+            seg.clip = makeClip(v, s);
+          }
+          W.segs.push(seg);
+        });
 
-      Array.prototype.forEach.call(el.querySelectorAll('[data-sc-copy]'), function (cEl) {
-        var spec = (cEl.getAttribute('data-sc-window') || '').trim();
-        var q = { el: cEl, from: 0, to: 1, rIn: 0.3, rOut: 0.3, state: -1 };
-        var first = W.segs[0], last = W.segs[W.segs.length - 1];
-        if (spec === 'hero') {
-          // Present the instant the reader lands. A hero that fades IN has to
-          // fade in from nothing over an empty first screen, which is the one
-          // moment on the page where there is nothing else to look at.
-          q.from = 0;
-          q.to = first ? (0.62 * first.w) / W.total : 0.3;
-          q.rIn = 0; q.rOut = 0.65;
-        } else if (spec === 'finale') {
-          q.from = last ? (last.c0 + 0.4 * last.w) / W.total : 0.7;
-          q.to = 1; q.rIn = 0.55; q.rOut = 0;
-        } else {
-          var n = spec.split(/\s+/).map(parseFloat);
-          q.from = isNaN(n[0]) ? 0 : clamp01(n[0]);
-          q.to = (n.length > 1 && !isNaN(n[1])) ? clamp01(n[1]) : clamp01(q.from + 0.18);
-          if (n.length > 2 && !isNaN(n[2])) q.rIn = clamp01(n[2]);
-          if (n.length > 3 && !isNaN(n[3])) q.rOut = clamp01(n[3]);
-        }
-        if (q.to <= q.from) q.to = clamp01(q.from + 0.05);
-        W.copies.push(q);
-      });
+        var run = 0;
+        W.segs.forEach(function (s) {
+          s.c0 = run;
+          run += Math.max(s.w, 0.1);
+          s.c1 = run;
+        });
+        W.total = Math.max(run, 0.001);
 
-      worlds.push(W);
-    });
+        Array.prototype.forEach.call(el.querySelectorAll('[data-sc-copy]'), function (cEl) {
+          var spec = (cEl.getAttribute('data-sc-window') || '').trim();
+          var q = { el: cEl, from: 0, to: 1, rIn: 0.3, rOut: 0.3, state: -1 };
+          var first = W.segs[0],
+            last = W.segs[W.segs.length - 1];
+          if (spec === 'hero') {
+            // Present the instant the reader lands. A hero that fades IN has to
+            // fade in from nothing over an empty first screen, which is the one
+            // moment on the page where there is nothing else to look at.
+            q.from = 0;
+            q.to = first ? (0.62 * first.w) / W.total : 0.3;
+            q.rIn = 0;
+            q.rOut = 0.65;
+          } else if (spec === 'finale') {
+            q.from = last ? (last.c0 + 0.4 * last.w) / W.total : 0.7;
+            q.to = 1;
+            q.rIn = 0.55;
+            q.rOut = 0;
+          } else {
+            var n = spec.split(/\s+/).map(parseFloat);
+            q.from = isNaN(n[0]) ? 0 : clamp01(n[0]);
+            q.to = (n.length > 1 && !isNaN(n[1])) ? clamp01(n[1]) : clamp01(q.from + 0.18);
+            if (n.length > 2 && !isNaN(n[2])) q.rIn = clamp01(n[2]);
+            if (n.length > 3 && !isNaN(n[3])) q.rOut = clamp01(n[3]);
+          }
+          if (q.to <= q.from) q.to = clamp01(q.from + 0.05);
+          W.copies.push(q);
+        });
+
+        worlds.push(W);
+      }
+    );
 
     // flow reveals (fire once)
     // `cio` is assigned inside the counters IIFE below; it is declared here so
@@ -494,26 +600,34 @@
     // every observed target, and unobserve only runs on first intersection, so a
     // never-revealed element in a removed subtree is retained for the life of the
     // tab, once per re-mount.
-    var io = null, cio = null;
+    var io = null,
+      cio = null;
     if ('IntersectionObserver' in window) {
-      io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (e) {
-          if (!e.isIntersecting) return;
-          var el = e.target;
-          el.classList.add('sc-in');
-          var stagger = parseFloat(el.getAttribute('data-sc-stagger'));
-          if (!isNaN(stagger)) {
-            Array.prototype.forEach.call(el.children, function (kid, i) {
-              kid.style.transitionDelay = (i * stagger) + 'ms';
-              kid.classList.add('sc-in');
-            });
-          }
-          io.unobserve(el);
-        });
-      }, { rootMargin: '0px 0px -12% 0px', threshold: 0.01 });
-      Array.prototype.forEach.call(root.querySelectorAll('[data-sc-in]'), function (el) { io.observe(el); });
+      io = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (e) {
+            if (!e.isIntersecting) return;
+            var el = e.target;
+            el.classList.add('sc-in');
+            var stagger = parseFloat(el.getAttribute('data-sc-stagger'));
+            if (!isNaN(stagger)) {
+              Array.prototype.forEach.call(el.children, function (kid, i) {
+                kid.style.transitionDelay = (i * stagger) + 'ms';
+                kid.classList.add('sc-in');
+              });
+            }
+            io.unobserve(el);
+          });
+        },
+        { rootMargin: '0px 0px -12% 0px', threshold: 0.01 }
+      );
+      Array.prototype.forEach.call(root.querySelectorAll('[data-sc-in]'), function (el) {
+        io.observe(el);
+      });
     } else {
-      Array.prototype.forEach.call(root.querySelectorAll('[data-sc-in]'), function (el) { el.classList.add('sc-in'); });
+      Array.prototype.forEach.call(root.querySelectorAll('[data-sc-in]'), function (el) {
+        el.classList.add('sc-in');
+      });
     }
 
     // entry counters (fire once)
@@ -522,38 +636,62 @@
     // Same formatting rules as the act counter: write the target as it should
     // render. Reduced motion writes the final value and never animates.
     (function () {
-      var ease = function (t) { return 1 - Math.pow(1 - t, 3); };
-      var num = function (s) { return parseFloat(String(s).replace(/,/g, '')) || 0; };
-      var spec = function (c) { return (c.getAttribute('data-sc-count') || '').trim().split(/\s+/); };
+      var ease = function (t) {
+        return 1 - Math.pow(1 - t, 3);
+      };
+      var num = function (s) {
+        return parseFloat(String(s).replace(/,/g, '')) || 0;
+      };
+      var spec = function (c) {
+        return (c.getAttribute('data-sc-count') || '').trim().split(/\s+/);
+      };
       var els = Array.prototype.filter.call(root.querySelectorAll('[data-sc-count]'), function (c) {
         return !c.closest('[data-sc-act]');
       });
       if (!els.length) return;
       function run(c) {
         var nums = spec(c);
-        var a = num(nums[0]), b = num(nums[1]), tpl = nums[1] || '0';
+        var a = num(nums[0]),
+          b = num(nums[1]),
+          tpl = nums[1] || '0';
         var ms = parseFloat(c.getAttribute('data-sc-count-ms')) || 1400;
-        if (reduce || ms <= 0) { c.textContent = formatNum(b, tpl); return; }
-        var t0 = null, last = null;
+        if (reduce || ms <= 0) {
+          c.textContent = formatNum(b, tpl);
+          return;
+        }
+        var t0 = null,
+          last = null;
         function frame(now) {
           if (scDead) return;
           if (t0 === null) t0 = now;
           var t = Math.min((now - t0) / ms, 1);
           var out = formatNum(a + (b - a) * ease(t), tpl);
-          if (out !== last) { c.textContent = out; last = out; }
+          if (out !== last) {
+            c.textContent = out;
+            last = out;
+          }
           if (t < 1) requestAnimationFrame(frame);
         }
         requestAnimationFrame(frame);
       }
-      els.forEach(function (c) { var n = spec(c); c.textContent = formatNum(num(n[0]), n[1] || '0'); });
+      els.forEach(function (c) {
+        var n = spec(c);
+        c.textContent = formatNum(num(n[0]), n[1] || '0');
+      });
       if ('IntersectionObserver' in window) {
-        cio = new IntersectionObserver(function (entries) {
-          entries.forEach(function (e) {
-            if (!e.isIntersecting) return;
-            run(e.target); cio.unobserve(e.target);
-          });
-        }, { rootMargin: '0px 0px -10% 0px', threshold: 0.5 });
-        els.forEach(function (c) { cio.observe(c); });
+        cio = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (e) {
+              if (!e.isIntersecting) return;
+              run(e.target);
+              cio.unobserve(e.target);
+            });
+          },
+          { rootMargin: '0px 0px -10% 0px', threshold: 0.5 }
+        );
+        els.forEach(function (c) {
+          cio.observe(c);
+        });
       } else {
         els.forEach(run);
       }
@@ -564,7 +702,8 @@
       // layout() and read() are both on the returned api, so a framework's
       // updated() arriving after destroyed() enters them directly.
       if (scDead) return;
-      vh = innerHeight; vw = innerWidth;
+      vh = innerHeight;
+      vw = innerWidth;
       acts.forEach(function (a) {
         if (a.pinned) a.el.style.height = (a.span * 100) + 'vh';
       });
@@ -602,8 +741,15 @@
         a.stageChecked = true;
         var pos = getComputedStyle(a.stage).position;
         if (pos !== 'sticky' && pos !== '-webkit-sticky') {
-          console.warn('[scrollcraft] act "' + (a.el.id || a.device) + '" will not pin: its stage computes ' +
-            'position:' + pos + ', not sticky. Something is overriding .sc-stage.', a.stage);
+          console.warn(
+            '[scrollcraft] act "' +
+              (a.el.id || a.device) +
+              '" will not pin: its stage computes ' +
+              'position:' +
+              pos +
+              ', not sticky. Something is overriding .sc-stage.',
+            a.stage
+          );
         }
       });
 
@@ -612,19 +758,30 @@
         if (W.checked) return;
         W.checked = true;
         if (!W.stage) {
-          console.warn('[scrollcraft] worldflight has no [data-sc-world] stage; nothing will fly.', W.el);
+          console.warn(
+            '[scrollcraft] worldflight has no [data-sc-world] stage; nothing will fly.',
+            W.el
+          );
           return;
         }
         if (!W.spacer) {
-          console.warn('[scrollcraft] worldflight has no [data-sc-spacer]; the page has no scroll track.', W.el);
+          console.warn(
+            '[scrollcraft] worldflight has no [data-sc-spacer]; the page has no scroll track.',
+            W.el
+          );
         }
         // The same silent failure as an unpinned act, one level worse: a stage
         // that is not fixed scrolls away and takes the whole page with it, while
         // every progress number still reads correctly.
         var wp = getComputedStyle(W.stage).position;
         if (wp !== 'fixed') {
-          console.warn('[scrollcraft] worldflight stage computes position:' + wp + ', not fixed. ' +
-            'Something is overriding .sc-world, and the flight will scroll off screen.', W.stage);
+          console.warn(
+            '[scrollcraft] worldflight stage computes position:' +
+              wp +
+              ', not fixed. ' +
+              'Something is overriding .sc-world, and the flight will scroll off screen.',
+            W.stage
+          );
         }
       });
 
@@ -633,24 +790,33 @@
     }
 
     // video
-    function loadVideo(a) { loadClip(a.video); }
+    function loadVideo(a) {
+      loadClip(a.video);
+    }
     function loadClip(V) {
       // Under reduced motion the clip is never fetched. The poster holds the
       // frame and the copy still cues, so the page reads without the decode.
       if (reduce || !V || V.loading) return;
-      var src = V.el.getAttribute('data-sc-src') ||
-                (isMobile() && V.el.getAttribute('data-sc-src-mobile')) ||
-                V.el.currentSrc || V.el.src;
-      if (isMobile() && V.el.getAttribute('data-sc-src-mobile')) src = V.el.getAttribute('data-sc-src-mobile');
+      var src =
+        V.el.getAttribute('data-sc-src') ||
+        (isMobile() && V.el.getAttribute('data-sc-src-mobile')) ||
+        V.el.currentSrc ||
+        V.el.src;
+      if (isMobile() && V.el.getAttribute('data-sc-src-mobile'))
+        src = V.el.getAttribute('data-sc-src-mobile');
       if (!src) return;
       V.loading = true;
-      fetch(src).then(function (r) { if (!r.ok) throw new Error(r.status); return r.blob(); })
+      fetch(src)
+        .then(function (r) {
+          if (!r.ok) throw new Error(r.status);
+          return r.blob();
+        })
         .then(function (blob) {
           // A fetch in flight when destroy() ran resolves anyway. Without this
           // it attaches loadedmetadata/seeked to a detached element, calls
           // read(), arms primeClip's 2s timer and assigns a blob URL nothing
           // will ever revoke, all after teardown reported success.
-          if (scDead) return;   // the Blob is unreferenced from here and is collected
+          if (scDead) return; // the Blob is unreferenced from here and is collected
           // Listeners and preload BEFORE src. Assigning src starts the load, so
           // attaching afterwards and then calling load() restarts it and aborts
           // the first request (visible as ERR_ABORTED on the blob URL).
@@ -661,7 +827,9 @@
             // time actually needs to change, so a clip sitting at the very top
             // of its act would never seek, never fire 'seeked', and never
             // replace its poster until the reader scrolled it off zero.
-            try { V.el.currentTime = Math.max(V.target * (V.el.duration || 1), 0.001); } catch (e) {}
+            try {
+              V.el.currentTime = Math.max(V.target * (V.el.duration || 1), 0.001);
+            } catch (e) {}
             read();
             // Prime the decoder the moment the clip can be primed, without
             // waiting for a gesture. A muted inline play() is allowed with no
@@ -689,12 +857,14 @@
           // briefly blank is a smaller fault than one that never shows its clip.
           setTimeout(reveal, 2500);
           V.el.preload = 'auto';
-          V.el.muted = true;            // as a property, not only an attribute
+          V.el.muted = true; // as a property, not only an attribute
           V.el.playsInline = true;
           V.objectURL = URL.createObjectURL(blob);
           V.el.src = V.objectURL;
         })
-        .catch(function () { V.loading = false; });
+        .catch(function () {
+          V.loading = false;
+        });
     }
 
     // image sequence
@@ -705,11 +875,15 @@
         (function (i) {
           var img = new Image();
           img.decoding = 'async';
-          img.src = S.tpl.replace('{i}', String(S.start + i))
-                         .replace('{ii}', String(S.start + i).padStart(2, '0'))
-                         .replace('{iii}', String(S.start + i).padStart(3, '0'))
-                         .replace('{iiii}', String(S.start + i).padStart(4, '0'));
-          img.onload = function () { S.loaded++; if (S.loaded === 1) S.drawn = -1; };
+          img.src = S.tpl
+            .replace('{i}', String(S.start + i))
+            .replace('{ii}', String(S.start + i).padStart(2, '0'))
+            .replace('{iii}', String(S.start + i).padStart(3, '0'))
+            .replace('{iiii}', String(S.start + i).padStart(4, '0'));
+          img.onload = function () {
+            S.loaded++;
+            if (S.loaded === 1) S.drawn = -1;
+          };
           S.frames[i] = img;
         })(i);
       }
@@ -721,10 +895,12 @@
       if (idx === S.drawn) return;
       var img = S.frames[idx];
       if (!img || !img.complete || !img.naturalWidth) return;
-      var cw = S.el.width, ch = S.el.height;
+      var cw = S.el.width,
+        ch = S.el.height;
       // cover fit
       var scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
-      var w = img.naturalWidth * scale, h = img.naturalHeight * scale;
+      var w = img.naturalWidth * scale,
+        h = img.naturalHeight * scale;
       S.ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
       S.drawn = idx;
     }
@@ -772,7 +948,10 @@
           s.el.style.visibility = op > 0.002 ? 'visible' : 'hidden';
           s.op = op;
         }
-        if (z !== s.z) { s.el.style.zIndex = String(z); s.z = z; }
+        if (z !== s.z) {
+          s.el.style.zIndex = String(z);
+          s.z = z;
+        }
 
         if (s.clip) {
           s.clip.live = op > 0.002;
@@ -806,10 +985,14 @@
         // different speed, which is the exact cheapness this mode replaces.
         var wp = clamp01((pr - q.from) / win);
         q.el.style.opacity = vis.toFixed(3);
-        q.el.style.transform = reduce ? 'none'
+        q.el.style.transform = reduce
+          ? 'none'
           : 'translate3d(0,' + ((0.5 - wp) * 4).toFixed(2) + 'vh,0)';
         var on = vis > 0.5;
-        if (on !== (q.state === 1)) { q.state = on ? 1 : 0; q.el.style.pointerEvents = on ? 'auto' : 'none'; }
+        if (on !== (q.state === 1)) {
+          q.state = on ? 1 : 0;
+          q.el.style.pointerEvents = on ? 'auto' : 'none';
+        }
       }
 
       // Publish the route, draw none of it. A gauge, a map, a leg counter and a
@@ -823,10 +1006,12 @@
       if (k !== W.index) {
         W.index = k;
         try {
-          W.el.dispatchEvent(new CustomEvent('sc:waypoint', {
-            bubbles: true,
-            detail: { index: k, count: W.segs.length, label: cur.label, el: cur.el, progress: pr }
-          }));
+          W.el.dispatchEvent(
+            new CustomEvent('sc:waypoint', {
+              bubbles: true,
+              detail: { index: k, count: W.segs.length, label: cur.label, el: cur.el, progress: pr }
+            })
+          );
         } catch (e) {}
       }
     }
@@ -835,7 +1020,9 @@
     function read() {
       if (scDead) return;
       y = scrollY || pageYOffset;
-      var driftA = null, driftB = null, driftT = 0;
+      var driftA = null,
+        driftB = null,
+        driftT = 0;
       var maxY = Math.max((document.documentElement.scrollHeight || 0) - vh, 1);
 
       for (var i = 0; i < acts.length; i++) {
@@ -881,14 +1068,18 @@
           if (a.seq) loadSeq(a);
         }
         if (a.live && a.seq) drawSeq(a);
-        if (a.video) { a.video.live = a.live; if (a.video.ready) a.video.target = a.vp; }
+        if (a.video) {
+          a.video.live = a.live;
+          if (a.video.ready) a.video.target = a.vp;
+        }
 
         // horizontal rail
         if (a.rail) {
           var over = a.rail.scrollWidth - vw;
           if (over > 0) {
             var extra = over * (a.railExtra || 0);
-            a.rail.style.transform = 'translate3d(' + (-(over + extra) * a.p).toFixed(2) + 'px,0,0)';
+            a.rail.style.transform =
+              'translate3d(' + (-(over + extra) * a.p).toFixed(2) + 'px,0,0)';
           }
         }
 
@@ -904,7 +1095,8 @@
               pq.el.style.opacity = '0';
               pq.el.style.pointerEvents = 'none';
               pq.state = 0;
-              if (pq.units) for (var zu = 0; zu < pq.units.length; zu++) pq.units[zu].style.opacity = '0';
+              if (pq.units)
+                for (var zu = 0; zu < pq.units.length; zu++) pq.units[zu].style.opacity = '0';
             }
             a.parked = true;
           }
@@ -920,10 +1112,11 @@
             vis = smooth((a.p - q.from) / 0.18);
           } else {
             var win = Math.max(q.to - q.from, 0.001);
-            var inEnd = q.from + win * q.rIn;        // full opacity from here
-            var outStart = q.to - win * q.rOut;      // starts leaving here
+            var inEnd = q.from + win * q.rIn; // full opacity from here
+            var outStart = q.to - win * q.rOut; // starts leaving here
             if (a.p < inEnd) vis = smooth((a.p - q.from) / Math.max(inEnd - q.from, 0.001));
-            else if (a.p <= outStart) vis = 1;       // the plateau
+            else if (a.p <= outStart)
+              vis = 1; // the plateau
             else vis = smooth(1 - (a.p - outStart) / Math.max(q.to - outStart, 0.001));
           }
           vis = clamp01(vis);
@@ -939,24 +1132,30 @@
               var uv = clamp01((vis - uStart) / (1 - 0.62 + 0.001));
               uv = smooth(uv);
               q.units[u].style.opacity = uv.toFixed(3);
-              q.units[u].style.transform = reduce ? 'none'
+              q.units[u].style.transform = reduce
+                ? 'none'
                 : 'translate3d(0,' + ((1 - uv) * 100).toFixed(2) + '%,0)';
             }
             q.el.style.opacity = '1';
           } else {
             q.el.style.opacity = vis.toFixed(3);
-            q.el.style.transform = reduce ? 'none'
+            q.el.style.transform = reduce
+              ? 'none'
               : 'translate3d(0,' + ((1 - vis) * 2.4 * q.rise).toFixed(2) + 'vh,0)';
           }
           var on = vis > 0.5;
-          if (on !== (q.state === 1)) { q.state = on ? 1 : 0; q.el.style.pointerEvents = on ? 'auto' : 'none'; }
+          if (on !== (q.state === 1)) {
+            q.state = on ? 1 : 0;
+            q.el.style.pointerEvents = on ? 'auto' : 'none';
+          }
         }
 
         // parallax
         if (!reduce) {
           for (var pz = 0; pz < a.parallax.length; pz++) {
             var pp = a.parallax[pz];
-            pp.el.style.transform = 'translate3d(0,' + (pp.rate * (a.p - 0.5) * 100).toFixed(2) + 'px,0)';
+            pp.el.style.transform =
+              'translate3d(0,' + (pp.rate * (a.p - 0.5) * 100).toFixed(2) + 'px,0)';
           }
         }
 
@@ -966,11 +1165,15 @@
           var t = smooth((a.p - R.from) / Math.max(R.to - R.from, 0.001));
           var pct = ((1 - t) * 100).toFixed(2);
           R.el.style.clipPath =
-            R.dir === 'down' ? 'inset(' + pct + '% 0 0 0)' :
-            R.dir === 'left' ? 'inset(0 ' + pct + '% 0 0)' :
-            R.dir === 'right' ? 'inset(0 0 0 ' + pct + '%)' :
-            R.dir === 'iris' ? 'circle(' + (t * 78).toFixed(2) + '% at 50% 50%)' :
-                               'inset(0 0 ' + pct + '% 0)';
+            R.dir === 'down'
+              ? 'inset(' + pct + '% 0 0 0)'
+              : R.dir === 'left'
+                ? 'inset(0 ' + pct + '% 0 0)'
+                : R.dir === 'right'
+                  ? 'inset(0 0 0 ' + pct + '%)'
+                  : R.dir === 'iris'
+                    ? 'circle(' + (t * 78).toFixed(2) + '% at 50% 50%)'
+                    : 'inset(0 0 ' + pct + '% 0)';
         }
 
         // counters
@@ -979,7 +1182,10 @@
           var kt = smooth((a.p - K.from) / Math.max(K.to - K.from, 0.001));
           var val = lerp(K.a, K.b, kt);
           var out = formatNum(val, K.tpl);
-          if (out !== K.last) { K.el.textContent = out; K.last = out; }
+          if (out !== K.last) {
+            K.el.textContent = out;
+            K.last = out;
+          }
         }
       }
 
@@ -989,11 +1195,16 @@
       for (var d = 0; d < drifts.length; d++) {
         var D = drifts[d];
         if (D.act.raw > 0 && D.act.raw < 1) {
-          driftA = D; driftT = smooth(D.act.raw / 0.35);
+          driftA = D;
+          driftT = smooth(D.act.raw / 0.35);
           driftB = drifts[d - 1] || D;
           break;
         }
-        if (D.act.raw >= 1) { driftA = D; driftB = D; driftT = 1; }
+        if (D.act.raw >= 1) {
+          driftA = D;
+          driftB = D;
+          driftT = 1;
+        }
       }
       if (driftA) {
         docEl.style.setProperty('--sc-canvas', mixColor(driftB.rgb, driftA.rgb, driftT));
@@ -1028,7 +1239,9 @@
           if (!V.stuckAt) V.stuckAt = nw;
           else if (nw - V.stuckAt > 700) {
             V.stuckAt = nw;
-            try { V.el.currentTime = V.el.currentTime + 0.001; } catch (e) {}
+            try {
+              V.el.currentTime = V.el.currentTime + 0.001;
+            } catch (e) {}
           }
           continue;
         }
@@ -1038,7 +1251,11 @@
         V.cur += (V.target - V.cur) * (reduce ? 1 : V.lerp);
         var dur = V.el.duration || 1;
         var t = clamp(V.cur, 0, 0.999) * dur;
-        if (Math.abs(V.el.currentTime - t) > eps) { try { V.el.currentTime = t; } catch (e) {} }
+        if (Math.abs(V.el.currentTime - t) > eps) {
+          try {
+            V.el.currentTime = t;
+          } catch (e) {}
+        }
       }
       scTickFrame = requestAnimationFrame(tick);
     }
@@ -1069,8 +1286,13 @@
       V.priming = true;
       var done = function () {
         V.priming = false;
-        if (!V.primed) { V.primed = true; primedCount++; }
-        try { V.el.pause(); } catch (e) {}
+        if (!V.primed) {
+          V.primed = true;
+          primedCount++;
+        }
+        try {
+          V.el.pause();
+        } catch (e) {}
         // repaint: nudge past the deadband so the next tick writes for real
         try {
           var dur = V.el.duration || 1;
@@ -1078,15 +1300,24 @@
           V.el.currentTime = clamp(V.cur * dur + 0.05, 0, dur * 0.999);
         } catch (e) {}
       };
-      var fail = function () { V.priming = false; };
+      var fail = function () {
+        V.priming = false;
+      };
       // A play() promise is allowed to stay pending forever (iOS does this to a
       // video it has decided not to start). If that happened here, `priming`
       // would jam and no gesture could ever retry, so the flag is released on a
       // timer as well. A late resolution after the release still lands in
       // done(), which is idempotent.
-      setTimeout(function () { if (V.priming) fail(); }, 2000);
+      setTimeout(function () {
+        if (V.priming) fail();
+      }, 2000);
       var pr;
-      try { pr = V.el.play(); } catch (e) { fail(); return; }
+      try {
+        pr = V.el.play();
+      } catch (e) {
+        fail();
+        return;
+      }
       if (pr && pr.then) pr.then(done, fail);
       else done();
     }
@@ -1111,45 +1342,77 @@
     on('scroll', prime, { passive: true });
 
     // pointer devices
-    var tilts = [], magnets = [], spots = [];
+    var tilts = [],
+      magnets = [],
+      spots = [];
     function initPointer() {
       if (reduce || !fineMQ.matches) return;
       Array.prototype.forEach.call(root.querySelectorAll('[data-sc-tilt]'), function (el) {
-        tilts.push({ el: el, max: parseFloat(el.getAttribute('data-sc-tilt')) || 6, x: 0, ty: 0, tx: 0, y: 0 });
+        tilts.push({
+          el: el,
+          max: parseFloat(el.getAttribute('data-sc-tilt')) || 6,
+          x: 0,
+          ty: 0,
+          tx: 0,
+          y: 0
+        });
       });
       Array.prototype.forEach.call(root.querySelectorAll('[data-sc-magnet]'), function (el) {
-        magnets.push({ el: el, k: parseFloat(el.getAttribute('data-sc-magnet')) || 0.3, x: 0, y: 0, tx: 0, ty: 0 });
+        magnets.push({
+          el: el,
+          k: parseFloat(el.getAttribute('data-sc-magnet')) || 0.3,
+          x: 0,
+          y: 0,
+          tx: 0,
+          ty: 0
+        });
       });
       Array.prototype.forEach.call(root.querySelectorAll('[data-sc-spotlight]'), function (el) {
         spots.push(el);
       });
       if (!tilts.length && !magnets.length && !spots.length) return;
 
-      on('pointermove', function (e) {
-        if (e.pointerType !== 'mouse') return;
-        for (var i = 0; i < tilts.length; i++) {
-          var T = tilts[i], r = T.el.getBoundingClientRect();
-          if (r.bottom < -200 || r.top > vh + 200) { T.tx = 0; T.ty = 0; continue; }
-          var nx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2);
-          var ny = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
-          var inside = Math.abs(nx) < 1.6 && Math.abs(ny) < 1.6;
-          T.tx = inside ? clamp(ny, -1, 1) * -T.max : 0;
-          T.ty = inside ? clamp(nx, -1, 1) * T.max : 0;
-        }
-        for (var m = 0; m < magnets.length; m++) {
-          var M = magnets[m], mr = M.el.getBoundingClientRect();
-          var dx = e.clientX - (mr.left + mr.width / 2);
-          var dy = e.clientY - (mr.top + mr.height / 2);
-          var near = Math.abs(dx) < mr.width && Math.abs(dy) < mr.height * 2.5;
-          M.tx = near ? dx * M.k : 0;
-          M.ty = near ? dy * M.k : 0;
-        }
-        for (var s = 0; s < spots.length; s++) {
-          var sr = spots[s].getBoundingClientRect();
-          spots[s].style.setProperty('--sc-mx', clamp01((e.clientX - sr.left) / sr.width).toFixed(3));
-          spots[s].style.setProperty('--sc-my', clamp01((e.clientY - sr.top) / sr.height).toFixed(3));
-        }
-      }, { passive: true });
+      on(
+        'pointermove',
+        function (e) {
+          if (e.pointerType !== 'mouse') return;
+          for (var i = 0; i < tilts.length; i++) {
+            var T = tilts[i],
+              r = T.el.getBoundingClientRect();
+            if (r.bottom < -200 || r.top > vh + 200) {
+              T.tx = 0;
+              T.ty = 0;
+              continue;
+            }
+            var nx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2);
+            var ny = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
+            var inside = Math.abs(nx) < 1.6 && Math.abs(ny) < 1.6;
+            T.tx = inside ? clamp(ny, -1, 1) * -T.max : 0;
+            T.ty = inside ? clamp(nx, -1, 1) * T.max : 0;
+          }
+          for (var m = 0; m < magnets.length; m++) {
+            var M = magnets[m],
+              mr = M.el.getBoundingClientRect();
+            var dx = e.clientX - (mr.left + mr.width / 2);
+            var dy = e.clientY - (mr.top + mr.height / 2);
+            var near = Math.abs(dx) < mr.width && Math.abs(dy) < mr.height * 2.5;
+            M.tx = near ? dx * M.k : 0;
+            M.ty = near ? dy * M.k : 0;
+          }
+          for (var s = 0; s < spots.length; s++) {
+            var sr = spots[s].getBoundingClientRect();
+            spots[s].style.setProperty(
+              '--sc-mx',
+              clamp01((e.clientX - sr.left) / sr.width).toFixed(3)
+            );
+            spots[s].style.setProperty(
+              '--sc-my',
+              clamp01((e.clientY - sr.top) / sr.height).toFixed(3)
+            );
+          }
+        },
+        { passive: true }
+      );
 
       (function pointerTick() {
         if (scDead) return;
@@ -1158,14 +1421,21 @@
         // momentum; the lerp gives it weight.
         for (var i = 0; i < tilts.length; i++) {
           var T = tilts[i];
-          T.x += (T.tx - T.x) * 0.09; T.y += (T.ty - T.y) * 0.09;
+          T.x += (T.tx - T.x) * 0.09;
+          T.y += (T.ty - T.y) * 0.09;
           if (Math.abs(T.x) > 0.001 || Math.abs(T.y) > 0.001) {
-            T.el.style.transform = 'perspective(1100px) rotateX(' + T.x.toFixed(3) + 'deg) rotateY(' + T.y.toFixed(3) + 'deg)';
+            T.el.style.transform =
+              'perspective(1100px) rotateX(' +
+              T.x.toFixed(3) +
+              'deg) rotateY(' +
+              T.y.toFixed(3) +
+              'deg)';
           }
         }
         for (var m = 0; m < magnets.length; m++) {
           var M = magnets[m];
-          M.x += (M.tx - M.x) * 0.12; M.y += (M.ty - M.y) * 0.12;
+          M.x += (M.tx - M.x) * 0.12;
+          M.y += (M.ty - M.y) * 0.12;
           M.el.style.transform = 'translate3d(' + M.x.toFixed(2) + 'px,' + M.y.toFixed(2) + 'px,0)';
         }
         scPointerFrame = requestAnimationFrame(pointerTick);
@@ -1174,10 +1444,20 @@
 
     // wiring
     var ticking = false;
-    on('scroll', function () {
-      if (scDead) return;
-      if (!ticking) { ticking = true; requestAnimationFrame(function () { if (!scDead) read(); ticking = false; }); }
-    }, { passive: true });
+    on(
+      'scroll',
+      function () {
+        if (scDead) return;
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(function () {
+            if (!scDead) read();
+            ticking = false;
+          });
+        }
+      },
+      { passive: true }
+    );
 
     // Keyboard focus on a pinned or panning act. The browser's own
     // scroll-into-view parks the focused element barely on screen, which is
@@ -1199,20 +1479,34 @@
     });
 
     var lastW = innerWidth;
-    on('resize', function () {
-      // Ignore URL-bar-only height changes on phones. Relaying out on those
-      // makes the page jump under the reader's thumb for no reason.
-      if (scDead) return;
-      if (innerWidth === lastW && isMobile()) { vh = innerHeight; return; }
-      lastW = innerWidth;
-      layout();
-    }, { passive: true });
+    on(
+      'resize',
+      function () {
+        // Ignore URL-bar-only height changes on phones. Relaying out on those
+        // makes the page jump under the reader's thumb for no reason.
+        if (scDead) return;
+        if (innerWidth === lastW && isMobile()) {
+          vh = innerHeight;
+          return;
+        }
+        lastW = innerWidth;
+        layout();
+      },
+      { passive: true }
+    );
 
     if (document.fonts && document.fonts.ready) {
       // Line splitting measures line boxes, so it has to wait for the real face.
       document.fonts.ready.then(function () {
         if (scDead) return;
-        acts.forEach(function (a) { a.cues.forEach(function (q) { if (q.kinetic && q.units) { q.el.__scSplit = null; q.units = null; } }); });
+        acts.forEach(function (a) {
+          a.cues.forEach(function (q) {
+            if (q.kinetic && q.units) {
+              q.el.__scSplit = null;
+              q.units = null;
+            }
+          });
+        });
         layout();
       });
     }
@@ -1222,7 +1516,14 @@
     scTickFrame = requestAnimationFrame(tick);
     document.documentElement.classList.add('sc-ready');
 
-    var api = { layout: layout, read: read, acts: acts, worlds: worlds, clips: playheads, lerp: LERP };
+    var api = {
+      layout: layout,
+      read: read,
+      acts: acts,
+      worlds: worlds,
+      clips: playheads,
+      lerp: LERP
+    };
     // Idempotent: a second call is a no-op, because a framework's teardown hook
     // can run after the element is already gone.
     api.destroy = function () {
@@ -1232,20 +1533,37 @@
         removeEventListener(scListeners[i][0], scListeners[i][1], scListeners[i][2]);
       }
       scListeners.length = 0;
-      if (scTickFrame) { cancelAnimationFrame(scTickFrame); scTickFrame = 0; }
-      if (scPointerFrame) { cancelAnimationFrame(scPointerFrame); scPointerFrame = 0; }
+      if (scTickFrame) {
+        cancelAnimationFrame(scTickFrame);
+        scTickFrame = 0;
+      }
+      if (scPointerFrame) {
+        cancelAnimationFrame(scPointerFrame);
+        scPointerFrame = 0;
+      }
       // Both observers, or every element they still watch stays reachable.
-      if (io) { io.disconnect(); io = null; }
-      if (cio) { cio.disconnect(); cio = null; }
+      if (io) {
+        io.disconnect();
+        io = null;
+      }
+      if (cio) {
+        cio.disconnect();
+        cio = null;
+      }
       // A blob URL is a document-lifetime reference to a whole decoded clip, so
       // an unreleased one is the largest thing a re-mount can leak. Detaching
       // the source needs the removeAttribute + load() pair: revoking alone
       // leaves the element holding the resource.
       for (var v = 0; v < playheads.length; v++) {
         var V = playheads[v];
-        try { V.el.pause(); } catch (e) {}
+        try {
+          V.el.pause();
+        } catch (e) {}
         if (V.objectURL) {
-          try { V.el.removeAttribute('src'); V.el.load(); } catch (e) {}
+          try {
+            V.el.removeAttribute('src');
+            V.el.load();
+          } catch (e) {}
           URL.revokeObjectURL(V.objectURL);
           V.objectURL = null;
         }

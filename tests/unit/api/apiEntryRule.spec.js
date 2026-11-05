@@ -30,11 +30,10 @@ beforeEach(async () => {
   handler = (await import('../../../api/entry-rule.js')).default
 })
 
-const request = (passport) => mockReq({
-  url: passport === undefined
-    ? '/api/entry-rule'
-    : `/api/entry-rule?passport=${passport}`,
-})
+const request = (passport) =>
+  mockReq({
+    url: passport === undefined ? '/api/entry-rule' : `/api/entry-rule?passport=${passport}`,
+  })
 
 describe('/api/entry-rule', () => {
   it.each([

@@ -36,7 +36,14 @@ function whyRemoved(r) {
             <h2 id="jc-title" class="h4 mb-0">Join {{ p.hostName }}?</h2>
             <p class="small text-muted mb-0">Here's exactly what changes in your plan.</p>
           </div>
-          <button type="button" class="btn btn-sm btn-soft" aria-label="Close" @click="emit('close')"><i class="bi bi-x-lg"></i></button>
+          <button
+            type="button"
+            class="btn btn-sm btn-soft"
+            aria-label="Close"
+            @click="emit('close')"
+          >
+            <i class="bi bi-x-lg"></i>
+          </button>
         </div>
 
         <div v-if="!p.ok" class="alert alert-danger small">
@@ -45,13 +52,21 @@ function whyRemoved(r) {
 
         <template v-else>
           <div v-if="p.bigChange" class="big-warn mb-3" role="alert">
-            <div class="fw-800"><i class="bi bi-exclamation-triangle-fill"></i> This replaces {{ p.removed.length === 1 ? 'a big part' : p.removed.length + ' stops' }} of your plan</div>
+            <div class="fw-800">
+              <i class="bi bi-exclamation-triangle-fill"></i> This replaces
+              {{ p.removed.length === 1 ? 'a big part' : p.removed.length + ' stops' }} of your plan
+            </div>
             <div class="small">
-              Replaced: {{ p.removed.map((r) => `${r.leg.name} (${formatDuration(stay(r.leg))})`).join(', ') }}.
+              Replaced:
+              {{
+                p.removed.map((r) => `${r.leg.name} (${formatDuration(stay(r.leg))})`).join(', ')
+              }}.
             </div>
           </div>
 
-          <div class="tiny fw-800 text-uppercase text-muted mb-1">Added · with {{ p.hostName }}</div>
+          <div class="tiny fw-800 text-uppercase text-muted mb-1">
+            Added · with {{ p.hostName }}
+          </div>
           <ul class="rows mb-3">
             <li v-for="b in p.blocks" :key="b.place_id" class="row-add">
               <i class="bi bi-people-fill"></i>
@@ -66,7 +81,9 @@ function whyRemoved(r) {
               <li v-for="r in p.removed" :key="r.leg.place_id" class="row-del">
                 <i class="bi bi-dash-circle"></i>
                 <span class="flex-grow-1 min-w-0">
-                  <span class="d-block text-truncate"><s>{{ r.leg.name }}</s></span>
+                  <span class="d-block text-truncate"
+                    ><s>{{ r.leg.name }}</s></span
+                  >
                   <span class="tiny">{{ whyRemoved(r) }}</span>
                 </span>
                 <span class="mono tiny">{{ span(r.leg) }}</span>
@@ -76,10 +93,19 @@ function whyRemoved(r) {
         </template>
 
         <div class="d-flex gap-2">
-          <button type="button" class="btn btn-soft" :disabled="busy" @click="emit('close')">Cancel</button>
-          <button type="button" class="btn btn-primary flex-grow-1" :disabled="busy || !p.ok" @click="emit('confirm')">
+          <button type="button" class="btn btn-soft" :disabled="busy" @click="emit('close')">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary flex-grow-1"
+            :disabled="busy || !p.ok"
+            @click="emit('confirm')"
+          >
             <span v-if="busy" class="spinner-border spinner-border-sm"></span>
-            <template v-else-if="p.ok"><i class="bi bi-people-fill"></i> Join &amp; update my plan</template>
+            <template v-else-if="p.ok"
+              ><i class="bi bi-people-fill"></i> Join &amp; update my plan</template
+            >
             <template v-else>Ends too late for your flight</template>
           </button>
         </div>
@@ -89,7 +115,15 @@ function whyRemoved(r) {
 </template>
 
 <style scoped>
-.sheet-backdrop { position: fixed; inset: 0; z-index: 1800; background: rgba(0, 0, 0, 0.45); display: flex; align-items: flex-end; justify-content: center; }
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1800;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
 .sheet {
   width: min(560px, 100%);
   max-height: 92vh;
@@ -99,12 +133,50 @@ function whyRemoved(r) {
   border-bottom-right-radius: 0;
   animation: sheet-up 0.2s ease-out;
 }
-@keyframes sheet-up { from { transform: translateY(40px); opacity: 0; } }
-.grabber { width: 44px; height: 5px; border-radius: 99px; background: var(--zt-soft-line); margin: 0 auto 10px; }
-.rows { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
-.rows li { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 14px; border: 2px dashed var(--zt-soft-line); }
-.rows .row-add { border: 2px solid var(--zt-line); background: var(--zt-yellow-pale); color: #111; }
-.rows .row-del { color: var(--zt-muted); }
-.big-warn { padding: 12px 14px; border-radius: 16px; background: #e5484d; color: #fff; border: var(--zt-bw) solid var(--zt-line); }
-.min-w-0 { min-width: 0; }
+@keyframes sheet-up {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+.grabber {
+  width: 44px;
+  height: 5px;
+  border-radius: 99px;
+  background: var(--zt-soft-line);
+  margin: 0 auto 10px;
+}
+.rows {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.rows li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  border: 2px dashed var(--zt-soft-line);
+}
+.rows .row-add {
+  border: 2px solid var(--zt-line);
+  background: var(--zt-yellow-pale);
+  color: #111;
+}
+.rows .row-del {
+  color: var(--zt-muted);
+}
+.big-warn {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #e5484d;
+  color: #fff;
+  border: var(--zt-bw) solid var(--zt-line);
+}
+.min-w-0 {
+  min-width: 0;
+}
 </style>

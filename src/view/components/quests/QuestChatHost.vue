@@ -21,13 +21,19 @@ const user = useUserStore()
 const { active } = useActiveQuest()
 
 // Signed in: load my plan (for the quest I joined) and my open window (if I'm hosting one).
-watch(() => user.userId, async (id) => {
-  if (!id) return
-  try {
-    const m = await mission.loadActive()
-    if (m) await party.loadHosted(m)
-  } catch { /* guest mode / offline: no social quests */ }
-}, { immediate: true })
+watch(
+  () => user.userId,
+  async (id) => {
+    if (!id) return
+    try {
+      const m = await mission.loadActive()
+      if (m) await party.loadHosted(m)
+    } catch {
+      /* guest mode / offline: no social quests */
+    }
+  },
+  { immediate: true }
+)
 
 // Follow the active quest's chat.
 let following = null
@@ -39,26 +45,37 @@ function follow(id) {
 watch(() => active.value?.id, follow, { immediate: true })
 onUnmounted(() => follow(null))
 // After reading another quest's chat (e.g. from its page), switch back to mine.
-watch(() => party.chatPanel, (open) => {
-  if (!open && following && party.chat.partyId !== following) {
-    party.resetChat()
-    party.chatUsers = 0
-    party.startChat(following)
+watch(
+  () => party.chatPanel,
+  (open) => {
+    if (!open && following && party.chat.partyId !== following) {
+      party.resetChat()
+      party.chatUsers = 0
+      party.startChat(following)
+    }
   }
-})
+)
 
 // New message from someone else
 const banner = ref(null)
 let hideTimer = 0
-watch(() => party.incoming, (msg) => {
-  if (!msg) return
-  if (document.hidden) {
-    notify(`${msg.name} · ${msg.title}`, msg.body, { tag: `chat-${msg.partyId}`, onClick: () => party.openChat(msg.partyId) })
+watch(
+  () => party.incoming,
+  (msg) => {
+    if (!msg) return
+    if (document.hidden) {
+      notify(`${msg.name} · ${msg.title}`, msg.body, {
+        tag: `chat-${msg.partyId}`,
+        onClick: () => party.openChat(msg.partyId)
+      })
+    }
+    banner.value = msg
+    clearTimeout(hideTimer)
+    hideTimer = setTimeout(() => {
+      banner.value = null
+    }, 6000)
   }
-  banner.value = msg
-  clearTimeout(hideTimer)
-  hideTimer = setTimeout(() => { banner.value = null }, 6000)
-})
+)
 onUnmounted(() => clearTimeout(hideTimer))
 function openFromBanner() {
   const id = banner.value.partyId
@@ -69,18 +86,30 @@ function openFromBanner() {
 
 <template>
   <Transition name="chat-banner">
-    <button v-if="banner && party.chatPanel !== banner.partyId" type="button" class="chat-banner" @click="openFromBanner"
-      :aria-label="`New message from ${banner.name}: ${banner.body}. Open chat`">
+    <button
+      v-if="banner && party.chatPanel !== banner.partyId"
+      type="button"
+      class="chat-banner"
+      @click="openFromBanner"
+      :aria-label="`New message from ${banner.name}: ${banner.body}. Open chat`"
+    >
       <i class="bi bi-chat-dots-fill icon" aria-hidden="true"></i>
       <span class="flex-grow-1 min-w-0 text-start">
-        <span class="d-block tiny fw-800 text-truncate">{{ banner.name }} · {{ banner.title }}</span>
+        <span class="d-block tiny fw-800 text-truncate"
+          >{{ banner.name }} · {{ banner.title }}</span
+        >
         <span class="d-block small text-truncate">{{ banner.body }}</span>
       </span>
       <span class="open tiny fw-800">Open</span>
     </button>
   </Transition>
 
-  <QuestChatDrawer v-if="party.chatPanel" :open="true" :party-id="party.chatPanel" @close="party.closeChat()" />
+  <QuestChatDrawer
+    v-if="party.chatPanel"
+    :open="true"
+    :party-id="party.chatPanel"
+    @close="party.closeChat()"
+  />
 </template>
 
 <style scoped>
@@ -101,9 +130,28 @@ function openFromBanner() {
   color: #111;
   box-shadow: 4px 4px 0 #111;
 }
-.icon { font-size: 1.3rem; }
-.open { flex: none; padding: 3px 10px; border-radius: 99px; background: #111; color: #ffcc00; }
-.min-w-0 { min-width: 0; }
-.chat-banner-enter-active, .chat-banner-leave-active { transition: transform 0.25s ease, opacity 0.25s ease; }
-.chat-banner-enter-from, .chat-banner-leave-to { transform: translate(-50%, -24px); opacity: 0; }
+.icon {
+  font-size: 1.3rem;
+}
+.open {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: #111;
+  color: #ffcc00;
+}
+.min-w-0 {
+  min-width: 0;
+}
+.chat-banner-enter-active,
+.chat-banner-leave-active {
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
+}
+.chat-banner-enter-from,
+.chat-banner-leave-to {
+  transform: translate(-50%, -24px);
+  opacity: 0;
+}
 </style>

@@ -31,7 +31,11 @@ export class StampSlam {
     const parts = [
       [new THREE.SphereGeometry(0.2, 24, 16), yellow, 0.95],
       [new THREE.CylinderGeometry(0.09, 0.12, 0.6, 24), yellow, 0.55],
-      [new THREE.CylinderGeometry(0.48, 0.5, 0.2, 48), new THREE.MeshStandardMaterial({ color: 0x111111 }), 0.15],
+      [
+        new THREE.CylinderGeometry(0.48, 0.5, 0.2, 48),
+        new THREE.MeshStandardMaterial({ color: 0x111111 }),
+        0.15
+      ],
       [new THREE.CylinderGeometry(0.47, 0.47, 0.05, 48), this.ink, 0.025]
     ]
     this.stamp = new THREE.Group()
@@ -53,7 +57,10 @@ export class StampSlam {
     this.stamp.add(this.face)
 
     // Ink ring that spreads out on impact
-    this.ring = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.56, 48), new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false }))
+    this.ring = new THREE.Mesh(
+      new THREE.RingGeometry(0.5, 0.56, 48),
+      new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false })
+    )
     this.ring.rotation.x = -Math.PI / 2
     this.scene.add(this.stamp, this.ring)
     this.stamp.visible = this.ring.visible = false
@@ -61,10 +68,16 @@ export class StampSlam {
 
   // Canvas pixel → point on the paper
   paperPoint(x, y) {
-    const ndc = new THREE.Vector2((x / this.canvas.clientWidth) * 2 - 1, 1 - (y / this.canvas.clientHeight) * 2)
+    const ndc = new THREE.Vector2(
+      (x / this.canvas.clientWidth) * 2 - 1,
+      1 - (y / this.canvas.clientHeight) * 2
+    )
     const raycaster = new THREE.Raycaster()
     raycaster.setFromCamera(ndc, this.camera)
-    return raycaster.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), new THREE.Vector3())
+    return raycaster.ray.intersectPlane(
+      new THREE.Plane(new THREE.Vector3(0, 1, 0), 0),
+      new THREE.Vector3()
+    )
   }
 
   /** Put a location's stamp PNG on the stamp face (null hides it). */
@@ -139,7 +152,11 @@ export class StampSlam {
           const lift = Math.max(0, (k - 0.35) / 0.65)
           this.stamp.position.y = scale * 2 * lift * lift
           this.stamp.rotation.z = 0
-          this.stamp.scale.set(scale * (1 - lift * 0.9), scale * (1 - lift * 0.9) * squash, scale * (1 - lift * 0.9))
+          this.stamp.scale.set(
+            scale * (1 - lift * 0.9),
+            scale * (1 - lift * 0.9) * squash,
+            scale * (1 - lift * 0.9)
+          )
           this.ring.scale.setScalar(scale * (1 + k * 3))
           this.ring.material.opacity = Math.max(0, 0.8 - k * 2)
         }

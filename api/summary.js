@@ -19,12 +19,22 @@ export default async function handler(req, res) {
   try {
     const { model, data } = await groqJson({
       system: SYSTEM,
-      user: { name: p.name, area: p.area, tags: p.tags, blurb: p.blurb, captions: p.captions || [], hours: p.hours, safety_notes: p.safety_notes || '' },
+      user: {
+        name: p.name,
+        area: p.area,
+        tags: p.tags,
+        blurb: p.blurb,
+        captions: p.captions || [],
+        hours: p.hours,
+        safety_notes: p.safety_notes || ''
+      },
       temperature: 0.5,
       maxTokens: 600
     })
     const summary = typeof data.summary === 'string' ? data.summary.slice(0, 600) : ''
-    const tips = Array.isArray(data.tips) ? data.tips.filter((t) => typeof t === 'string').slice(0, 3) : []
+    const tips = Array.isArray(data.tips)
+      ? data.tips.filter((t) => typeof t === 'string').slice(0, 3)
+      : []
     if (!summary) return res.status(502).json({ error: 'empty summary' })
     return res.status(200).json({ model, summary, tips })
   } catch (err) {

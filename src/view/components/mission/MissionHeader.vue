@@ -33,8 +33,12 @@ function newLayover() {
     <div class="mhead-top">
       <div class="pills">
         <span class="zt-pill"><i class="bi" :class="style.icon"></i> {{ style.label }}</span>
-        <span v-if="m.source === 'groq'" class="zt-pill ink" :title="m.groq_model"><i class="bi bi-stars"></i> Groq</span>
-        <span v-else class="zt-pill paper" :title="m.fallback_reason || ''"><i class="bi bi-cpu"></i> Offline</span>
+        <span v-if="m.source === 'groq'" class="zt-pill ink" :title="m.groq_model"
+          ><i class="bi bi-stars"></i> Groq</span
+        >
+        <span v-else class="zt-pill paper" :title="m.fallback_reason || ''"
+          ><i class="bi bi-cpu"></i> Offline</span
+        >
         <span v-if="m.replans" class="zt-pill pale">Replanned ×{{ m.replans }}</span>
       </div>
       <TimeToGate :must-return-ms="store.mustReturnMs" :start-ms="Date.parse(m.start_iso)" />
@@ -42,16 +46,36 @@ function newLayover() {
     <h1 class="title">{{ m.title }}</h1>
     <div class="meta">
       <span><i class="bi bi-geo-alt"></i> From {{ m.origin.label }}</span>
-      <span><i class="bi bi-patch-check"></i> {{ store.stampedCount }}/{{ store.visitLegs.length }} stamped</span>
+      <span
+        ><i class="bi bi-patch-check"></i> {{ store.stampedCount }}/{{
+          store.visitLegs.length
+        }}
+        stamped</span
+      >
     </div>
     <div class="mt-2 d-flex flex-wrap gap-2">
-      <button v-if="hasPending" type="button" class="btn btn-sm btn-soft" :class="{ active: editingSchedule }"
-        :aria-expanded="editingSchedule" @click="editingSchedule = !editingSchedule">
-        <i class="bi" :class="editingSchedule ? 'bi-check-lg' : 'bi-arrow-down-up'"></i> {{ editingSchedule ? 'Done editing' : 'Edit order & times' }}
+      <button
+        v-if="hasPending"
+        type="button"
+        class="btn btn-sm btn-soft"
+        :class="{ active: editingSchedule }"
+        :aria-expanded="editingSchedule"
+        @click="editingSchedule = !editingSchedule"
+      >
+        <i class="bi" :class="editingSchedule ? 'bi-check-lg' : 'bi-arrow-down-up'"></i>
+        {{ editingSchedule ? 'Done editing' : 'Edit order & times' }}
       </button>
-      <button v-if="hasPending && !editingSchedule" type="button" class="btn btn-sm btn-soft"
-        :disabled="store.status === 'planning'" @click="emit('regenerate')">
-        <i class="bi" :class="store.status === 'planning' ? 'bi-hourglass-split' : 'bi-shuffle'"></i>
+      <button
+        v-if="hasPending && !editingSchedule"
+        type="button"
+        class="btn btn-sm btn-soft"
+        :disabled="store.status === 'planning'"
+        @click="emit('regenerate')"
+      >
+        <i
+          class="bi"
+          :class="store.status === 'planning' ? 'bi-hourglass-split' : 'bi-shuffle'"
+        ></i>
         {{ store.status === 'planning' ? 'Finding new stops…' : 'New itinerary' }}
       </button>
       <button v-if="!m.completed" type="button" class="btn btn-sm btn-primary" @click="newLayover">
@@ -60,8 +84,19 @@ function newLayover() {
     </div>
     <div v-if="store.previousPlan" class="undo-strip mt-2" role="status">
       <span class="small">New stops picked. Liked the old plan better?</span>
-      <button type="button" class="btn btn-sm btn-link p-0 fw-800" @click="store.restorePreviousPlan()">Bring it back</button>
-      <button type="button" class="btn-close btn-sm ms-auto" aria-label="Keep the new plan" @click="store.previousPlan = null"></button>
+      <button
+        type="button"
+        class="btn btn-sm btn-link p-0 fw-800"
+        @click="store.restorePreviousPlan()"
+      >
+        Bring it back
+      </button>
+      <button
+        type="button"
+        class="btn-close btn-sm ms-auto"
+        aria-label="Keep the new plan"
+        @click="store.previousPlan = null"
+      ></button>
     </div>
   </header>
 </template>

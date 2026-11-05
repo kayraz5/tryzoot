@@ -3,9 +3,12 @@
 // ICA's own visa list wins; the Passport Index dataset (MIT) covers every other passport.
 // Used by /api/entry-rule (live data) and by the app (saved copy, when the API can't be reached).
 
-export const ICA_VISA_PAGE = 'https://www.ica.gov.sg/enter-transit-depart/entering-singapore/visa_requirements'
-export const ICA_VFTF_PAGE = 'https://www.ica.gov.sg/enter-transit-depart/entering-singapore/visa-free-transit-facility'
-export const ICA_ARRIVAL_CARD_PAGE = 'https://www.ica.gov.sg/enter-transit-depart/entering-singapore/sg-arrival-card'
+export const ICA_VISA_PAGE =
+  'https://www.ica.gov.sg/enter-transit-depart/entering-singapore/visa_requirements'
+export const ICA_VFTF_PAGE =
+  'https://www.ica.gov.sg/enter-transit-depart/entering-singapore/visa-free-transit-facility'
+export const ICA_ARRIVAL_CARD_PAGE =
+  'https://www.ica.gov.sg/enter-transit-depart/entering-singapore/sg-arrival-card'
 export const icaCountryPage = (slug) => `${ICA_VISA_PAGE}/visa-detail-page/${slug}`
 
 // 96-hour Visa Free Transit Facility, from ICA's VFTF page (updated 1 Aug 2025, checked 24 Oct 2026)
@@ -16,7 +19,16 @@ export const VFTF = {
   ticketOnly: ['AM', 'AZ', 'BY', 'KZ', 'KG', 'MD', 'RU', 'TJ', 'UZ', 'GE', 'TM', 'UA'],
   checkedOn: '2026-10-24'
 }
-export const VFTF_VISA_COUNTRIES = ['Australia', 'Canada', 'Germany', 'Japan', 'New Zealand', 'Switzerland', 'United Kingdom', 'United States']
+export const VFTF_VISA_COUNTRIES = [
+  'Australia',
+  'Canada',
+  'Germany',
+  'Japan',
+  'New Zealand',
+  'Switzerland',
+  'United Kingdom',
+  'United States'
+]
 
 // ICA link names that don't follow the country's English name
 const ICA_SLUG_ALIASES = { KP: 'democratic-people' }
@@ -24,7 +36,12 @@ const ICA_SLUG_ALIASES = { KP: 'democratic-people' }
 const regionNames = new Intl.DisplayNames(['en'], { type: 'region' })
 export const countryName = (code) => regionNames.of(code)
 
-const slugify = (text) => text.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+const slugify = (text) =>
+  text
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
 export const icaSlug = (code) => ICA_SLUG_ALIASES[code] || slugify(countryName(code))
 
 /**

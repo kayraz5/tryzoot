@@ -20,20 +20,35 @@ export function useActiveQuest() {
   /** Host: my open window, if anyone has joined and it hasn't ended. */
   const hostedLive = computed(() => {
     const h = party.hosted
-    return h && h.status !== 'closed' && h.roster?.length > 1 && Date.parse(h.ends_at) > tick.value ? h : null
+    return h && h.status !== 'closed' && h.roster?.length > 1 && Date.parse(h.ends_at) > tick.value
+      ? h
+      : null
   })
   /** { id, role: 'guest' | 'host', startMs, endMs } or null. */
   const active = computed(() => {
-    if (joined.value) return { id: joined.value.id, role: 'guest', startMs: joined.value.startMs, endMs: joined.value.endMs }
+    if (joined.value)
+      return {
+        id: joined.value.id,
+        role: 'guest',
+        startMs: joined.value.startMs,
+        endMs: joined.value.endMs
+      }
     if (hostedLive.value) {
-      return { id: hostedLive.value.id, role: 'host', startMs: Date.parse(hostedLive.value.starts_at), endMs: Date.parse(hostedLive.value.ends_at) }
+      return {
+        id: hostedLive.value.id,
+        role: 'host',
+        startMs: Date.parse(hostedLive.value.starts_at),
+        endMs: Date.parse(hostedLive.value.ends_at)
+      }
     }
     return null
   })
   const started = computed(() => !!active.value && tick.value >= active.value.startMs)
   /** Locations are shared from the moment someone joins until the quest ends. */
   const live = computed(() => !!active.value && tick.value < active.value.endMs)
-  const guestNames = computed(() => (hostedLive.value?.roster || []).filter((m) => m.role !== 'host').map((m) => m.display_name))
+  const guestNames = computed(() =>
+    (hostedLive.value?.roster || []).filter((m) => m.role !== 'host').map((m) => m.display_name)
+  )
   /** Where my own plan picks up after the joined stops (a visit, or the return leg). */
   const resume = computed(() => store.resumeLeg)
 

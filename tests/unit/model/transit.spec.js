@@ -2,7 +2,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { HUBS, nearestHub, transit, travel } from '../../../src/model/services/travel.js'
 import { hubByCode, rideDirection } from '../../../src/model/services/transit/network.js'
-import { transitSteps, transferPoints, currentPartIndex } from '../../../src/model/services/transit/steps.js'
+import {
+  transitSteps,
+  transferPoints,
+  currentPartIndex
+} from '../../../src/model/services/transit/steps.js'
 import { decodePolyline } from '../../../src/model/services/transit/polyline.js'
 
 const CHANGI = { lat: 1.3574, lng: 103.9884 }
@@ -28,16 +32,57 @@ describe('MRT network', () => {
   })
 
   it('describes MRT legs by line name, not code', () => {
-    expect(travel(CHANGI, ORCHARD).detail).toBe('MRT Changi Airport → Orchard · East West Line → North South Line')
+    expect(travel(CHANGI, ORCHARD).detail).toBe(
+      'MRT Changi Airport → Orchard · East West Line → North South Line'
+    )
   })
 })
 
 describe('transitSteps', () => {
   const parts = [
-    { mode: 'walk', minutes: 4, coords: [[103.85, 1.3], [103.851, 1.3]], to: { name: 'Bugis', kind: 'station', exit: 'C' } },
-    { mode: 'mrt', line: 'EW', coords: [[103.851, 1.3], [103.852, 1.293]], from: { name: 'Bugis', lat: 1.3, lng: 103.851 }, to: { name: 'City Hall', lat: 1.293, lng: 103.852 }, stops: 1, towards: 'Tuas Link' },
-    { mode: 'mrt', line: 'NS', coords: [[103.852, 1.293], [103.832, 1.304]], from: { name: 'City Hall', lat: 1.293, lng: 103.852 }, to: { name: 'Orchard', lat: 1.304, lng: 103.832 }, stops: 3, towards: 'Jurong East' },
-    { mode: 'walk', minutes: 3, coords: [[103.832, 1.304], [103.831, 1.305]], from: { name: 'Orchard', exit: 'E' }, to: { name: 'ION Sky', kind: 'place' } }
+    {
+      mode: 'walk',
+      minutes: 4,
+      coords: [
+        [103.85, 1.3],
+        [103.851, 1.3]
+      ],
+      to: { name: 'Bugis', kind: 'station', exit: 'C' }
+    },
+    {
+      mode: 'mrt',
+      line: 'EW',
+      coords: [
+        [103.851, 1.3],
+        [103.852, 1.293]
+      ],
+      from: { name: 'Bugis', lat: 1.3, lng: 103.851 },
+      to: { name: 'City Hall', lat: 1.293, lng: 103.852 },
+      stops: 1,
+      towards: 'Tuas Link'
+    },
+    {
+      mode: 'mrt',
+      line: 'NS',
+      coords: [
+        [103.852, 1.293],
+        [103.832, 1.304]
+      ],
+      from: { name: 'City Hall', lat: 1.293, lng: 103.852 },
+      to: { name: 'Orchard', lat: 1.304, lng: 103.832 },
+      stops: 3,
+      towards: 'Jurong East'
+    },
+    {
+      mode: 'walk',
+      minutes: 3,
+      coords: [
+        [103.832, 1.304],
+        [103.831, 1.305]
+      ],
+      from: { name: 'Orchard', exit: 'E' },
+      to: { name: 'ION Sky', kind: 'place' }
+    }
   ]
 
   it('reads like directions a first-timer can follow', () => {
@@ -54,7 +99,11 @@ describe('transitSteps', () => {
   })
 
   it('pins where to board, change and get off', () => {
-    expect(transferPoints(parts).map((p) => p.label)).toEqual(['Board · East West Line', 'Change · North South Line', 'Get off · Orchard'])
+    expect(transferPoints(parts).map((p) => p.label)).toEqual([
+      'Board · East West Line',
+      'Change · North South Line',
+      'Get off · Orchard'
+    ])
   })
 
   it('knows which step you are on from your position', () => {
@@ -65,7 +114,10 @@ describe('transitSteps', () => {
 
 describe('decodePolyline', () => {
   it('decodes Google polylines to [lng, lat]', () => {
-    expect(decodePolyline('_p~iF~ps|U_ulLnnqC')).toEqual([[-120.2, 38.5], [-120.95, 40.7]])
+    expect(decodePolyline('_p~iF~ps|U_ulLnnqC')).toEqual([
+      [-120.2, 38.5],
+      [-120.95, 40.7]
+    ])
   })
 })
 
@@ -79,19 +131,35 @@ describe('findDirectBus', () => {
     const data = {
       stops: {
         '01012': [103.8545, 1.2967, 'Hotel Grand Pacific', 'Victoria St', ['7']],
-        '01013': [103.8560, 1.2990, 'St. Joseph\'s Ch', 'Victoria St', ['7']],
-        '09047': [103.8350, 1.3040, 'Orchard Stn', 'Orchard Rd', ['7']]
+        '01013': [103.856, 1.299, "St. Joseph's Ch", 'Victoria St', ['7']],
+        '09047': [103.835, 1.304, 'Orchard Stn', 'Orchard Rd', ['7']]
       },
       services: { 7: { name: 'A ⇄ B', routes: [['01012', '01013', '09047']], lines: [] } }
     }
-    vi.stubGlobal('fetch', vi.fn(async (url) => {
-      if (String(url).includes('bus.sg.json')) return { ok: true, json: async () => data }
-      // OSRM walk routes
-      const [a, b] = String(url).split('/').pop().split('?')[0].split(';').map((p) => p.split(',').map(Number))
-      return { ok: true, json: async () => ({ routes: [{ geometry: { coordinates: [a, b] }, distance: 100, legs: [{ steps: [] }] }] }) }
-    }))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url) => {
+        if (String(url).includes('bus.sg.json')) return { ok: true, json: async () => data }
+        // OSRM walk routes
+        const [a, b] = String(url)
+          .split('/')
+          .pop()
+          .split('?')[0]
+          .split(';')
+          .map((p) => p.split(',').map(Number))
+        return {
+          ok: true,
+          json: async () => ({
+            routes: [{ geometry: { coordinates: [a, b] }, distance: 100, legs: [{ steps: [] }] }]
+          })
+        }
+      })
+    )
     const { findDirectBus } = await import('../../../src/model/services/transit/bus.js')
-    const route = await findDirectBus({ lat: 1.2965, lng: 103.8542 }, { lat: 1.3042, lng: 103.8352, name: 'Orchard' })
+    const route = await findDirectBus(
+      { lat: 1.2965, lng: 103.8542 },
+      { lat: 1.3042, lng: 103.8352, name: 'Orchard' }
+    )
     const bus = route.parts.find((p) => p.mode === 'bus')
     expect(bus.service).toBe('7')
     expect(bus.from.code).toBe('01012')
@@ -123,7 +191,17 @@ describe('which way to ride', () => {
   })
 
   it('reads the direction into the step', () => {
-    const [step] = transitSteps([{ mode: 'mrt', line: 'CC', loop: 'clockwise', nextStop: 'Caldecott', stops: 9, from: { name: 'Botanic Gardens' }, to: { name: 'Paya Lebar' } }])
+    const [step] = transitSteps([
+      {
+        mode: 'mrt',
+        line: 'CC',
+        loop: 'clockwise',
+        nextStop: 'Caldecott',
+        stops: 9,
+        from: { name: 'Botanic Gardens' },
+        to: { name: 'Paya Lebar' }
+      }
+    ])
     expect(step.title).toBe('Take the Circle Line clockwise')
     expect(step.detail).toBe('Next stop Caldecott · 9 stops · get off at Paya Lebar')
   })

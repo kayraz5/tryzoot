@@ -1,6 +1,6 @@
 <!-- EDITOR: HULBERT -->
 <script setup>
-import { computed } from "vue";
+import { computed } from 'vue'
 
 /**
  * Procedural poster art for a place in the Zoot palette: sunburst, outlined skyline, category icon.
@@ -9,44 +9,40 @@ import { computed } from "vue";
 const props = defineProps({
   place: { type: Object, required: true },
   height: { type: Number, default: 160 },
-  rounded: { type: Boolean, default: true },
-});
+  rounded: { type: Boolean, default: true }
+})
 
 // [background, sunburst ray, icon disc, sparkles]
 const SCHEMES = [
-  ["#ffcc00", "rgba(255,255,255,0.38)", "#ffffff", "#111111"],
-  ["#fff4c2", "rgba(255,204,0,0.55)", "#ffcc00", "#111111"],
-  ["#f83878", "rgba(255,255,255,0.22)", "#ffffff", "#111111"],
-  ["#111111", "rgba(255,204,0,0.2)", "#ffcc00", "#ffcc00"],
-];
+  ['#ffcc00', 'rgba(255,255,255,0.38)', '#ffffff', '#111111'],
+  ['#fff4c2', 'rgba(255,204,0,0.55)', '#ffcc00', '#111111'],
+  ['#f83878', 'rgba(255,255,255,0.22)', '#ffffff', '#111111'],
+  ['#111111', 'rgba(255,204,0,0.2)', '#ffcc00', '#ffcc00']
+]
 const ICONS = {
-  hawker: "bi-egg-fried",
-  food: "bi-cup-hot-fill",
-  gardens: "bi-flower1",
-  views: "bi-binoculars-fill",
-  museum: "bi-easel-fill",
-  temple: "bi-bank2",
-  heritage: "bi-hourglass-split",
-  nightlife: "bi-moon-stars-fill",
-  shopping: "bi-bag-heart-fill",
-  beach: "bi-water",
-  nature: "bi-tree-fill",
-  photo: "bi-camera-fill",
-  architecture: "bi-buildings-fill",
-  art: "bi-palette-fill",
-  coffee: "bi-cup-straw",
-  culture: "bi-globe-asia-australia",
-  family: "bi-emoji-smile-fill",
-  rides: "bi-rocket-takeoff-fill",
-};
-const seed = computed(() =>
-  [...props.place.id].reduce((s, ch) => s + ch.charCodeAt(0), 0),
-);
-const scheme = computed(() => SCHEMES[seed.value % SCHEMES.length]);
-const icon = computed(() => ICONS[props.place.tags?.[0]] || "bi-geo-alt-fill");
-const bars = computed(() =>
-  Array.from({ length: 9 }, (_, i) => 22 + ((seed.value * (i + 3)) % 48)),
-);
+  hawker: 'bi-egg-fried',
+  food: 'bi-cup-hot-fill',
+  gardens: 'bi-flower1',
+  views: 'bi-binoculars-fill',
+  museum: 'bi-easel-fill',
+  temple: 'bi-bank2',
+  heritage: 'bi-hourglass-split',
+  nightlife: 'bi-moon-stars-fill',
+  shopping: 'bi-bag-heart-fill',
+  beach: 'bi-water',
+  nature: 'bi-tree-fill',
+  photo: 'bi-camera-fill',
+  architecture: 'bi-buildings-fill',
+  art: 'bi-palette-fill',
+  coffee: 'bi-cup-straw',
+  culture: 'bi-globe-asia-australia',
+  family: 'bi-emoji-smile-fill',
+  rides: 'bi-rocket-takeoff-fill'
+}
+const seed = computed(() => [...props.place.id].reduce((s, ch) => s + ch.charCodeAt(0), 0))
+const scheme = computed(() => SCHEMES[seed.value % SCHEMES.length])
+const icon = computed(() => ICONS[props.place.tags?.[0]] || 'bi-geo-alt-fill')
+const bars = computed(() => Array.from({ length: 9 }, (_, i) => 22 + ((seed.value * (i + 3)) % 48)))
 </script>
 
 <template>
@@ -60,7 +56,7 @@ const bars = computed(() =>
       '--bg': scheme[0],
       '--ray': scheme[1],
       '--disc': scheme[2],
-      '--spark': scheme[3],
+      '--spark': scheme[3]
     }"
   >
     <img
@@ -72,17 +68,12 @@ const bars = computed(() =>
     />
     <template v-else>
       <div class="skyline">
-        <span
-          v-for="(h, i) in bars"
-          :key="i"
-          :style="{ height: h + '%' }"
-        ></span>
+        <span v-for="(h, i) in bars" :key="i" :style="{ height: h + '%' }"></span>
       </div>
       <div class="disc">
         <i class="bi" :class="icon" aria-hidden="true"></i>
       </div>
-      <span class="spark s1">✦</span><span class="spark s2">✦</span
-      ><span class="spark s3">✦</span>
+      <span class="spark s1">✦</span><span class="spark s2">✦</span><span class="spark s3">✦</span>
     </template>
     <span class="area-tag">{{ place.area }}</span>
   </div>

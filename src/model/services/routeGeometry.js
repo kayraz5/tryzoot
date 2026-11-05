@@ -6,8 +6,7 @@ const METERS_PER_DEG_LAT = 110540
 const METERS_PER_DEG_LNG_AT_EQUATOR = 111320
 
 function toLocalMeters(point, origin) {
-  const metersPerDegLng =
-    METERS_PER_DEG_LNG_AT_EQUATOR * Math.cos((origin.lat * Math.PI) / 180)
+  const metersPerDegLng = METERS_PER_DEG_LNG_AT_EQUATOR * Math.cos((origin.lat * Math.PI) / 180)
   return {
     x: (point[0] - origin.lng) * metersPerDegLng,
     y: (point[1] - origin.lat) * METERS_PER_DEG_LAT
@@ -64,14 +63,14 @@ export function trimRouteAtPosition(coords, position) {
   if (!hit) return { coords: coords.slice(), distanceM: Infinity }
 
   const trimmed = [[position.lng, position.lat]]
-// 1 m is below display resolution but bridges real GPS offset.
+  // 1 m is below display resolution but bridges real GPS offset.
   if (hit.distanceM > 1) trimmed.push(hit.point)
 
   for (let i = hit.index + 1; i < coords.length; i++) {
     const point = coords[i]
     const last = trimmed[trimmed.length - 1]
-// A projection landing exactly on a vertex would repeat it: skip, or the line
-// gets a zero-length segment.
+    // A projection landing exactly on a vertex would repeat it: skip, or the line
+    // gets a zero-length segment.
     if (point[0] === last[0] && point[1] === last[1]) continue
     trimmed.push(point)
   }

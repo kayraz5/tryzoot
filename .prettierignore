@@ -1,0 +1,10 @@
+node_modules
+dist
+.vercel
+pnpm-lock.yaml
+*.json
+*.md
+*.yml
+*.yaml
+*.sql
+*.patch

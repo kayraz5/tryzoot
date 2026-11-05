@@ -40,7 +40,9 @@ describe('Singapore opening-hours helpers', () => {
       const place = { hours: [['09:00', '17:00']], closed_days: [2] }
       expect(isOpenDuringVisit(place, T('10:00'), T('11:00'))).toBe(false)
       // Same place on Wednesday 2030-01-16 (not a closed day): the rejection above comes from the closed weekday.
-      expect(isOpenDuringVisit(place, T('10:00', '2030-01-16'), T('11:00', '2030-01-16'))).toBe(true)
+      expect(isOpenDuringVisit(place, T('10:00', '2030-01-16'), T('11:00', '2030-01-16'))).toBe(
+        true
+      )
     })
 
     it('accepts a visit fully inside a daytime range', () => {
@@ -60,7 +62,9 @@ describe('Singapore opening-hours helpers', () => {
 
     it('does not match an overnight range when arriving after midnight', () => {
       const place = { hours: [['22:00', '02:00']] }
-      expect(isOpenDuringVisit(place, T('01:00', '2030-01-16'), T('01:30', '2030-01-16'))).toBe(false)
+      expect(isOpenDuringVisit(place, T('01:00', '2030-01-16'), T('01:30', '2030-01-16'))).toBe(
+        false
+      )
     })
 
     it('treats 23:59 as the end of the day', () => {
@@ -75,10 +79,15 @@ describe('Singapore opening-hours helpers', () => {
     })
 
     it('formats ranges, midnight closing, and closed weekdays', () => {
-      expect(formatOpeningHours({
-        hours: [['07:00', '12:00'], ['18:00', '23:59']],
-        closed_days: [0, 2],
-      })).toBe('07:00-12:00, 18:00-24:00 · Closed Sun, Tue')
+      expect(
+        formatOpeningHours({
+          hours: [
+            ['07:00', '12:00'],
+            ['18:00', '23:59']
+          ],
+          closed_days: [0, 2],
+        })
+      ).toBe('07:00-12:00, 18:00-24:00 · Closed Sun, Tue')
     })
   })
 
@@ -106,19 +115,24 @@ describe('Singapore opening-hours helpers', () => {
 
     // Feature: test-coverage-expansion, Property 6: Duration formatting preserves minutes
     it('preserves generated duration minutes across both formatters', () => {
-      forAll((r) => int(r, -10000, 200000) / 100, (minutes) => {
-        const formatted = formatDuration(minutes)
-        const formattedMinutes = Number(formatted.match(/^(?:(\d+) h)?(?: ?(\d+) min)?$/)?.[1] || 0) * 60
-          + Number(formatted.match(/(\d+) min$/)?.[1] || 0)
-        const hmText = hm(minutes)
-        const hmMinutes = Number(hmText.match(/^(\d+)H/)?.[1] || 0) * 60
-          + Number(hmText.match(/(\d+)M$/)?.[1] || 0)
-        const expected = Math.max(0, Math.round(minutes))
+      forAll(
+        (r) => int(r, -10000, 200000) / 100,
+        (minutes) => {
+          const formatted = formatDuration(minutes)
+          const formattedMinutes =
+            Number(formatted.match(/^(?:(\d+) h)?(?: ?(\d+) min)?$/)?.[1] || 0) * 60 +
+            Number(formatted.match(/(\d+) min$/)?.[1] || 0)
+          const hmText = hm(minutes)
+          const hmMinutes =
+            Number(hmText.match(/^(\d+)H/)?.[1] || 0) * 60 +
+            Number(hmText.match(/(\d+)M$/)?.[1] || 0)
+          const expected = Math.max(0, Math.round(minutes))
 
-        expect(formattedMinutes).toBe(expected)
-        expect(hmMinutes).toBe(expected)
-        expect(hmMinutes).toBe(formattedMinutes)
-      })
+          expect(formattedMinutes).toBe(expected)
+          expect(hmMinutes).toBe(expected)
+          expect(hmMinutes).toBe(formattedMinutes)
+        }
+      )
     })
 
     // **Validates: Requirements 2.2, 2.3**
@@ -144,31 +158,35 @@ describe('Singapore opening-hours helpers', () => {
       const hour = int(r, 0, 23)
       const minute = int(r, 0, 59)
       const date = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-      return Date.parse(at(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`, date))
+      return Date.parse(
+        at(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`, date)
+      )
     }
 
-    forAll((r) => ({ first: timestamp(r), second: timestamp(r) }), ({ first, second }) => {
-      const firstLocal = toSgLocalInput(first)
-      const secondLocal = toSgLocalInput(second)
-      const [firstHour, firstMinute] = firstLocal.slice(11, 16).split(':').map(Number)
-      const [secondHour, secondMinute] = secondLocal.slice(11, 16).split(':').map(Number)
+    forAll(
+      (r) => ({ first: timestamp(r), second: timestamp(r) }),
+      ({ first, second }) => {
+        const firstLocal = toSgLocalInput(first)
+        const secondLocal = toSgLocalInput(second)
+        const [firstHour, firstMinute] = firstLocal.slice(11, 16).split(':').map(Number)
+        const [secondHour, secondMinute] = secondLocal.slice(11, 16).split(':').map(Number)
 
-      expect(fromSgLocalInput(firstLocal)).toBe(first)
-      expect(fromSgLocalInput(secondLocal)).toBe(second)
-      expect(formatTime(first)).toBe(firstLocal.slice(11, 16))
-      expect(formatTime(second)).toBe(secondLocal.slice(11, 16))
-      expect(getSgTimeParts(first)).toEqual({
-        minutes: firstHour * 60 + firstMinute,
-        day: new Date(`${firstLocal.slice(0, 10)}T00:00:00Z`).getUTCDay(),
-      })
-      expect(getSgTimeParts(second)).toEqual({
-        minutes: secondHour * 60 + secondMinute,
-        day: new Date(`${secondLocal.slice(0, 10)}T00:00:00Z`).getUTCDay(),
-      })
-      expect(sameSgDay(first, second)).toBe(firstLocal.slice(0, 10) === secondLocal.slice(0, 10))
-    })
+        expect(fromSgLocalInput(firstLocal)).toBe(first)
+        expect(fromSgLocalInput(secondLocal)).toBe(second)
+        expect(formatTime(first)).toBe(firstLocal.slice(11, 16))
+        expect(formatTime(second)).toBe(secondLocal.slice(11, 16))
+        expect(getSgTimeParts(first)).toEqual({
+          minutes: firstHour * 60 + firstMinute,
+          day: new Date(`${firstLocal.slice(0, 10)}T00:00:00Z`).getUTCDay(),
+        })
+        expect(getSgTimeParts(second)).toEqual({
+          minutes: secondHour * 60 + secondMinute,
+          day: new Date(`${secondLocal.slice(0, 10)}T00:00:00Z`).getUTCDay(),
+        })
+        expect(sameSgDay(first, second)).toBe(firstLocal.slice(0, 10) === secondLocal.slice(0, 10))
+      }
+    )
   })
 
   // **Validates: Requirements 2.2, 2.5**
 })
-

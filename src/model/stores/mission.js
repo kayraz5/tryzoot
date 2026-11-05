@@ -3,7 +3,14 @@ import { defineStore } from 'pinia'
 import { getDb } from '../services/db/index.js'
 import { buildMission } from '../services/groq.js'
 import { catalog, placeById, loadCatalog } from '../services/catalog.js'
-import { keptVisits, slackMinutes, leaveByMs, retimeMission, stayMinutes, xpFor } from '../services/planner.js'
+import {
+  keptVisits,
+  slackMinutes,
+  leaveByMs,
+  retimeMission,
+  stayMinutes,
+  xpFor
+} from '../services/planner.js'
 import { travel, distanceM, TRANSPORT } from '../services/travel.js'
 import { rainLookup } from '../services/weather.js'
 import { now } from '../services/clock.js'
@@ -14,7 +21,14 @@ import { useTripStore } from './trip.js'
 import { useUserStore } from './user.js'
 import { usePassportStore } from './passport.js'
 import { usePartyStore } from './party.js'
-import { previewJoin, withTravel, joinWindow, leaveWindow, getQuest, GuestModeError } from '../services/social.js'
+import {
+  previewJoin,
+  withTravel,
+  joinWindow,
+  leaveWindow,
+  getQuest,
+  GuestModeError
+} from '../services/social.js'
 import { restoreOnLeave } from '../services/joinResolver.js'
 
 const ACTIVE_KEY = 'zoot.activeMission'
@@ -33,20 +47,38 @@ export const useMissionStore = defineStore('mission', {
   }),
   getters: {
     legs: (s) => s.mission?.legs || [],
-    visitLegs() { return this.legs.filter((l) => l.kind === 'visit') },
-    returnLeg() { return this.legs.find((l) => l.kind === 'return') || null },
-    nextLeg() {
-      return this.visitLegs.find((l) => l.status === 'pending') || (this.returnLeg?.status === 'pending' ? this.returnLeg : null)
+    visitLegs() {
+      return this.legs.filter((l) => l.kind === 'visit')
     },
-    stampedCount() { return this.visitLegs.filter((l) => l.status === 'stamped').length },
-    arriveByMs() { return this.returnLeg ? Date.parse(this.returnLeg.arrive_by) : null },
+    returnLeg() {
+      return this.legs.find((l) => l.kind === 'return') || null
+    },
+    nextLeg() {
+      return this.visitLegs.find((l) => l.status === 'pending') ||
+        (this.returnLeg?.status === 'pending' ? this.returnLeg : null)
+    },
+    stampedCount() {
+      return this.visitLegs.filter((l) => l.status === 'stamped').length
+    },
+    arriveByMs() {
+      return this.returnLeg ? Date.parse(this.returnLeg.arrive_by) : null
+    },
     mustReturnMs: (s) => (s.mission ? Date.parse(s.mission.must_return_iso) : null),
-    missionPlaceIds() { return new Set(this.visitLegs.map((l) => l.place_id)) },
+    missionPlaceIds() {
+      return new Set(this.visitLegs.map((l) => l.place_id))
+    },
     /** The quest I've joined (as a guest): { id, title, host_name, from, to, blocks, startMs, endMs } or null. */
     joinedQuest() {
       for (const [id, info] of Object.entries(this.mission?.joined || {})) {
         const blocks = this.legs.filter((l) => l.fixed && l.party_id === id)
-        if (blocks.length) return { id, ...info, blocks, startMs: Date.parse(blocks[0].arrive_iso), endMs: Date.parse(blocks.at(-1).depart_iso) }
+        if (blocks.length)
+          return {
+            id,
+            ...info,
+            blocks,
+            startMs: Date.parse(blocks[0].arrive_iso),
+            endMs: Date.parse(blocks.at(-1).depart_iso)
+          }
       }
       return null
     },
@@ -54,7 +86,13 @@ export const useMissionStore = defineStore('mission', {
     resumeLeg() {
       const q = this.joinedQuest
       if (!q) return null
-      return this.legs.find((l) => l.kind === 'visit' && !l.fixed && l.status === 'pending' && Date.parse(l.arrive_iso) >= q.endMs) || this.returnLeg
+      return this.legs.find(
+          (l) =>
+            l.kind === 'visit' &&
+            !l.fixed &&
+            l.status === 'pending' &&
+            Date.parse(l.arrive_iso) >= q.endMs
+        ) || this.returnLeg
     }
   },
   actions: {
@@ -107,8 +145,12 @@ export const useMissionStore = defineStore('mission', {
       const db = await getDb()
       await db.saveMission(mission)
       this.mission = mission
-      try { localStorage.setItem(ACTIVE_KEY, mission.id) } catch {}
-      usePassportStore().markSeen(mission.legs.filter((l) => l.kind === 'visit').map((l) => l.place_id))
+      try {
+        localStorage.setItem(ACTIVE_KEY, mission.id)
+      } catch {}
+      usePassportStore().markSeen(
+        mission.legs.filter((l) => l.kind === 'visit').map((l) => l.place_id)
+      )
       // If I've opened part of this mission to company, keep what guests see in step (no-op otherwise).
       usePartyStore().syncHostedWindow(mission)
     },
@@ -116,7 +158,9 @@ export const useMissionStore = defineStore('mission', {
     /** Another account signed in (or this one signed out): forget everything about the last one's plan. */
     forgetAccount() {
       this.$reset()
-      try { localStorage.removeItem(ACTIVE_KEY) } catch {}
+      try {
+        localStorage.removeItem(ACTIVE_KEY)
+      } catch {}
     },
 
     async load(id) {
@@ -126,7 +170,9 @@ export const useMissionStore = defineStore('mission', {
       if (m) {
         this.mission = m
         this.status = 'ready'
-        try { localStorage.setItem(ACTIVE_KEY, id) } catch {}
+        try {
+          localStorage.setItem(ACTIVE_KEY, id)
+        } catch {}
       }
       return m
     },
@@ -134,7 +180,9 @@ export const useMissionStore = defineStore('mission', {
     async loadActive() {
       if (this.mission) return this.mission
       let id = null
-      try { id = localStorage.getItem(ACTIVE_KEY) } catch {}
+      try {
+        id = localStorage.getItem(ACTIVE_KEY)
+      } catch {}
       // The remembered id can belong to another account on this device: fall back to my latest.
       const remembered = id && await this.load(id)
       if (remembered) return remembered
@@ -155,7 +203,9 @@ export const useMissionStore = defineStore('mission', {
       // a mission left in the Pinia store after a different account signed in.
       this.mission = unfinished
       this.status = 'ready'
-      try { localStorage.setItem(ACTIVE_KEY, unfinished.id) } catch {}
+      try {
+        localStorage.setItem(ACTIVE_KEY, unfinished.id)
+      } catch {}
       return unfinished
     },
 
@@ -174,16 +224,25 @@ export const useMissionStore = defineStore('mission', {
       if (!m) return
       const joined = upcomingJoined(m.legs)
       if (joined) {
-        useUiStore().toast(`A rewrite would drop your stops with ${joined.with_host}. Leave that quest first.`, 'warning', 5000)
+        useUiStore().toast(
+          `A rewrite would drop your stops with ${joined.with_host}. Leave that quest first.`,
+          'warning',
+          5000
+        )
         return false
       }
       await loadCatalog()
-      const exclude = new Set(m.legs.filter((l) => l.kind === 'visit' && l.status !== 'pending').map((l) => l.place_id))
+      const exclude = new Set(
+        m.legs.filter((l) => l.kind === 'visit' && l.status !== 'pending').map((l) => l.place_id)
+      )
       const prefs = { ...m.prefs }
       let forceIndoor = false
       avoid.forEach((id) => exclude.add(id))
       if (mode === 'swap' && this.nextLeg?.kind === 'visit') exclude.add(this.nextLeg.place_id)
-      if (mode === 'less-walking') { prefs.maxWalk = 8; prefs.energy = 'low' }
+      if (mode === 'less-walking') {
+        prefs.maxWalk = 8;
+        prefs.energy = 'low'
+      }
       if (mode === 'rain') forceIndoor = true
       if (mode === 'behind') prefs.energy = prefs.energy === 'high' ? 'med' : 'low'
 
@@ -199,7 +258,10 @@ export const useMissionStore = defineStore('mission', {
         forceIndoor,
         excludeIds: exclude,
         // Not left yet (e.g. planned days ahead)? Rewrite from the start, not from here and now.
-        start: now() >= departOf(m) ? { point: this.here(), ms: now() } : { point: m.origin, ms: departOf(m) },
+        start:
+          now() >= departOf(m)
+            ? { point: this.here(), ms: now() }
+            : { point: m.origin, ms: departOf(m) },
         keepVisits: keptVisits(m, placeById.value),
         meta: { id: m.id }
       })
@@ -226,9 +288,12 @@ export const useMissionStore = defineStore('mission', {
       const m = this.mission
       if (!m) return false
       const before = JSON.parse(JSON.stringify(m))
-      const ahead = m.legs.filter((l) => l.kind === 'visit' && l.status === 'pending' && !l.fixed).map((l) => l.place_id)
+      const ahead = m.legs
+        .filter((l) => l.kind === 'visit' && l.status === 'pending' && !l.fixed)
+        .map((l) => l.place_id)
       let ok = await this.replan('fresh', { avoid: ahead, quiet: ahead.length > 1 })
-      if (!ok && ahead.length > 1) ok = await this.replan('fresh', { avoid: ahead.filter((_, i) => i % 2 === 0) })
+      if (!ok && ahead.length > 1)
+        ok = await this.replan('fresh', { avoid: ahead.filter((_, i) => i % 2 === 0) })
       if (ok) this.previousPlan = before
       return ok
     },
@@ -240,7 +305,11 @@ export const useMissionStore = defineStore('mission', {
       if (!prev || prev.id !== this.mission?.id) return false
       const stamped = (x) => x.legs.filter((l) => l.status === 'stamped').length
       if (stamped(prev) !== stamped(this.mission)) {
-        useUiStore().toast('You stamped a stop since then, so the old plan can’t come back.', 'warning', 4000)
+        useUiStore().toast(
+          'You stamped a stop since then, so the old plan can’t come back.',
+          'warning',
+          4000
+        )
         return false
       }
       await this.persist(prev)
@@ -264,7 +333,8 @@ export const useMissionStore = defineStore('mission', {
         return false
       }
       const departMs = departOf(m)
-      const start = now() >= departMs ? { point: this.here(), ms: now() } : { point: m.origin, ms: departMs }
+      const start =
+        now() >= departMs ? { point: this.here(), ms: now() } : { point: m.origin, ms: departMs }
       const { mission, problems } = retimeMission(draft, { start, catalogById: placeById.value })
       if (problems.length) {
         useUiStore().toast(`That doesn't fit: ${problems[0]}.`, 'warning', 5000)
@@ -289,12 +359,18 @@ export const useMissionStore = defineStore('mission', {
       const draft = JSON.parse(JSON.stringify(m))
       draft.prefs = { ...draft.prefs, transport: mode }
       const departMs = departOf(m)
-      const start = now() >= departMs ? { point: this.here(), ms: now() } : { point: m.origin, ms: departMs }
+      const start =
+        now() >= departMs ? { point: this.here(), ms: now() } : { point: m.origin, ms: departMs }
       const { mission, problems } = retimeMission(draft, { start, catalogById: placeById.value })
       await this.persist(mission)
       const ui = useUiStore()
-      if (problems.length) ui.toast(`${TRANSPORT[mode].label}: heads-up, ${problems[0]}.`, 'warning', 6000)
-      else ui.toast(`Going by ${TRANSPORT[mode].label.toLowerCase()}: route and times updated.`, 'success')
+      if (problems.length)
+        ui.toast(`${TRANSPORT[mode].label}: heads-up, ${problems[0]}.`, 'warning', 6000)
+      else
+        ui.toast(
+          `Going by ${TRANSPORT[mode].label.toLowerCase()}: route and times updated.`,
+          'success'
+        )
       return true
     },
 
@@ -303,8 +379,12 @@ export const useMissionStore = defineStore('mission', {
     /** Insert a catalog place after the stop at `afterPlaceId`, or just before the return leg. */
     addStop(place, afterPlaceId = null) {
       return this.editLegs((legs, m) => {
-        if (legs.some((l) => l.place_id === place.id)) return `${place.name} is already in this mission.`
-        const at = afterPlaceId == null ? legs.findIndex((l) => l.kind === 'return') : indexOfStop(legs, afterPlaceId) + 1
+        if (legs.some((l) => l.place_id === place.id))
+          return `${place.name} is already in this mission.`
+        const at =
+          afterPlaceId == null
+            ? legs.findIndex((l) => l.kind === 'return')
+            : indexOfStop(legs, afterPlaceId) + 1
         if (at < 1 && afterPlaceId != null) return STALE
         legs.splice(at, 0, userLeg(place, m, 'You added this stop.'))
       }, `${place.name} added.`)
@@ -313,7 +393,8 @@ export const useMissionStore = defineStore('mission', {
     swapStop(leg, place) {
       return this.editLegs((legs, m) => {
         if (leg.fixed) return lockedMessage(leg)
-        if (legs.some((l) => l.place_id === place.id)) return `${place.name} is already in this mission.`
+        if (legs.some((l) => l.place_id === place.id))
+          return `${place.name} is already in this mission.`
         const i = indexOfStop(legs, leg.place_id)
         if (i < 0) return STALE
         legs.splice(i, 1, userLeg(place, m, `Swapped in for ${leg.name}.`))
@@ -325,7 +406,8 @@ export const useMissionStore = defineStore('mission', {
         if (leg.fixed) return lockedMessage(leg)
         const i = indexOfStop(legs, leg.place_id)
         if (i < 0) return STALE
-        if (legs.filter((l) => l.kind === 'visit').length <= 1) return 'A mission needs at least one stop. Swap it instead.'
+        if (legs.filter((l) => l.kind === 'visit').length <= 1)
+          return 'A mission needs at least one stop. Swap it instead.'
         legs.splice(i, 1)
       }, `${leg.name} removed.`)
     },
@@ -354,13 +436,17 @@ export const useMissionStore = defineStore('mission', {
       return this.editLegs((legs, m) => {
         if (leg.fixed) return lockedMessage(leg)
         const slots = []
-        legs.forEach((l, i) => { if (l.kind === 'visit' && l.status === 'pending') slots.push(i) })
+        legs.forEach((l, i) => {
+          if (l.kind === 'visit' && l.status === 'pending') slots.push(i)
+        })
         const pending = slots.map((i) => legs[i])
         const from = pending.findIndex((l) => l.place_id === leg.place_id)
         if (from < 0) return STALE
         if (from === to) return null
         pending.splice(Math.max(0, Math.min(pending.length - 1, to)), 0, ...pending.splice(from, 1))
-        slots.forEach((i, k) => { legs[i] = pending[k] })
+        slots.forEach((i, k) => {
+          legs[i] = pending[k]
+        })
         m.manual_order = true
       })
     },
@@ -377,7 +463,9 @@ export const useMissionStore = defineStore('mission', {
     reorderByProximity() {
       return this.editLegs((legs) => {
         const slots = []
-        legs.forEach((l, i) => { if (l.kind === 'visit' && l.status === 'pending' && !l.fixed) slots.push(i) })
+        legs.forEach((l, i) => {
+          if (l.kind === 'visit' && l.status === 'pending' && !l.fixed) slots.push(i)
+        })
         if (slots.length < 2) return null // nothing to reorder
 
         const pool = slots.map((i) => legs[i])
@@ -388,7 +476,9 @@ export const useMissionStore = defineStore('mission', {
           cur = pool.shift()
           ordered.push(cur)
         }
-        slots.forEach((i, k) => { legs[i] = ordered[k] })
+        slots.forEach((i, k) => {
+          legs[i] = ordered[k]
+        })
       })
     },
 
@@ -415,8 +505,13 @@ export const useMissionStore = defineStore('mission', {
       const db = await getDb()
       const position = hasFix() ? { lat: geo.lat, lng: geo.lng, accuracy: geo.accuracy } : null
       const { stamp, profile } = await db.stampPlace({
-        userId: user.userId, place, position: dev && !position ? { lat: place.lat, lng: place.lng, accuracy: 5 } : position,
-        fake: geo.fake || dev, dev, missionId: this.mission?.id, xp: leg.xp
+        userId: user.userId,
+        place,
+        position: dev && !position ? { lat: place.lat, lng: place.lng, accuracy: 5 } : position,
+        fake: geo.fake || dev,
+        dev,
+        missionId: this.mission?.id,
+        xp: leg.xp
       })
       user.setProfile(profile)
       const chopEarned = passport.addStamp({ ...stamp, area: place.area })
@@ -457,15 +552,24 @@ export const useMissionStore = defineStore('mission', {
     async finishEarly() {
       if (!this.mission) return false
       for (const partyId of Object.keys(this.mission.joined || {})) {
-        try { await this.leaveQuest(partyId) } catch (err) { console.warn('[mission] leave on finish early:', err.message) }
+        try {
+          await this.leaveQuest(partyId)
+        } catch (err) {
+          console.warn('[mission] leave on finish early:', err.message)
+        }
       }
       await loadCatalog()
       const draft = JSON.parse(JSON.stringify(this.mission))
       const skipped = draft.legs.filter((l) => l.kind === 'visit' && l.status === 'pending')
-      skipped.forEach((l) => { l.status = 'skipped' })
+      skipped.forEach((l) => {
+        l.status = 'skipped'
+      })
       draft.ended_early = true
       const departMs = departOf(draft)
-      const start = now() >= departMs ? { point: this.here(), ms: now() } : { point: draft.origin, ms: departMs }
+      const start =
+        now() >= departMs
+          ? { point: this.here(), ms: now() }
+          : { point: draft.origin, ms: departMs }
       // Heading straight back is always allowed, even if it's already late: no refusal here.
       const { mission } = retimeMission(draft, { start, catalogById: placeById.value })
       await this.persist(mission)
@@ -486,7 +590,9 @@ export const useMissionStore = defineStore('mission', {
       if (onTime) {
         const user = useUserStore()
         const db = await getDb()
-        try { user.setProfile(await db.awardXp(user.userId, ret.xp)) } catch {}
+        try {
+          user.setProfile(await db.awardXp(user.userId, ret.xp))
+        } catch {}
       }
       useUiStore().celebrate({ returned: true, onTime, xp: onTime ? ret.xp : 0 })
     },
@@ -503,7 +609,8 @@ export const useMissionStore = defineStore('mission', {
       const m = this.mission
       if (!m) throw new Error('Plan your layover first.')
       const other = upcomingJoined(m.legs)
-      if (other && other.party_id !== quest.id) throw new Error(`You're already with ${other.with_host}. Leave that quest first.`)
+      if (other && other.party_id !== quest.id)
+        throw new Error(`You're already with ${other.with_host}. Leave that quest first.`)
       const res = previewJoin(quest, from, to, m)
       if (!res.ok) throw new Error(res.reason)
       await joinWindow({ quest, from, to, mission: m })
@@ -511,7 +618,13 @@ export const useMissionStore = defineStore('mission', {
       next.legs = withTravel(res.legs, m)
       next.joined = {
         ...(m.joined || {}),
-        [quest.id]: { title: quest.title, host_name: res.hostName, from, to, removed: res.removed.map((r) => ({ ...r.leg, removed_why: r.why })) }
+        [quest.id]: {
+          title: quest.title,
+          host_name: res.hostName,
+          from,
+          to,
+          removed: res.removed.map((r) => ({ ...r.leg, removed_why: r.why }))
+        }
       }
       setTotals(next)
       try {
@@ -534,7 +647,12 @@ export const useMissionStore = defineStore('mission', {
       if (!m) return { restored: [], dropped: [] }
       if (server) await leaveWindow(partyId)
       const info = m.joined?.[partyId]
-      const res = restoreOnLeave({ legs: m.legs, removed: info?.removed || [], partyId, nowMs: now() })
+      const res = restoreOnLeave({
+        legs: m.legs,
+        removed: info?.removed || [],
+        partyId,
+        nowMs: now()
+      })
       const next = JSON.parse(JSON.stringify(m))
       next.legs = withTravel(res.legs, m)
       next.joined = { ...(m.joined || {}) }
@@ -553,14 +671,20 @@ export const useMissionStore = defineStore('mission', {
       const ids = Object.keys(this.mission?.joined || {})
       for (const id of ids) {
         let q
-        try { q = await getQuest(id) } catch (err) {
+        try {
+          q = await getQuest(id)
+        } catch (err) {
           if (err instanceof GuestModeError) return
           continue // offline: check again next time
         }
         if (q && q.mine && q.status !== 'closed') continue
         const host = this.mission.joined[id].host_name
         await this.leaveQuest(id, { server: false })
-        useUiStore().toast(`${host} changed their plan, so you're back on your own.`, 'warning', 6000)
+        useUiStore().toast(
+          `${host} changed their plan, so you're back on your own.`,
+          'warning',
+          6000
+        )
       }
     },
 
@@ -573,11 +697,15 @@ export const useMissionStore = defineStore('mission', {
           const blocks = this.legs.filter((l) => l.fixed && l.party_id === id)
           if (blocks.length && Date.parse(blocks.at(-1).depart_iso) > now()) continue
           // Free me on the server too (one quest at a time); fine if the quest is already gone.
-          try { await leaveWindow(id) } catch {}
+          try {
+            await leaveWindow(id)
+          } catch {}
           await this.leaveQuest(id, { server: false })
           const next = this.nextLeg
           await usePartyStore().notice({
-            title: `Your stops with ${info.host_name} are done`, icon: 'bi-flag-fill', tone: 'success',
+            title: `Your stops with ${info.host_name} are done`,
+            icon: 'bi-flag-fill',
+            tone: 'success',
             body: `You'll carry on with your own plan${next?.kind === 'visit' ? `. Next up: ${next.name}` : ', heading back'}.`
           })
         }
@@ -605,16 +733,32 @@ export const useMissionStore = defineStore('mission', {
       const slack = this.slack()
       const next = this.nextLeg
       const nextPoint = next ? { lat: next.lat, lng: next.lng } : this.mission.origin
-      const opts = { maxWalk: this.mission.prefs?.maxWalk, transport: this.mission.prefs?.transport, style: this.mission.style }
+      const opts = {
+        maxWalk: this.mission.prefs?.maxWalk,
+        transport: this.mission.prefs?.transport,
+        style: this.mission.style
+      }
       const direct = travel(position, nextPoint, opts).minutes
-      return SIDEQUESTS
-        .map((sq) => ({ ...sq, place: placeById.value.get(sq.place_id) }))
-        .filter((sq) => sq.place && !this.missionPlaceIds.has(sq.place_id) && !this.mission.sidequests_done?.includes(sq.id))
+      return SIDEQUESTS.map((sq) => ({ ...sq, place: placeById.value.get(sq.place_id) }))
+        .filter(
+          (sq) =>
+            sq.place &&
+            !this.missionPlaceIds.has(sq.place_id) &&
+            !this.mission.sidequests_done?.includes(sq.id)
+        )
         .map((sq) => {
           const distance = distanceM(position, sq.place)
-          const detour = travel(position, sq.place, opts).minutes + travel(sq.place, nextPoint, opts).minutes - direct
+          const detour =
+            travel(position, sq.place, opts).minutes +
+            travel(sq.place, nextPoint, opts).minutes -
+            direct
           const extra = Math.max(0, detour) + sq.stay_min
-          return { ...sq, distance, extra_min: extra, eligible: slack != null && slack >= extra + SIDEQUEST_BUFFER_MIN }
+          return {
+            ...sq,
+            distance,
+            extra_min: extra,
+            eligible: slack != null && slack >= extra + SIDEQUEST_BUFFER_MIN
+          }
         })
         .filter((sq) => sq.distance <= SIDEQUEST_RADIUS_M)
         .sort((a, b) => a.distance - b.distance)
@@ -625,7 +769,11 @@ export const useMissionStore = defineStore('mission', {
       const m = this.mission
       const joined = upcomingJoined(m.legs)
       if (joined) {
-        useUiStore().toast(`Sidequests are paused while you have stops with ${joined.with_host}: they'd push your meet-up later.`, 'warning', 5000)
+        useUiStore().toast(
+          `Sidequests are paused while you have stops with ${joined.with_host}: they'd push your meet-up later.`,
+          'warning',
+          5000
+        )
         return
       }
       const next = this.nextLeg
@@ -636,11 +784,25 @@ export const useMissionStore = defineStore('mission', {
       const arrive = now() + tr.minutes * 60000
       const depart = arrive + sq.stay_min * 60000
       const leg = {
-        seq: 0, kind: 'visit', sidequest: true, sidequest_id: sq.id, place_id: place.id, name: place.name, area: place.area,
-        lat: place.lat, lng: place.lng, indoor: place.indoor,
-        arrive_iso: new Date(arrive).toISOString(), depart_iso: new Date(depart).toISOString(),
-        travel_mode: tr.mode, travel_min: tr.minutes, travel_detail: tr.detail, stay_min: sq.stay_min,
-        why: `Sidequest: ${sq.prompt}`, xp: sq.xp, status: 'pending'
+        seq: 0,
+        kind: 'visit',
+        sidequest: true,
+        sidequest_id: sq.id,
+        place_id: place.id,
+        name: place.name,
+        area: place.area,
+        lat: place.lat,
+        lng: place.lng,
+        indoor: place.indoor,
+        arrive_iso: new Date(arrive).toISOString(),
+        depart_iso: new Date(depart).toISOString(),
+        travel_mode: tr.mode,
+        travel_min: tr.minutes,
+        travel_detail: tr.detail,
+        stay_min: sq.stay_min,
+        why: `Sidequest: ${sq.prompt}`,
+        xp: sq.xp,
+        status: 'pending'
       }
       const idx = next ? m.legs.indexOf(next) : m.legs.length - 1
       m.legs.splice(idx, 0, leg)
@@ -678,11 +840,24 @@ function indexOfStop(legs, placeId) {
 function userLeg(place, mission, why) {
   const stay = stayMinutes(place, mission.prefs || {})
   return {
-    seq: 0, kind: 'visit', place_id: place.id, name: place.name, area: place.area,
-    lat: place.lat, lng: place.lng, indoor: place.indoor,
-    arrive_iso: mission.start_iso, depart_iso: mission.start_iso,
-    travel_mode: 'walk', travel_min: 0, travel_detail: '', stay_min: stay,
-    why, xp: xpFor(place, stay), status: 'pending', user_added: true
+    seq: 0,
+    kind: 'visit',
+    place_id: place.id,
+    name: place.name,
+    area: place.area,
+    lat: place.lat,
+    lng: place.lng,
+    indoor: place.indoor,
+    arrive_iso: mission.start_iso,
+    depart_iso: mission.start_iso,
+    travel_mode: 'walk',
+    travel_min: 0,
+    travel_detail: '',
+    stay_min: stay,
+    why,
+    xp: xpFor(place, stay),
+    status: 'pending',
+    user_added: true
   }
 }
 
@@ -708,7 +883,13 @@ function retime(m, idx, fromMs, fromPoint, opts) {
 }
 
 function labelFor(mode) {
-  return { behind: "I'm behind", 'less-walking': 'Less walking', swap: 'Stop swapped', rain: 'Rain plan', fresh: 'New itinerary' }[mode] || 'Replanned'
+  return {
+      behind: "I'm behind",
+      'less-walking': 'Less walking',
+      swap: 'Stop swapped',
+      rain: 'Rain plan',
+      fresh: 'New itinerary'
+    }[mode] || 'Replanned'
 }
 
 /** When the traveller leaves the airport: the trip start plus the immigration buffer. */

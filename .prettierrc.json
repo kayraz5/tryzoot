@@ -1,0 +1,106 @@
+{
+  "semi": false,
+  "singleQuote": true,
+  "trailingComma": "none",
+  "arrowParens": "always",
+  "quoteProps": "preserve",
+  "printWidth": 100,
+  "endOfLine": "auto",
+  "overrides": [
+    {
+      "files": [
+        "e2e/global-setup.js",
+        "e2e/journeys/harness.spec.js",
+        "playwright.config.js",
+        "tests/integration/support/hermeticEnv.spec.js",
+        "tests/integration/support/networkGuard.spec.js",
+        "tests/integration/support/supabaseGate.spec.js",
+        "tests/setup/supabase.globalSetup.js",
+        "tests/support/networkGuard.js",
+        "tests/support/supabaseGate.js",
+        "tests/support/unit/fixtures.js",
+        "tests/support/unit/index.js",
+        "tests/unit/api/apiLibGroq.spec.js",
+        "tests/unit/api/apiLibImmigration.spec.js",
+        "tests/unit/api/apiLibPlaces.spec.js",
+        "tests/unit/api/apiPlan.spec.js",
+        "tests/unit/api/apiRoute.spec.js",
+        "tests/unit/api/apiSummary.spec.js",
+        "tests/unit/api/apiSyncPlaces.spec.js",
+        "tests/unit/controller/routing.spec.js",
+        "tests/unit/controller/useMissionNav.spec.js",
+        "tests/unit/model/characterStore.spec.js",
+        "tests/unit/model/checkin.spec.js",
+        "tests/unit/model/config.spec.js",
+        "tests/unit/model/dbIndex.spec.js",
+        "tests/unit/model/geo.spec.js",
+        "tests/unit/model/groq.spec.js",
+        "tests/unit/model/hours.spec.js",
+        "tests/unit/model/itinerarySchema.spec.js",
+        "tests/unit/model/localDb.spec.js",
+        "tests/unit/model/missionStore.spec.js",
+        "tests/unit/model/mrtRoute.spec.js",
+        "tests/unit/model/passportStore.spec.js",
+        "tests/unit/model/placeImages.spec.js",
+        "tests/unit/model/planner.spec.js",
+        "tests/unit/model/travel.spec.js",
+        "tests/unit/model/uiStore.spec.js",
+        "tests/unit/model/weather.spec.js",
+        "tests/unit/view/planUi.spec.js",
+        "vite.config.js"
+      ],
+      "options": {
+        "trailingComma": "es5"
+      }
+    },
+    {
+      "files": [
+        "public/story/scrollcraft.css",
+        "src/model/data/sgEntrySnapshot.js"
+      ],
+      "options": {
+        "singleQuote": false
+      }
+    },
+    {
+      "files": [
+        "src/model/services/clock.js",
+        "src/model/services/db/index.js",
+        "src/model/services/db/remote.js",
+        "src/model/services/groq.js",
+        "src/model/services/hours.js",
+        "src/model/services/xp.js",
+        "src/model/stores/user.js",
+        "src/view/components/story/engine/scrollcraft.js",
+        "src/view/views/AuthView.vue",
+        "src/view/views/OnboardView.vue",
+        "src/view/views/ProfileView.vue"
+      ],
+      "options": {
+        "semi": true
+      }
+    },
+    {
+      "files": [
+        "src/model/services/db/local.js"
+      ],
+      "options": {
+        "semi": true,
+        "trailingComma": "es5",
+        "arrowParens": "avoid"
+      }
+    },
+    {
+      "files": [
+        "tests/unit/api/apiEntryRule.spec.js",
+        "tests/unit/model/immigration.spec.js",
+        "tests/unit/model/tripStore.spec.js",
+        "tests/unit/model/userStore.spec.js",
+        "vitest.config.js"
+      ],
+      "options": {
+        "trailingComma": "all"
+      }
+    }
+  ]
+}

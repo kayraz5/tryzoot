@@ -8,10 +8,11 @@ import { jsonResponse, stubFetch, useCleanSlate } from '../../support/unit/index
 
 useCleanSlate()
 
-const planningContext = (overrides = {}) => ctx({
-  cityRisk: { severity: 0 },
-  ...overrides,
-})
+const planningContext = (overrides = {}) =>
+  ctx({
+    cityRisk: { severity: 0 },
+    ...overrides,
+  })
 
 const fallbackPlace = {
   id: 'stored-place',
@@ -30,10 +31,12 @@ const validGroqResponse = (context) => {
     choice: {
       schema: CHOICE_SCHEMA,
       title: 'A useful layover quest',
-      picks: [{
-        place_id: slice[0].id,
-        why: 'This stop fits the layover and your interests.',
-      }],
+      picks: [
+        {
+          place_id: slice[0].id,
+          why: 'This stop fits the layover and your interests.',
+        }
+      ],
     },
   }
 }
@@ -41,14 +44,18 @@ const validGroqResponse = (context) => {
 describe('buildMission', () => {
   it('refuses a severity-four city alert without making a network request', async () => {
     const fetchMock = stubFetch()
-    const result = await buildMission(planningContext({
-      cityRisk: { severity: 4, headline: 'Severe weather' },
-    }))
+    const result = await buildMission(
+      planningContext({
+        cityRisk: { severity: 4, headline: 'Severe weather' },
+      })
+    )
 
-    expect(result).toEqual(expect.objectContaining({
-      ok: false,
-      source: 'fallback',
-    }))
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: false,
+        source: 'fallback',
+      })
+    )
     expect(result.reason).toContain('Danger alert: Severe weather')
     expect(fetchMock).not.toHaveBeenCalled()
   })
@@ -60,11 +67,13 @@ describe('buildMission', () => {
       onStatus: (message) => statuses.push(message),
     })
 
-    expect(result).toEqual(expect.objectContaining({
-      ok: true,
-      source: 'fallback',
-      fallbackReason: null,
-    }))
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: true,
+        source: 'fallback',
+        fallbackReason: null,
+      })
+    )
     expect(statuses).toEqual(['Planning offline with the route engine…'])
     expect(fetchMock).not.toHaveBeenCalled()
   })
@@ -78,11 +87,13 @@ describe('buildMission', () => {
       onStatus: (message) => statuses.push(message),
     })
 
-    expect(result).toEqual(expect.objectContaining({
-      ok: true,
-      source: 'fallback',
-      fallbackReason: 'Groq is not configured',
-    }))
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: true,
+        source: 'fallback',
+        fallbackReason: 'Groq is not configured',
+      })
+    )
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(statuses).toEqual([
       'Groq is choosing your stops…',
@@ -92,20 +103,26 @@ describe('buildMission', () => {
 
   it('retries an invalid choice once and then uses the fallback planner', async () => {
     const fetchMock = stubFetch([
-      ['/api/plan', () => jsonResponse({
-        model: 'test-groq-model',
-        choice: { schema: CHOICE_SCHEMA, title: 'Invalid choice', picks: [] },
-      })],
+      [
+        '/api/plan',
+        () =>
+          jsonResponse({
+            model: 'test-groq-model',
+            choice: { schema: CHOICE_SCHEMA, title: 'Invalid choice', picks: [] },
+          })
+      ],
     ])
     const statuses = []
     const result = await buildMission(planningContext(), {
       onStatus: (message) => statuses.push(message),
     })
 
-    expect(result).toEqual(expect.objectContaining({
-      ok: true,
-      source: 'fallback',
-    }))
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: true,
+        source: 'fallback',
+      })
+    )
     expect(result.fallbackReason).toContain('picks must have 1–6 items')
     expect(fetchMock).toHaveBeenCalledTimes(2)
     expect(statuses).toEqual([
@@ -118,38 +135,40 @@ describe('buildMission', () => {
   it('returns a Groq-sourced mission for a valid choice from the catalog slice', async () => {
     const context = planningContext()
     const response = validGroqResponse(context)
-    const fetchMock = stubFetch([
-      ['/api/plan', () => jsonResponse(response)],
-    ])
+    const fetchMock = stubFetch([['/api/plan', () => jsonResponse(response)],])
 
     const result = await buildMission(context)
 
-    expect(result).toEqual(expect.objectContaining({
-      ok: true,
-      source: 'groq',
-    }))
-    expect(result.mission).toEqual(expect.objectContaining({
-      source: 'groq',
-      groq_model: 'test-groq-model',
-      fallback_used: false,
-    }))
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: true,
+        source: 'groq',
+      })
+    )
+    expect(result.mission).toEqual(
+      expect.objectContaining({
+        source: 'groq',
+        groq_model: 'test-groq-model',
+        fallback_used: false,
+      })
+    )
     expect(result.mission.legs.at(-1).kind).toBe('return')
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
   it('uses the timeout reason when the planning request aborts', async () => {
     const timeout = Object.assign(new Error('request aborted'), { name: 'AbortError' })
-    const fetchMock = stubFetch([
-      ['/api/plan', () => Promise.reject(timeout)],
-    ])
+    const fetchMock = stubFetch([['/api/plan', () => Promise.reject(timeout)],])
 
     const result = await buildMission(planningContext())
 
-    expect(result).toEqual(expect.objectContaining({
-      ok: true,
-      source: 'fallback',
-      fallbackReason: 'Groq timed out',
-    }))
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: true,
+        source: 'fallback',
+        fallbackReason: 'Groq timed out',
+      })
+    )
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 })
@@ -173,11 +192,15 @@ describe('summarizePlace', () => {
 
   it('persists a successful summary response in localStorage', async () => {
     const fetchMock = stubFetch([
-      ['/api/summary', () => jsonResponse({
-        model: 'summary-model',
-        summary: 'A concise AI summary.',
-        tips: ['Go early', 'Bring water'],
-      })],
+      [
+        '/api/summary',
+        () =>
+          jsonResponse({
+            model: 'summary-model',
+            summary: 'A concise AI summary.',
+            tips: ['Go early', 'Bring water'],
+          })
+      ],
     ])
 
     const result = await summarizePlace({ id: 'fresh-place', name: 'Fresh Place' })
