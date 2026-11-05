@@ -46,7 +46,7 @@ watch(() => party.chatPanel, (open) => {
   }
 })
 
-// ── New message from someone else ──
+// New message from someone else
 const banner = ref(null)
 let hideTimer = 0
 watch(() => party.incoming, (msg) => {

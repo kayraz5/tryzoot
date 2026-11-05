@@ -86,7 +86,7 @@ export function requireSupabase(t, needs = []) {
   return gate
 }
 
-// ── Accounts ─────────────────────────────────────────────────────────────
+// Accounts
 
 /** In-memory storage for supabase-js, so sessions never touch disk. */
 function memoryStorage(map) {
@@ -149,7 +149,7 @@ export const test = base.extend({
 
 export { expect }
 
-// ── Browser harness ──────────────────────────────────────────────────────
+// Browser harness
 
 /**
  * Signed-in browser environment for the configured project:
@@ -170,7 +170,7 @@ export async function installSupabaseHarness(page, account) {
   await installApiStubs(page)
 }
 
-// ── Tier 2 helpers ───────────────────────────────────────────────────────
+// Tier 2 helpers
 
 const must = ({ data, error }, what) => {
   if (error) throw new Error(scrub(`${what}: ${error.message}`))

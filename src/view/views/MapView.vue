@@ -38,9 +38,7 @@
  *   - orbit:          { pointerId, x, y, bearing, pitch } while a drag is active
  */
 
-// ─────────────────────────────────────────────────────────────────────────────
 // 1. Imports
-// ─────────────────────────────────────────────────────────────────────────────
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Map as MapLibreMap, LngLatBounds, setWorkerUrl } from 'maplibre-gl'
@@ -111,9 +109,7 @@ import TransitStopSheet from '../components/map/transit/TransitStopSheet.vue'
 // starts exactly at the character (no straight "tail" from a stale route origin).
 import { trimRouteAtPosition } from '../../model/services/routeGeometry.js'
 
-// ─────────────────────────────────────────────────────────────────────────────
 // 2. Module constants
-// ─────────────────────────────────────────────────────────────────────────────
 const TRAVELLER_LAYER_ID = 'zt-traveller'
 
 // The live leg is drawn as three stacked lines (glow, casing, core) so it reads
@@ -231,9 +227,7 @@ const MAP_PALETTE = {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // 3. UI state (everything the template binds to)
-// ─────────────────────────────────────────────────────────────────────────────
 const mapContainer = ref(null)          // the <div> MapLibre renders into
 const mapReady = ref(false)             // style loaded + quest layers added
 const following = ref(true)             // camera tracks the traveller until a user gesture
@@ -261,9 +255,7 @@ const wasdEnabled = ref(true)           // keyboard movement during Demo-Walk
 const liveRoute = ref(null)             // { coords, parts?, from, to }
 const plannedSegments = ref([])         // [{ coords, mode, parts?, active }]
 
-// ─────────────────────────────────────────────────────────────────────────────
 // 4. Stores & derived mission state
-// ─────────────────────────────────────────────────────────────────────────────
 const router = useRouter()
 const currentRoute = useRoute()
 const missionStore = useMissionStore()
@@ -278,9 +270,7 @@ const {
   formatDistance
 } = useMissionNav()
 
-// ─────────────────────────────────────────────────────────────────────────────
 // 5. Map instance & mutable handles
-// ─────────────────────────────────────────────────────────────────────────────
 let map = null                          // MapLibre map instance
 let player = null                       // flat "you are here" DOM marker
 let traveller3D = null                  // 3D character layer (null while using the dot)
@@ -311,9 +301,7 @@ let liveDeviationM = Infinity           // how far the traveller is from the res
 const keys = new Set()                  // pressed Demo-Walk keys (w/a/s/d + arrows)
 let orbit = null                        // active drag-to-orbit gesture, or null
 
-// ─────────────────────────────────────────────────────────────────────────────
 // 6. Lifecycle
-// ─────────────────────────────────────────────────────────────────────────────
 onMounted(async () => {
   createMap()
 
@@ -355,9 +343,7 @@ onUnmounted(() => {
   map = null
 })
 
-// ─────────────────────────────────────────────────────────────────────────────
 // 7. Map setup & theming
-// ─────────────────────────────────────────────────────────────────────────────
 
 /** Create the MapLibre instance, wire its events, and attach the orbit gesture. */
 function createMap() {
@@ -610,9 +596,7 @@ function toggleFlatMode() {
   setFlatMode(!flatMode.value)
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // 8. Rendering
-// ─────────────────────────────────────────────────────────────────────────────
 
 /** Redraw everything that depends on the mission: avatars, pins, route, fence, zoom. */
 function drawMission() {
@@ -985,9 +969,7 @@ function onOrbitPointerUp(event) {
   if (here.value && map) map.easeTo({ center: [here.value.lng, here.value.lat], duration: 300 })
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // 9. Camera
-// ─────────────────────────────────────────────────────────────────────────────
 
 /** Fly to a stop, and stop following until the user recentres. */
 function flyTo(place, zoom = 17) {
@@ -1175,9 +1157,7 @@ function toggleOtterView() {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // 10. Mission actions
-// ─────────────────────────────────────────────────────────────────────────────
 
 /** Stamp the next stop, or check in at home. */
 async function stampNextStop() {
@@ -1217,13 +1197,11 @@ function openAirportHelp() {
   airportOpen.value = true
 }
 
-// ── Public transport (state and handlers in transit/useTransit.js) ──────────
+// Public transport (state and handlers in transit/useTransit.js)
 const { transitVisible, selectedStop, busAlt, liveSteps, liveStepIndex, attachTransit } =
   useTransit({ getMap: () => map, liveRoute, next, here, liveTravel })
 
-// ─────────────────────────────────────────────────────────────────────────────
 // 11. Demo-Walk (fake GPS you move with WASD / taps)
-// ─────────────────────────────────────────────────────────────────────────────
 
 /** Initial bearing from `a` to `b`, in degrees clockwise from north. */
 function bearingDegrees(a, b) {
@@ -1338,9 +1316,7 @@ function demoWalkLoop(timestamp) {
   raf = requestAnimationFrame(demoWalkLoop)
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // 12. Watchers
-// ─────────────────────────────────────────────────────────────────────────────
 
 // Remember the card's open/closed state across visits to other pages.
 watch(showMissionCard, (open) => writeMissionCardFlag(open))
@@ -1428,9 +1404,7 @@ function syncTravellerAppearance() {
   traveller3D.setEyewear(character.eyewear)
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // 13. Helpers
-// ─────────────────────────────────────────────────────────────────────────────
 
 // The next-stop card remembers whether it was left open. '1' means open; any
 // other value (including a first visit) means closed. localStorage can be
@@ -1455,7 +1429,7 @@ function writeMissionCardFlag(open) {
   <!-- MapLibre renders into this element; every overlay below is plain DOM on top. -->
   <div ref="mapContainer" class="quest-map"></div>
 
-  <!-- ── Right stack: countdown + map tools ────────────────────────────── -->
+  <!-- Right stack: countdown + map tools -->
   <div id="right-stack">
     <!-- Two explicit class flags instead of one derived string, so the red/amber
          thresholds stay visible here and in useMissionNav. -->
@@ -1513,7 +1487,7 @@ function writeMissionCardFlag(open) {
   <!-- Social quests: always on, even when the card below is hidden. -->
   <QuestMapLive :get-map="() => (mapReady ? map : null)" />
 
-  <!-- ── Next-stop card (the "center console") ─────────────────────────── -->
+  <!-- Next-stop card (the "center console") -->
   <!-- Purely presentational: mission/GPS values come in as props and every button
        emits an event, keeping map + navigation state owned by this view. -->
   <Transition name="mission-pop">
@@ -1544,10 +1518,10 @@ function writeMissionCardFlag(open) {
     />
   </Transition>
 
-  <!-- ── Tapped MRT station / bus stop (lines, live bus arrivals) ───────── -->
+  <!-- Tapped MRT station / bus stop (lines, live bus arrivals) -->
   <TransitStopSheet v-if="selectedStop" :stop="selectedStop" @close="selectedStop = null" />
 
-  <!-- ── Top-left HUD column: Singapore badge, weather chip, GPS/demo button ── -->
+  <!-- Top-left HUD column: Singapore badge, weather chip, GPS/demo button -->
   <!-- The Demo-Walk controls (fake GPS, dev/demo only) sit in its slot, so they stack with the same gap. -->
   <MapStatusStack :demo="demo" @toggle-demo="toggleDemoWalk">
     <div v-if="demo" id="demo-controls" class="rounded-4">
@@ -1571,7 +1545,7 @@ function writeMissionCardFlag(open) {
     </div>
   </MapStatusStack>
 
-  <!-- ── "Need help?" replan dialog ────────────────────────────────────── -->
+  <!-- "Need help?" replan dialog -->
   <template v-if="helpOpen">
     <div class="map-backdrop" @click="helpOpen = false"></div>
     <div id="HelpPop" class="rounded-4" role="dialog" aria-label="Need help?">
@@ -1592,7 +1566,7 @@ function writeMissionCardFlag(open) {
     </div>
   </template>
 
-  <!-- ── "I need to get to the airport" dialog ─────────────────────────── -->
+  <!-- "I need to get to the airport" dialog -->
   <AirportHelp
     v-if="airportOpen"
     :mission="mission"
@@ -1600,7 +1574,7 @@ function writeMissionCardFlag(open) {
     @close="airportOpen = false"
   />
 
-  <!-- ── Map appearance dialog ─────────────────────────────────────────── -->
+  <!-- Map appearance dialog -->
   <div v-if="mapStyleOpen" class="map-backdrop" @click="mapStyleOpen = false"></div>
 
   <div id="MapPop" class="rounded-4" v-if="mapStyleOpen">
@@ -1640,7 +1614,7 @@ function writeMissionCardFlag(open) {
     </div>
   </div>
 
-  <!-- ── Floating button that reopens the next-stop card ───────────────── -->
+  <!-- Floating button that reopens the next-stop card -->
   <!-- Shares the showMissionCard flag with the card itself, so only one of the two
        is ever on screen and the transition reads as one motion. -->
   <Transition name="fab-pop">
@@ -1655,7 +1629,7 @@ function writeMissionCardFlag(open) {
     </button>
   </Transition>
 
-  <!-- ── Bottom navigation (own copy for this fullscreen view) ─────────── -->
+  <!-- Bottom navigation (own copy for this fullscreen view) -->
   <nav class="map-nav zt-glass" aria-label="Main">
     <RouterLink v-for="item in navItemsBefore" :key="item.to" :to="item.to">
       <i class="bi" :class="item.icon" aria-hidden="true"></i>
@@ -1804,7 +1778,7 @@ function writeMissionCardFlag(open) {
   padding: clamp(8px, 3vw, 12px) clamp(10px, 3.8vw, 16px);
 }
 
-/* ── Mission wiring ── */
+/* Mission wiring */
 .map-btn.active {
 	color: var(--zt-black);
 	background: var(--zt-yellow);
@@ -1864,7 +1838,7 @@ function writeMissionCardFlag(open) {
 #HelpPop .airport-cta { font-weight: 800; text-align: left; }
 .help-note { color: var(--zt-yellow-pale); opacity: 0.75; font-size: clamp(0.65rem, 2.4vw, 0.75rem); margin-bottom: 10px; }
 
-/* ── Bottom nav (own copy — edit freely, this only affects the 3D map view) ── */
+/* Bottom nav (own copy — edit freely, this only affects the 3D map view) */
 .map-nav {
   position: fixed;
   left: 50%;

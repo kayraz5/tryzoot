@@ -125,12 +125,12 @@ const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 </template>
 
 <style scoped>
-/* ---------- Page ---------- */
+/* Page */
 .landing {
   min-height: 100vh;
 }
 
-/* ---------- Hero ---------- */
+/* Hero */
 .hero {
   padding-bottom: 44px;
   overflow: hidden;
@@ -224,7 +224,7 @@ const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
   text-transform: uppercase;
 }
 
-/* ---------- Hero scene & speech bubbles ---------- */
+/* Hero scene & speech bubbles */
 .scene {
   position: relative;
   max-width: 560px;
@@ -302,7 +302,7 @@ const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
   border-bottom: none;
 }
 
-/* ---------- Content blocks ---------- */
+/* Content blocks */
 .block {
   padding-top: 48px;
 }
@@ -401,12 +401,12 @@ const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
   font-weight: 800;
 }
 
-/* ---------- Footer ---------- */
+/* Footer */
 footer {
   padding-top: 48px;
 }
 
-/* ---------- Responsive ---------- */
+/* Responsive */
 @media (max-width: 991px) {
   .scene {
     padding-top: 56px;

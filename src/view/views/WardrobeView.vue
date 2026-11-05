@@ -1,7 +1,5 @@
 <script setup>
-// ─────────────────────────────────────────────────────────────────────────────
 //  WardrobeView.vue — the 3D traveller on his own, at /wardrobe
-// ─────────────────────────────────────────────────────────────────────────────
 //  A scratch playground for working on the character: full-page, no saving, no
 //  map in the way. The quickest place to see a change after editing
 //  travellerAssets.js.
@@ -10,7 +8,6 @@
 //  page and that tab render the SAME CharacterStudio component, so there's one
 //  implementation to keep correct. The only difference is that this one throws
 //  your picks away on reload; the Me tab saves them for the map.
-// ─────────────────────────────────────────────────────────────────────────────
 import { ref } from 'vue'
 import CharacterStudio from '../components/character/CharacterStudio.vue'
 
@@ -26,7 +23,7 @@ const eyewear = ref('none')
       <h1>Wardrobe</h1>
       <p>
         Scratch preview — nothing here is saved. Everything is built in code, see
-        <code>src/view/gl/travellerAssets.js</code>. To pick the look your map
+        <code>src/view/components/character/travellerAssets.js</code>. To pick the look your map
         avatar actually wears, use the Character tab on
         <RouterLink to="/me">the Me page</RouterLink>.
       </p>
