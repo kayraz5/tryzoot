@@ -1,6 +1,6 @@
 // EDITOR: KAYRA
 import { distanceM } from './distance.js'
-import { HUBS, rideMinutes, rideRuns, lineColours } from './transit/network.js'
+import { HUBS, rideMinutes, rideRuns, lineNames } from './transit/network.js'
 
 // Re-exported: most of the app reaches for these through travel.js.
 export { distanceM, HUBS, rideMinutes }
@@ -107,7 +107,7 @@ export function travel(a, b, opts = {}) {
 
   const t = mrtRunning(opts.atMs) ? transit(a, b) : null
   const taxi = taxiMinutes(a, b)
-  const byMrt = t && { mode: 'mrt', minutes: t.minutes, walk_min: walk, distance_m, detail: `MRT ${t.from} → ${t.to} · ${lineColours(t.lines)}` }
+  const byMrt = t && { mode: 'mrt', minutes: t.minutes, walk_min: walk, distance_m, detail: `MRT ${t.from} → ${t.to} · ${lineNames(t.lines)}` }
   const byTaxi = (why) => ({ mode: 'taxi', minutes: taxi, walk_min: walk, distance_m, detail: `Taxi / Grab · ${why}` })
   // Budget travellers ride the MRT; others take a cab when it saves 20+ min.
   const mrtOrTaxi = () => (opts.style !== 'budget' && taxi + 20 < t.minutes ? byTaxi(`saves ${t.minutes - taxi} min vs MRT`) : byMrt)

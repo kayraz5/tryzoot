@@ -13,7 +13,7 @@ const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
 const mins = (m) => (m ? ` · ${m} min` : '')
 
 export function lineInfo(code) {
-  return LINES[code] || { name: code ? `${code} line` : 'Train', colour: code || 'Train', hex: '#666666' }
+  return LINES[code] || { name: code ? `${code} line` : 'Train', hex: '#666666' }
 }
 
 /** Colour a part is drawn in on the map. */
@@ -30,7 +30,7 @@ function walkStep(part, i, parts) {
     return {
       icon: 'bi-person-walking',
       title: `Walk to ${to.name} MRT station`,
-      detail: [to.exit && `Use Exit ${to.exit}`, nextPart?.mode === 'mrt' && 'Follow the signs for the ' + lineInfo(nextPart.line).colour + ' line'].filter(Boolean).join(' · ') || 'Follow the red-and-white MRT signs'
+      detail: [to.exit && `Use Exit ${to.exit}`, nextPart?.mode === 'mrt' && 'Follow the signs for the ' + lineInfo(nextPart.line).name].filter(Boolean).join(' · ') || 'Follow the red-and-white MRT signs'
     }
   }
   if (to.kind === 'bus-stop') {
@@ -76,7 +76,7 @@ function rideStep(part, i, parts) {
     icon: part.loop ? (part.loop === 'clockwise' ? 'bi-arrow-clockwise' : 'bi-arrow-counterclockwise') : 'bi-train-front-fill',
     colour: line.hex,
     badge: part.line,
-    title: `${changing ? `Change at ${part.from?.name} to` : 'Take'} the ${line.colour} line ${direction}`.trim(),
+    title: `${changing ? `Change at ${part.from?.name} to` : 'Take'} the ${line.name} ${direction}`.trim(),
     detail: [part.nextStop && part.nextStop !== part.to?.name && `Next stop ${part.nextStop}`, plural(part.stops, 'stop'), `get off at ${part.to?.name}`].filter(Boolean).join(' · ')
   }
 }
@@ -110,7 +110,7 @@ export function transferPoints(parts) {
   parts.forEach((part, i) => {
     if (part.mode === 'walk' || !part.from || !part.to) return
     const prevRide = parts[i - 1]?.mode !== 'walk' && parts[i - 1]
-    const what = part.mode === 'bus' ? `Bus ${part.service}` : `${lineInfo(part.line).colour} line`
+    const what = part.mode === 'bus' ? `Bus ${part.service}` : lineInfo(part.line).name
     points.push({ ...part.from, label: prevRide ? `Change · ${what}` : `Board · ${what}`, colour: partColour(part) })
     const nextRide = parts[i + 1]?.mode !== 'walk' && parts[i + 1]
     if (!nextRide) points.push({ ...part.to, label: `Get off · ${part.to.name}`, colour: partColour(part) })
