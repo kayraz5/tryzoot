@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 /**
  * Social journey (Tier 2, demo seed, one account): live member pins on the map.
  * 

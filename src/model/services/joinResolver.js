@@ -1,3 +1,4 @@
+// EDITOR: EUDALE
 /**
  * Join resolution: what happens to a guest's own itinerary when they join part of someone's window.
  * Pure functions (no store, no network), so they're unit-tested in src/__tests__/joinResolver.spec.js

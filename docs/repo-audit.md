@@ -1,3 +1,4 @@
+<!-- EDITOR: EUDALE -->
 # Repo audit for Social Quests
 
 Audited against [social-quests-spec.md](social-quests-spec.md) and [zoot-context.md](zoot-context.md) on branch `eudale-missions-social`.

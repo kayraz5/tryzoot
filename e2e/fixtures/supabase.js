@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 /**
  * Supabase-gated E2E fixtures for the `supabase` Playwright project (e2e/social/*.supabase.spec.js).
  *

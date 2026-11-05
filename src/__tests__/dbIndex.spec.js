@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useCleanSlate } from './helpers/index.js'
 

@@ -1,3 +1,4 @@
+<!-- EDITOR: EUDALE -->
 # Social Quests spec: Zoot!
 
 ## Context

@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 /**
  * OneMap public-transport routes, through our /api/transit proxy (it holds the login).
  * fromOneMap(from, to) -> Promise<{ coords, parts, minutes, source: 'onemap' } | null>

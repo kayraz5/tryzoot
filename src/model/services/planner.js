@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 import { travel, distanceM, nearestHub } from './travel.js'
 import { isOpenDuringVisit, formatTime, waitUntilOpen } from './hours.js'
 

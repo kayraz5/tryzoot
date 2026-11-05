@@ -1,3 +1,4 @@
+// EDITOR: EUDALE
 import { describe, it, expect } from 'vitest'
 import { resolveJoin, restoreOnLeave, GAP_MIN } from '../model/services/joinResolver.js'
 

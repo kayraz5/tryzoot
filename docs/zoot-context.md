@@ -1,3 +1,4 @@
+<!-- EDITOR: EUDALE -->
 # Zoot! background
 - App: gamified planner for travellers with 6–14h layovers in Singapore. Core promise is "time-safe": every plan is built around the user's return-by time, and the planner refuses rather than guesses when a window is too tight.
 - Core pitch: decision paralysis under time pressure makes people waste a layover. Zoot turns the itinerary into a quest on a 3D map (MapLibre + Three.js), with XP, stamps, and a passport.

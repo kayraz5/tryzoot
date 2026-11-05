@@ -1,3 +1,4 @@
+<!-- EDITOR: MATTHEW -->
 <script setup>
 import {computed, defineAsyncComponent, ref} from 'vue';
 import {useRouter} from 'vue-router';

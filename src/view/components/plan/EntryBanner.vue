@@ -1,3 +1,4 @@
+<!-- EDITOR: KAYRA -->
 <script setup>
 import { computed, ref } from 'vue'
 import { usePassportStore } from '../../../model/stores/passport.js'

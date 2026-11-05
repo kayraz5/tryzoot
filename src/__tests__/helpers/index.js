@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 import { afterEach, beforeEach, vi } from 'vitest'
 import { redact } from '../../../tests/support/redact.js'
 

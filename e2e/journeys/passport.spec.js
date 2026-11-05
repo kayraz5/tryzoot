@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 /**
  * Journey — Feature: passport view and area pages.
  * Runs in the guest harness (zoot.guest='1', external hosts aborted); see e2e/fixtures/harness.js.

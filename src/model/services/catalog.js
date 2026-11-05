@@ -1,3 +1,4 @@
+// EDITOR: SHREY
 import { shallowRef } from 'vue'
 import syncedPlaces from '../data/places.synced.json'
 import { SUPABASE_URL, SUPABASE_ANON_KEY, HAS_SUPABASE } from './config.js'

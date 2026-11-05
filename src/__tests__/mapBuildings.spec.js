@@ -1,3 +1,4 @@
+// EDITOR: MATTHEW
 import { describe, expect, it, vi } from 'vitest'
 import { applyBuildingLayers, BUILDING_LAYERS } from '../view/components/map/mapBuildings.js'
 

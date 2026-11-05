@@ -1,3 +1,4 @@
+// EDITOR: MATTHEW
 /**
  * Small, dependency-free geometry helpers for the live route line.
  *

@@ -1,3 +1,4 @@
+<!-- EDITOR: KAYRA -->
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { catalog } from '../../../model/services/catalog.js'

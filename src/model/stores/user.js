@@ -1,3 +1,4 @@
+// EDITOR: MATTHEW
 import {defineStore} from 'pinia';
 import {getDb, hasLinkedAccount, isGuestMode, rememberLinkedAccount, setGuestMode} from '../services/db/index.js';
 import {HAS_SUPABASE} from '../services/config.js';

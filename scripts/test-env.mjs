@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// EDITOR: STEVEN
 /**
  * Presence report for the Supabase-gated test tiers: `pnpm run test:env [-- --preflight]`.
  *

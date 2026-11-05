@@ -1,3 +1,4 @@
+// EDITOR: EUDALE
 import { describe, it, expect } from 'vitest'
 import { joinableRange, previewJoin, withTravel } from '../model/services/social.js'
 import { restoreOnLeave } from '../model/services/joinResolver.js'

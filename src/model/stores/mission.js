@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 import { defineStore } from 'pinia'
 import { getDb } from '../services/db/index.js'
 import { buildMission } from '../services/groq.js'

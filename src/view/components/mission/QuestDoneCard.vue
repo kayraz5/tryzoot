@@ -1,3 +1,4 @@
+<!-- EDITOR: KAYRA -->
 <script setup>
 import { useRouter } from 'vue-router'
 import { useMissionStore } from '../../../model/stores/mission.js'

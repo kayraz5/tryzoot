@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 import { test, expect } from './fixtures/harness.js'
 
 test('shows the landing page entry points', async ({ page }) => {

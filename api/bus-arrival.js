@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 /**
  * GET /api/bus-arrival?code=01012 — live arrivals at one bus stop:
  *   { services: [{ no, mins: [3, 11, 19], load: 'SEA'|'SDA'|'LSD' }] }  (mins may be empty)

@@ -1,3 +1,4 @@
+<!-- EDITOR: MATTHEW -->
 <script setup>
 // ─────────────────────────────────────────────────────────────────────────────
 //  CharacterStudio.vue — the dressing room, as a reusable component

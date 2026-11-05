@@ -1,3 +1,4 @@
+<!-- EDITOR: MATTHEW -->
 <script setup>
 /**
  * The Zoot landing page: one continuous scroll-driven flight over Singapore.
