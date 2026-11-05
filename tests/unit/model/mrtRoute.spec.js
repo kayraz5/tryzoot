@@ -22,7 +22,10 @@ const passesNear = (coords, hub, metres = 300) =>
   coords.some(([lng, lat]) => distanceM({ lat, lng }, hub) <= metres)
 
 const twoPointWalk = (from, to) => ({
-  coords: [[from.lng, from.lat], [to.lng, to.lat]],
+  coords: [
+    [from.lng, from.lat],
+    [to.lng, to.lat]
+  ],
 })
 
 beforeEach(() => {
@@ -33,10 +36,12 @@ describe('MRT route service', () => {
   it('stitches the Changi T3 to City Hall walk and rail geometry', async () => {
     const route = await getMrtRoute(changiT3, cityHall)
 
-    expect(route).toEqual(expect.objectContaining({
-      coords: expect.any(Array),
-      distance_m: expect.any(Number),
-    }))
+    expect(route).toEqual(
+      expect.objectContaining({
+        coords: expect.any(Array),
+        distance_m: expect.any(Number),
+      })
+    )
     expect(route.distance_m).toBeGreaterThan(0)
     expect(route.coords[0]).toEqual([changiT3.lng, changiT3.lat])
     expect(route.coords.at(-1)).toEqual([cityHall.lng, cityHall.lat])
@@ -72,10 +77,12 @@ describe('MRT route service', () => {
     const route = await getMrtRoute(HUBS.harbourfront, HUBS.rws)
 
     expect(route.parts.find((part) => part.mode === 'mrt').line).toBe('SE')
-    expect(route).toEqual(expect.objectContaining({
-      coords: expect.any(Array),
-      distance_m: expect.any(Number),
-    }))
+    expect(route).toEqual(
+      expect.objectContaining({
+        coords: expect.any(Array),
+        distance_m: expect.any(Number),
+      })
+    )
     expect(route.distance_m).toBeGreaterThan(0)
     expect(route.coords[0]).toEqual([HUBS.harbourfront.lng, HUBS.harbourfront.lat])
     expect(route.coords.at(-1)).toEqual([HUBS.rws.lng, HUBS.rws.lat])

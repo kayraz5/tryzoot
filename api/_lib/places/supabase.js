@@ -5,9 +5,29 @@ import { supabaseFromEnv } from '../supabase.js'
 // Writes synced places to the Supabase `places` table (used by the cron and `pnpm sync:places --db`)
 
 const COLUMNS = [
-  'id', 'name', 'area', 'lat', 'lng', 'tags', 'duration_min', 'cost_band', 'indoor', 'mrt', 'hours',
-  'closed_days', 'min_window_h', 'blurb', 'captions', 'safety_notes', 'image_url',
-  'source', 'source_ref', 'active', 'hours_verified', 'website', 'blurb_source'
+  'id',
+  'name',
+  'area',
+  'lat',
+  'lng',
+  'tags',
+  'duration_min',
+  'cost_band',
+  'indoor',
+  'mrt',
+  'hours',
+  'closed_days',
+  'min_window_h',
+  'blurb',
+  'captions',
+  'safety_notes',
+  'image_url',
+  'source',
+  'source_ref',
+  'active',
+  'hours_verified',
+  'website',
+  'blurb_source'
 ]
 
 /** Needs SUPABASE_URL (or VITE_SUPABASE_URL) and SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY); null if missing. */

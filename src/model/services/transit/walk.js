@@ -13,7 +13,13 @@ export async function walkLeg(a, b) {
   const route = await getWalkRoute(a, b)
   const straight = distanceM(a, b)
   if (straight <= INDOOR_HOP_M && (!route || route.distance_m > straight * 4 + 200)) {
-    return { coords: [[a.lng, a.lat], [b.lng, b.lat]], distance_m: straight }
+    return {
+      coords: [
+        [a.lng, a.lat],
+        [b.lng, b.lat]
+      ],
+      distance_m: straight
+    }
   }
   return route
 }

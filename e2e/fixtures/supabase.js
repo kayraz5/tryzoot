@@ -25,7 +25,12 @@ import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { test as base, expect } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
-import { gateFor, loadTestEnv, SEED_MISSING_REASON, VARS } from '../../tests/support/supabaseGate.js'
+import {
+  gateFor,
+  loadTestEnv,
+  SEED_MISSING_REASON,
+  VARS
+} from '../../tests/support/supabaseGate.js'
 import { redact } from '../../tests/support/redact.js'
 import { installApiStubs, routeExternalHosts } from './harness.js'
 
@@ -55,7 +60,10 @@ function tier0() {
   if (!raw) return null
   try {
     const gate = JSON.parse(raw)
-    return { enabled: gate?.enabled === true, reason: typeof gate?.reason === 'string' ? gate.reason : null }
+    return {
+      enabled: gate?.enabled === true,
+      reason: typeof gate?.reason === 'string' ? gate.reason : null
+    }
   } catch {
     return null
   }
@@ -71,8 +79,11 @@ function tier0() {
 export function supabaseGate(needs = []) {
   const env = testEnv()
   const t0 = tier0()
-  if (t0 && !t0.enabled) return { enabled: false, reason: t0.reason || 'Supabase-gated: preflight not ok' }
-  const wanted = needs.map((need) => (need === 'seed' ? 'writes' : need)).filter((need) => STATIC_NEEDS.has(need))
+  if (t0 && !t0.enabled)
+    return { enabled: false, reason: t0.reason || 'Supabase-gated: preflight not ok' }
+  const wanted = needs
+    .map((need) => (need === 'seed' ? 'writes' : need))
+    .filter((need) => STATIC_NEEDS.has(need))
   // Without global setup (e.g. `playwright test --list`), gateFor reports "preflight not run".
   return gateFor(env, t0 ? { ok: true } : null, wanted)
 }
@@ -93,8 +104,12 @@ export function requireSupabase(t, needs = []) {
 function memoryStorage(map) {
   return {
     getItem: (key) => (map.has(key) ? map.get(key) : null),
-    setItem: (key, value) => { map.set(key, value) },
-    removeItem: (key) => { map.delete(key) },
+    setItem: (key, value) => {
+      map.set(key, value)
+    },
+    removeItem: (key) => {
+      map.delete(key)
+    },
   }
 }
 
@@ -111,11 +126,21 @@ async function signIn(kind) {
 
   const store = new Map()
   const client = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY, {
-    auth: { storage: memoryStorage(store), persistSession: true, autoRefreshToken: false, detectSessionInUrl: false },
+    auth: {
+      storage: memoryStorage(store),
+      persistSession: true,
+      autoRefreshToken: false,
+      detectSessionInUrl: false
+    },
   })
-  const { data, error } = await client.auth.signInWithPassword({ email: env[emailVar], password: env[passwordVar] })
+  const { data, error } = await client.auth.signInWithPassword({
+    email: env[emailVar],
+    password: env[passwordVar]
+  })
   if (error || !data?.session) {
-    throw new Error(scrub(`Test sign-in failed for ${emailVar}: ${error?.message || 'no session returned'}`))
+    throw new Error(
+      scrub(`Test sign-in failed for ${emailVar}: ${error?.message || 'no session returned'}`)
+    )
   }
   const storageEntry = [...store.entries()].find(([key]) => key.endsWith('-auth-token'))
   if (!storageEntry) throw new Error(`Test sign-in for ${emailVar} wrote no session to storage`)
@@ -143,9 +168,19 @@ async function accountFor(kind) {
 
 export const test = base.extend({
   /** Tier 1+: the main test account (E2E_SUPABASE_EMAIL / E2E_SUPABASE_PASSWORD), signed in once per worker. */
-  testAccount: [async ({}, use) => { await use(await accountFor('account')) }, { scope: 'worker' }],
+  testAccount: [
+    async ({}, use) => {
+      await use(await accountFor('account'))
+    },
+    { scope: 'worker' }
+  ],
   /** Two-account scenarios: the host account (E2E_SUPABASE_HOST_EMAIL / E2E_SUPABASE_HOST_PASSWORD). */
-  hostAccount: [async ({}, use) => { await use(await accountFor('host')) }, { scope: 'worker' }],
+  hostAccount: [
+    async ({}, use) => {
+      await use(await accountFor('host'))
+    },
+    { scope: 'worker' }
+  ],
 })
 
 export { expect }
@@ -163,10 +198,13 @@ export { expect }
 export async function installSupabaseHarness(page, account) {
   const origin = new URL(testEnv().VITE_SUPABASE_URL).origin
   const [key, value] = await account.browserSession()
-  await page.addInitScript(([key, value]) => {
-    localStorage.removeItem('zoot.guest')
-    if (!localStorage.getItem(key)) localStorage.setItem(key, value)
-  }, [key, value])
+  await page.addInitScript(
+    ([key, value]) => {
+      localStorage.removeItem('zoot.guest')
+      if (!localStorage.getItem(key)) localStorage.setItem(key, value)
+    },
+    [key, value]
+  )
   await routeExternalHosts(page, { passThrough: (url) => url.origin === origin })
   await installApiStubs(page)
 }
@@ -190,12 +228,22 @@ function requireWrites(what) {
 export async function cleanupSocial(account) {
   requireWrites('cleanupSocial')
   const { client, userId } = account
-  const joined = must(await client.from('party_members').select('party_id').eq('user_id', userId).eq('role', 'member'),
-    'list joined quests')
-  for (const row of joined) must(await client.rpc('leave_window', { p_party: row.party_id }), 'leave_window')
-  const hosted = must(await client.from('parties').select('id').eq('host_id', userId).neq('status', 'closed'),
-    'list hosted quests')
-  for (const row of hosted) must(await client.rpc('delete_quest', { p_party: row.id }), 'delete_quest')
+  const joined = must(
+    await client
+      .from('party_members')
+      .select('party_id')
+      .eq('user_id', userId)
+      .eq('role', 'member'),
+    'list joined quests'
+  )
+  for (const row of joined)
+    must(await client.rpc('leave_window', { p_party: row.party_id }), 'leave_window')
+  const hosted = must(
+    await client.from('parties').select('id').eq('host_id', userId).neq('status', 'closed'),
+    'list hosted quests'
+  )
+  for (const row of hosted)
+    must(await client.rpc('delete_quest', { p_party: row.id }), 'delete_quest')
 }
 
 /**
@@ -204,7 +252,11 @@ export async function cleanupSocial(account) {
  */
 export async function requireSeed(account) {
   const { data, error } = await account.client.from('demo_users').select('user_id').limit(1)
-  const gate = gateFor(testEnv(), { ok: true, seed: !error && Array.isArray(data) && data.length > 0 }, ['seed'])
+  const gate = gateFor(
+    testEnv(),
+    { ok: true, seed: !error && Array.isArray(data) && data.length > 0 },
+    ['seed']
+  )
   base.skip(!gate.enabled, gate.reason ?? undefined)
 }
 
@@ -219,7 +271,8 @@ export async function requireSeed(account) {
 export async function simulate(client, partyId, action) {
   requireWrites('simulate')
   const { data, error } = await client.rpc('dev_simulate', { p_party: partyId, p_action: action })
-  if (error && /simulator is switched off/i.test(error.message)) base.skip(true, SEED_MISSING_REASON)
+  if (error && /simulator is switched off/i.test(error.message))
+    base.skip(true, SEED_MISSING_REASON)
   if (error) throw new Error(scrub(`dev_simulate ${action}: ${error.message}`))
   return data
 }
@@ -231,7 +284,10 @@ export async function simulate(client, partyId, action) {
 export async function ensureOnboarded(account, fallbackName) {
   requireWrites('ensureOnboarded')
   const { client, userId } = account
-  const profile = must(await client.from('profiles').select('display_name, style').eq('id', userId).maybeSingle(), 'read profile')
+  const profile = must(
+    await client.from('profiles').select('display_name, style').eq('id', userId).maybeSingle(),
+    'read profile'
+  )
   const updates = {}
   if (!profile?.style) updates.style = 'budget'
   if (!profile?.display_name) updates.display_name = fallbackName
@@ -243,8 +299,16 @@ export async function ensureOnboarded(account, fallbackName) {
 
 /** The account's newest non-closed hosted quest: `{ id, title, starts_at, ends_at }`. */
 export async function latestHostedQuest(account) {
-  const rows = must(await account.client.from('parties').select('id, title, starts_at, ends_at')
-    .eq('host_id', account.userId).neq('status', 'closed').order('created_at', { ascending: false }).limit(1), 'read hosted quest')
+  const rows = must(
+    await account.client
+      .from('parties')
+      .select('id, title, starts_at, ends_at')
+      .eq('host_id', account.userId)
+      .neq('status', 'closed')
+      .order('created_at', { ascending: false })
+      .limit(1),
+    'read hosted quest'
+  )
   if (!rows.length) throw new Error('The host has no open quest after publishing')
   return rows[0]
 }

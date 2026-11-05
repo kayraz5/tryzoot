@@ -63,7 +63,7 @@ async function copyDestination() {
       copied.value = false
     }, 2000)
   } catch {
-// Clipboard can be blocked; the written destination is still visible.
+    // Clipboard can be blocked; the written destination is still visible.
   }
 }
 
@@ -92,14 +92,14 @@ onBeforeUnmount(() => clearTimeout(copiedTimer))
             Be at the airport by <b>{{ formatTime(plan.deadlineMs) }}</b>
             <span v-if="plan.minutesLeft != null">
               ·
-              {{ plan.minutesLeft >= 0
-                ? `${remainingLabel(plan.minutesLeft)} left`
-                : `${remainingLabel(plan.minutesLeft)} past` }}
+              {{
+                plan.minutesLeft >= 0
+                  ? `${remainingLabel(plan.minutesLeft)} left`
+                  : `${remainingLabel(plan.minutesLeft)} past`
+              }}
             </span>
           </template>
-          <template v-else>
-            No flight time set — plan your layover for a deadline check.
-          </template>
+          <template v-else> No flight time set — plan your layover for a deadline check. </template>
         </div>
 
         <p v-if="plan.atAirport" class="airport-summary" :class="{ late: plan.onTime === false }">
@@ -110,13 +110,16 @@ onBeforeUnmount(() => clearTimeout(copiedTimer))
         <template v-if="!plan.atAirport">
           <section class="airport-option" :class="{ off: plan.mrt && !plan.mrt.available }">
             <header>
-              <span class="airport-mode"><i class="bi bi-train-front-fill" aria-hidden="true"></i> MRT</span>
+              <span class="airport-mode"
+                ><i class="bi bi-train-front-fill" aria-hidden="true"></i> MRT</span
+              >
               <span v-if="plan.mrt" class="airport-time">{{ plan.mrt.minutes }} min</span>
             </header>
 
             <template v-if="plan.mrt">
               <p class="airport-hint">
-                Walk {{ plan.mrt.walkToStationMin }} min to <b>{{ plan.mrt.station }}</b>.
+                Walk {{ plan.mrt.walkToStationMin }} min to <b>{{ plan.mrt.station }}</b
+                >.
               </p>
               <ol class="airport-legs">
                 <li v-for="(leg, index) in plan.mrt.legs" :key="index">
@@ -126,7 +129,12 @@ onBeforeUnmount(() => clearTimeout(copiedTimer))
               <p class="airport-hint">Follow the signs to {{ plan.destination.label }}.</p>
               <p v-if="plan.mrt.note" class="airport-hint warn">{{ plan.mrt.note }}</p>
               <div class="airport-actions">
-                <a class="btn btn-soft btn-sm" :href="transitDirections" target="_blank" rel="noopener">
+                <a
+                  class="btn btn-soft btn-sm"
+                  :href="transitDirections"
+                  target="_blank"
+                  rel="noopener"
+                >
                   <i class="bi bi-sign-turn-right" aria-hidden="true"></i> Transit directions
                 </a>
               </div>
@@ -136,7 +144,9 @@ onBeforeUnmount(() => clearTimeout(copiedTimer))
 
           <section class="airport-option">
             <header>
-              <span class="airport-mode"><i class="bi bi-taxi-front-fill" aria-hidden="true"></i> Grab / taxi</span>
+              <span class="airport-mode"
+                ><i class="bi bi-taxi-front-fill" aria-hidden="true"></i> Grab / taxi</span
+              >
               <span class="airport-time">~{{ plan.taxi.effectiveMinutes }} min</span>
             </header>
 
@@ -146,20 +156,32 @@ onBeforeUnmount(() => clearTimeout(copiedTimer))
             <p class="airport-hint"><b>Pick-up:</b> {{ plan.pickup.hint }}</p>
 
             <div class="airport-actions">
-              <a class="btn btn-warning btn-sm" href="https://www.grab.com/sg/" target="_blank" rel="noopener">
+              <a
+                class="btn btn-warning btn-sm"
+                href="https://www.grab.com/sg/"
+                target="_blank"
+                rel="noopener"
+              >
                 <i class="bi bi-phone" aria-hidden="true"></i> Open Grab
               </a>
               <button type="button" class="btn btn-soft btn-sm" @click="copyDestination">
                 <i class="bi" :class="copied ? 'bi-check2' : 'bi-clipboard'" aria-hidden="true"></i>
                 {{ copied ? 'Copied' : 'Copy destination' }}
               </button>
-              <a class="btn btn-soft btn-sm" :href="drivingDirections" target="_blank" rel="noopener">
+              <a
+                class="btn btn-soft btn-sm"
+                :href="drivingDirections"
+                target="_blank"
+                rel="noopener"
+              >
                 <i class="bi bi-map" aria-hidden="true"></i> Driving directions
               </a>
             </div>
           </section>
 
-          <p class="airport-foot">Times are estimates. Confirm the pick-up point in Grab before booking.</p>
+          <p class="airport-foot">
+            Times are estimates. Confirm the pick-up point in Grab before booking.
+          </p>
         </template>
       </template>
 

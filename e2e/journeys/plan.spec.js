@@ -8,7 +8,9 @@ import { expect, test } from '../fixtures/harness.js'
 test.describe('onboarded layover planning', () => {
   test.use({ auth: 'onboarded' })
 
-  test('lets an onboarded traveller set times and see the generated quest return leg', async ({ page }) => {
+  test('lets an onboarded traveller set times and see the generated quest return leg', async ({
+    page
+  }) => {
     await page.clock.install({ time: new Date('2030-01-15T09:00:00+08:00') })
     await page.goto('/plan')
 

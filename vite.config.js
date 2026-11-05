@@ -27,26 +27,32 @@ function vercelApiDev() {
         }
         let raw = ''
         for await (const chunk of req) raw += chunk
-        try { req.body = raw ? JSON.parse(raw) : {} } catch { req.body = {} }
-        res.status = (code) => { res.statusCode = code; return res }
-        res.json = (data) => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(data)) }
+        try {
+          req.body = raw ? JSON.parse(raw) : {}
+        } catch {
+          req.body = {}
+        }
+        res.status = (code) => {
+          res.statusCode = code
+          return res
+        }
+        res.json = (data) => {
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(data))
+        }
         try {
           await mod.default(req, res)
         } catch (err) {
           res.status(500).json({ error: String(err.message || err) })
         }
       })
-    }
+    },
   }
 }
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    vue(),
-    vueDevTools(),
-    vercelApiDev(),
-  ],
+  plugins: [vue(), vueDevTools(), vercelApiDev()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

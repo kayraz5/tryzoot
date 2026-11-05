@@ -3,7 +3,7 @@
  * Social journey (Tier 1, signed-in read): the open quests feed and one quest's detail page,
  * against the configured Supabase project as the test account. Reads only; the app may create a
  * profile row for the test account on its first sign-in (user store refreshProfile).
- * 
+ *
  * Gate: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, a 2xx preflight, E2E_SUPABASE_EMAIL and
  * E2E_SUPABASE_PASSWORD. Otherwise every test is skipped with the missing variable name.
  */
@@ -31,7 +31,9 @@ test.describe('signed-in open quests', () => {
     await page.goto('/quests')
 
     const cards = page.locator('main a.quest-card')
-    const empty = page.getByRole('heading', { name: /^(No open quests right now|Nothing matches)$/ })
+    const empty = page.getByRole('heading', {
+      name: /^(No open quests right now|Nothing matches)$/
+    })
     await expect(cards.first().or(empty)).toBeVisible({ timeout: 20_000 })
     test.skip(await cards.count() === 0, 'Supabase-gated: no open quest on the project')
 

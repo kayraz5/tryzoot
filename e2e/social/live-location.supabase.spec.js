@@ -1,22 +1,29 @@
 // EDITOR: STEVEN
 /**
  * Social journey (Tier 2, demo seed, one account): live member pins on the map.
- * 
+ *
  * The test account hosts a window, a seeded demo traveller joins (dev_simulate 'guest_joins') and
  * is placed on the map ('locate'). The browser clock moves to the window start, so the client
  * considers the quest live; RLS on party_locations checks membership, not time.
- * 
+ *
  * Member pins are divs titled "<name> (live)", and the chip appends " · <n> live".
  * After dev_simulate('guest_leaves') the pin is removed (the map re-reads locations every 20 s).
- * 
+ *
  * Gate: Tier 1 plus E2E_SUPABASE_WRITES=1 and the demo seed; otherwise skipped with the reason.
  * Writes: trips, missions, a quest, demo join/locate/leave, and the profile style/name if missing.
- * 
+ *
  * The account is cleaned up (cleanupSocial) before and after the test.
- * 
+ *
  */
 import {
-  cleanupSocial, ensureOnboarded, expect, installSupabaseHarness, requireSeed, requireSupabase, simulate, test
+  cleanupSocial,
+  ensureOnboarded,
+  expect,
+  installSupabaseHarness,
+  requireSeed,
+  requireSupabase,
+  simulate,
+  test
 } from '../fixtures/supabase.js'
 import {
   layoverTimes, openMapCard, openToCompany, planLayover, questChip, SOCIAL_TIMEOUT_MS, TIMEZONE
@@ -26,10 +33,17 @@ test.describe('live member locations', () => {
   requireSupabase(test, ['seed'])
   test.use({ timezoneId: TIMEZONE })
 
-  test.beforeEach(async ({ testAccount }) => { await cleanupSocial(testAccount) })
-  test.afterEach(async ({ testAccount }) => { await cleanupSocial(testAccount) })
+  test.beforeEach(async ({ testAccount }) => {
+    await cleanupSocial(testAccount)
+  })
+  test.afterEach(async ({ testAccount }) => {
+    await cleanupSocial(testAccount)
+  })
 
-  test('shows a joined member pin and removes it after they leave the quest', async ({ page, testAccount }) => {
+  test('shows a joined member pin and removes it after they leave the quest', async ({
+    page,
+    testAccount
+  }) => {
     test.setTimeout(SOCIAL_TIMEOUT_MS)
     await requireSeed(testAccount)
     await ensureOnboarded(testAccount, 'E2E Host')

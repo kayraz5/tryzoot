@@ -12,7 +12,9 @@ export async function syncPlaces({ seed, previous = [], log = console.log }) {
   try {
     osm = await fetchOsmPlaces()
     // Reuse last run's Wikipedia text so only new places hit Wikipedia
-    const cachedBlurbs = new Map(previous.filter((p) => p.blurb_source === 'wikipedia').map((p) => [p.source_ref, p.blurb]))
+    const cachedBlurbs = new Map(
+      previous.filter((p) => p.blurb_source === 'wikipedia').map((p) => [p.source_ref, p.blurb])
+    )
     await addWikipediaBlurbs(osm, cachedBlurbs)
     report.osm = osm.length
   } catch (err) {

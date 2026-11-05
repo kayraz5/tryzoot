@@ -25,15 +25,19 @@ const showNav = computed(() => route.meta.nav && user.isAuthed && !ui.navHidden)
 const mission = useMissionStore()
 const party = usePartyStore()
 
-watch(() => user.userId, (id, old) => {
-  // Signed out, or someone else signed in on this device: drop the last account's mission and
-  // quest, or the next save would write to a mission this account doesn't own (RLS refuses it).
-  if (old && id !== old) {
-    mission.forgetAccount()
-    party.$reset()
-  }
-  passport.load(id)
-}, { immediate: true })
+watch(
+  () => user.userId,
+  (id, old) => {
+    // Signed out, or someone else signed in on this device: drop the last account's mission and
+    // quest, or the next save would write to a mission this account doesn't own (RLS refuses it).
+    if (old && id !== old) {
+      mission.forgetAccount()
+      party.$reset()
+    }
+    passport.load(id)
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -42,7 +46,7 @@ watch(() => user.userId, (id, old) => {
   </RouterView>
   <AppNav v-if="showNav" />
   <SkyEffects />
-  <RainOverlay />  
+  <RainOverlay />
   <ToastHost />
   <StampCelebration />
   <CenterDialog />

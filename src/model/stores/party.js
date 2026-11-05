@@ -13,11 +13,20 @@ let checkingCoop = false
 function until(fn) {
   return new Promise((resolve) => {
     if (fn()) return resolve()
-    const stop = watch(fn, (v) => { if (v) { stop(); resolve() } })
+    const stop = watch(fn, (v) => {
+      if (v) {
+        stop();
+        resolve()
+      }
+    })
   })
 }
 function readTimes() {
-  try { return JSON.parse(localStorage.getItem(READ_KEY) || '{}') } catch { return {} }
+  try {
+    return JSON.parse(localStorage.getItem(READ_KEY) || '{}')
+  } catch {
+    return {}
+  }
 }
 
 /**
@@ -49,7 +58,9 @@ export const usePartyStore = defineStore('party', {
     unread(s) {
       const me = useUserStore().userId
       const since = s.chatReadAt[s.chat.partyId] || 0
-      return s.chat.messages.filter((m) => m.user_id && m.user_id !== me && Date.parse(m.created_at) > since).length
+      return s.chat.messages.filter(
+        (m) => m.user_id && m.user_id !== me && Date.parse(m.created_at) > since
+      ).length
     },
     /** Sending closes 30 min after the window ends, or when the host closes it (the database enforces it too). */
     chatOpen(s) {
@@ -59,7 +70,14 @@ export const usePartyStore = defineStore('party', {
   },
   actions: {
     /** Centred prompt that blurs the page. Resolves true (confirm) or false (cancel). Waits its turn if one is showing. */
-    async ask({ title, body = '', icon = 'bi-people-fill', confirmText = 'OK', cancelText = 'Cancel', tone = 'primary' }) {
+    async ask({
+      title,
+      body = '',
+      icon = 'bi-people-fill',
+      confirmText = 'OK',
+      cancelText = 'Cancel',
+      tone = 'primary'
+    }) {
       while (this.dialog) await until(() => !this.dialog)
       return new Promise((resolve) => {
         this.dialog = { title, body, icon, confirmText, cancelText, tone, resolve }
@@ -83,7 +101,10 @@ export const usePartyStore = defineStore('party', {
       this.resetChat()
       this.chat = { partyId, quest: null, messages: [], loading: true, error: null }
       try {
-        const [quest, messages] = await Promise.all([social.getQuest(partyId), social.listMessages(partyId)])
+        const [quest, messages] = await Promise.all([
+          social.getQuest(partyId),
+          social.listMessages(partyId)
+        ])
         if (this.chat.partyId !== partyId) return
         this.chat.quest = quest
         this.chat.messages = messages
@@ -108,13 +129,29 @@ export const usePartyStore = defineStore('party', {
       this.chat.messages.push(m)
       // Someone else wrote and I'm not looking at this chat: the banner / notification picks this up.
       const away = typeof document !== 'undefined' && document.hidden
-      if (m.user_id && m.user_id !== useUserStore().userId && (this.chatPanel !== m.party_id || away)) {
-        const name = this.chat.quest?.roster?.find((r) => r.user_id === m.user_id)?.display_name || 'Someone'
-        this.incoming = { partyId: m.party_id, name, body: m.body, title: this.chat.quest?.title || 'Quest chat', at: Date.now() }
+      if (
+        m.user_id &&
+        m.user_id !== useUserStore().userId &&
+        (this.chatPanel !== m.party_id || away)
+      ) {
+        const name =
+          this.chat.quest?.roster?.find((r) => r.user_id === m.user_id)?.display_name || 'Someone'
+        this.incoming = {
+          partyId: m.party_id,
+          name,
+          body: m.body,
+          title: this.chat.quest?.title || 'Quest chat',
+          at: Date.now()
+        }
       }
       // New people may join mid-quest: refresh names/avatars.
       if (m.user_id && !this.chat.quest?.roster?.some((r) => r.user_id === m.user_id)) {
-        social.getQuest(m.party_id).then((q) => { if (q && this.chat.partyId === m.party_id) this.chat.quest = q }).catch(() => {})
+        social
+          .getQuest(m.party_id)
+          .then((q) => {
+            if (q && this.chat.partyId === m.party_id) this.chat.quest = q
+          })
+          .catch(() => {})
       }
     },
     async sendChat(body, type = 'text') {
@@ -132,7 +169,9 @@ export const usePartyStore = defineStore('party', {
     markChatRead() {
       if (!this.chat.partyId) return
       this.chatReadAt = { ...this.chatReadAt, [this.chat.partyId]: Date.now() }
-      try { localStorage.setItem(READ_KEY, JSON.stringify(this.chatReadAt)) } catch {}
+      try {
+        localStorage.setItem(READ_KEY, JSON.stringify(this.chatReadAt))
+      } catch {}
     },
     /** Block someone: their messages disappear here at once; the database hides them everywhere from now on. */
     async block(userId) {
@@ -152,16 +191,26 @@ export const usePartyStore = defineStore('party', {
       checkingCoop = true
       try {
         let rows
-        try { rows = await social.coopUnseen() } catch { return } // guest mode / offline
+        try {
+          rows = await social.coopUnseen()
+        } catch {
+          return
+        } // guest mode / offline
         if (!rows?.length) return
         const ui = useUiStore()
         await until(() => !ui.celebration)
         await social.markCoopSeen(rows.map((r) => r.id))
         const user = useUserStore()
-        social.myProfile().then((p) => p && user.setProfile(p)).catch(() => {})
+        social
+          .myProfile()
+          .then((p) => p && user.setProfile(p))
+          .catch(() => {})
         for (const r of rows) {
           await this.notice({
-            title: 'Co-op stamp!', icon: 'bi-people-fill', tone: 'success', confirmText: 'Nice!',
+            title: 'Co-op stamp!',
+            icon: 'bi-people-fill',
+            tone: 'success',
+            confirmText: 'Nice!',
             body: `You and ${r.partners} were both at ${r.place_name} for the first time. +${r.bonus_xp} bonus XP each.`
           })
         }
@@ -214,7 +263,11 @@ export const usePartyStore = defineStore('party', {
     },
 
     async loadDemoIds() {
-      try { this.demoIds = await social.demoUserIds() } catch { /* not signed in / guest */ }
+      try {
+        this.demoIds = await social.demoUserIds()
+      } catch {
+        /* not signed in / guest */
+      }
     },
 
     // Mutations throw so the calling button can toast the database's own message.
@@ -238,7 +291,8 @@ export const usePartyStore = defineStore('party', {
     async simulate(questId, action) {
       const msg = await social.devSimulate(questId, action)
       if (this.quest?.id === questId) await this.loadQuest(questId)
-      if (this.hosted?.id === questId) this.hosted = { ...this.hosted, ...(await social.getQuest(questId)) }
+      if (this.hosted?.id === questId)
+        this.hosted = { ...this.hosted, ...(await social.getQuest(questId)) }
       return msg
     },
 
@@ -257,15 +311,27 @@ export const usePartyStore = defineStore('party', {
         if (!next.length) {
           await social.closeWindow(hosted.id)
           this.hosted = null
-          ui.toast('Your open stops are no longer in your plan, so the quest was closed.', 'warning', 5000)
+          ui.toast(
+            'Your open stops are no longer in your plan, so the quest was closed.',
+            'warning',
+            5000
+          )
           return
         }
         const res = await social.updateWindow(hosted.id, next)
-        const names = (res.removed || []).map((id) => hosted.roster?.find((m) => m.user_id === id)?.display_name || 'A guest')
-        if (names.length) ui.toast(`${names.join(', ')} ${names.length === 1 ? 'is' : 'are'} back on their own plan (their stops changed).`, 'warning', 5000)
+        const names = (res.removed || []).map(
+          (id) => hosted.roster?.find((m) => m.user_id === id)?.display_name || 'A guest'
+        )
+        if (names.length)
+          ui.toast(
+            `${names.join(', ')} ${names.length === 1 ? 'is' : 'are'} back on their own plan (their stops changed).`,
+            'warning',
+            5000
+          )
         await this.loadHosted(mission)
       } catch (err) {
-        if (!(err instanceof social.GuestModeError)) useUiStore().toast(`Couldn't update your open quest: ${err.message}`, 'danger', 5000)
+        if (!(err instanceof social.GuestModeError))
+          useUiStore().toast(`Couldn't update your open quest: ${err.message}`, 'danger', 5000)
       }
     }
   }

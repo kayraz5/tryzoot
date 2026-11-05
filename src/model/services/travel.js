@@ -44,7 +44,11 @@ export function nearestHub(p) {
     const d = distanceM(p, h)
     if (!best || d < best.d) best = { id, d, hub: h }
   }
-  return { id: best.id, ...best.hub, walk_min: Math.max(1, Math.round((best.d * DETOUR) / WALK_M_PER_MIN)) }
+  return {
+    id: best.id,
+    ...best.hub,
+    walk_min: Math.max(1, Math.round((best.d * DETOUR) / WALK_M_PER_MIN))
+  }
 }
 
 /** Exported so transit/mrt.js can get at the hub ids + per-hop line sequence, not just the minutes. */
@@ -89,7 +93,12 @@ export function busMinutes(a, b) {
 
 /** How the traveller gets around between stops (beyond walking distance). */
 export const TRANSPORT = {
-  transit: { label: 'Public transport', short: 'Public', icon: 'bi-train-front-fill', sub: 'MRT & bus' },
+  transit: {
+    label: 'Public transport',
+    short: 'Public',
+    icon: 'bi-train-front-fill',
+    sub: 'MRT & bus'
+  },
   car: { label: 'Car / Grab', short: 'Car', icon: 'bi-taxi-front-fill', sub: 'Quicker, costs more' }
 }
 
@@ -102,22 +111,49 @@ export function travel(a, b, opts = {}) {
   const maxWalk = Math.min(opts.maxWalk ?? MRT_THRESHOLD_MIN, MRT_THRESHOLD_MIN)
   const walk = walkMinutes(a, b)
   const distance_m = Math.round(distanceM(a, b))
-  const onFoot = { mode: 'walk', minutes: walk, walk_min: walk, distance_m, detail: `${distance_m} m on foot` }
+  const onFoot = {
+    mode: 'walk',
+    minutes: walk,
+    walk_min: walk,
+    distance_m,
+    detail: `${distance_m} m on foot`
+  }
   if (walk <= maxWalk) return onFoot
 
   const t = mrtRunning(opts.atMs) ? transit(a, b) : null
   const taxi = taxiMinutes(a, b)
-  const byMrt = t && { mode: 'mrt', minutes: t.minutes, walk_min: walk, distance_m, detail: `MRT ${t.from} → ${t.to} · ${lineNames(t.lines)}` }
-  const byTaxi = (why) => ({ mode: 'taxi', minutes: taxi, walk_min: walk, distance_m, detail: `Taxi / Grab · ${why}` })
+  const byMrt = t && {
+    mode: 'mrt',
+    minutes: t.minutes,
+    walk_min: walk,
+    distance_m,
+    detail: `MRT ${t.from} → ${t.to} · ${lineNames(t.lines)}`
+  }
+  const byTaxi = (why) => ({
+    mode: 'taxi',
+    minutes: taxi,
+    walk_min: walk,
+    distance_m,
+    detail: `Taxi / Grab · ${why}`
+  })
   // Budget travellers ride the MRT; others take a cab when it saves 20+ min.
-  const mrtOrTaxi = () => (opts.style !== 'budget' && taxi + 20 < t.minutes ? byTaxi(`saves ${t.minutes - taxi} min vs MRT`) : byMrt)
+  const mrtOrTaxi = () =>
+    opts.style !== 'budget' && taxi + 20 < t.minutes
+      ? byTaxi(`saves ${t.minutes - taxi} min vs MRT`)
+      : byMrt
 
   // The traveller said how they get around.
   if (opts.transport === 'car') return byTaxi(`${(distance_m / 1000).toFixed(1)} km by road`)
   if (opts.transport === 'transit') {
     if (!mrtRunning(opts.atMs)) return byTaxi('no trains or buses at this hour')
     const bus = busMinutes(a, b)
-    const byBus = { mode: 'bus', minutes: bus, walk_min: walk, distance_m, detail: `Bus · ${(distance_m / 1000).toFixed(1)} km by road` }
+    const byBus = {
+      mode: 'bus',
+      minutes: bus,
+      walk_min: walk,
+      distance_m,
+      detail: `Bus · ${(distance_m / 1000).toFixed(1)} km by road`
+    }
     const quickest = byMrt && byMrt.minutes <= bus ? byMrt : byBus
     // Still walkable and no slower than riding: walk it.
     return walk <= 25 && walk <= quickest.minutes ? onFoot : quickest

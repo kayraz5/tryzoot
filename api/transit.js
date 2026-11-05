@@ -36,7 +36,10 @@ async function getToken() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: process.env.ONEMAP_EMAIL, password: process.env.ONEMAP_PASSWORD })
   })
-  token = { value: json.access_token, expiresMs: Number(json.expiry_timestamp) * 1000 || Date.now() + 2 * 86400e3 }
+  token = {
+    value: json.access_token,
+    expiresMs: Number(json.expiry_timestamp) * 1000 || Date.now() + 2 * 86400e3
+  }
   return token.value
 }
 
@@ -46,7 +49,13 @@ function sgDateTime(ms) {
   return { date: `${d.slice(5, 7)}-${d.slice(8, 10)}-${d.slice(0, 4)}`, time: d.slice(11, 19) }
 }
 
-const place = (p) => p && { name: p.name, code: p.stopCode || p.stopId?.split(':').pop() || null, lat: p.lat, lng: p.lon }
+const place = (p) =>
+  p && {
+    name: p.name,
+    code: p.stopCode || p.stopId?.split(':').pop() || null,
+    lat: p.lat,
+    lng: p.lon
+  }
 
 function toParts(itinerary, endName) {
   return itinerary.legs.map((leg, i, legs) => {
@@ -67,7 +76,10 @@ function toParts(itinerary, endName) {
       part.towards = leg.headsign || null // OneMap leaves this empty for trains; the client works it out
       part.nextStop = place(leg.intermediateStops?.[0]) || part.to
       if (mode === 'bus') part.service = leg.routeShortName || leg.route
-      else part.line = String(leg.route || leg.routeShortName || '').slice(0, 2).toUpperCase()
+      else
+        part.line = String(leg.route || leg.routeShortName || '')
+          .slice(0, 2)
+          .toUpperCase()
     }
     return part
   })
@@ -79,7 +91,8 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: 'OneMap is not configured' })
   }
   const { start, end, atMs, endName } = req.body || {}
-  if (!Array.isArray(start) || !Array.isArray(end)) return res.status(400).json({ error: 'start and end ([lng,lat]) required' })
+  if (!Array.isArray(start) || !Array.isArray(end))
+    return res.status(400).json({ error: 'start and end ([lng,lat]) required' })
 
   const { date, time } = sgDateTime(Number(atMs) || Date.now())
   const qs = new URLSearchParams({
@@ -95,17 +108,27 @@ export default async function handler(req, res) {
   try {
     let json
     try {
-      json = await fetchJson(`${ONEMAP}/api/public/routingsvc/route?${qs}`, { headers: { Authorization: await getToken() } })
+      json = await fetchJson(`${ONEMAP}/api/public/routingsvc/route?${qs}`, {
+        headers: { Authorization: await getToken() }
+      })
     } catch (err) {
       if (err.status !== 401) throw err
       token = null // expired early: get a fresh one and retry once
-      json = await fetchJson(`${ONEMAP}/api/public/routingsvc/route?${qs}`, { headers: { Authorization: await getToken() } })
+      json = await fetchJson(`${ONEMAP}/api/public/routingsvc/route?${qs}`, {
+        headers: { Authorization: await getToken() }
+      })
     }
     const itineraries = json.plan?.itineraries || []
     if (!itineraries.length) return res.status(404).json({ error: 'no transit route' })
     const best = itineraries.reduce((a, b) => (b.duration < a.duration ? b : a))
     res.setHeader('Cache-Control', 's-maxage=300')
-    return res.status(200).json({ minutes: Math.round(best.duration / 60), transfers: best.transfers ?? null, parts: toParts(best, endName) })
+    return res
+      .status(200)
+      .json({
+        minutes: Math.round(best.duration / 60),
+        transfers: best.transfers ?? null,
+        parts: toParts(best, endName)
+      })
   } catch (err) {
     return res.status(502).json({ error: String(err.message || err) })
   }

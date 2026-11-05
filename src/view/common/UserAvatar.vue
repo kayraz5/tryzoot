@@ -16,8 +16,18 @@ const level = computed(() => levelFor(props.profile?.xp || 0).level)
 </script>
 
 <template>
-  <span class="ua" :style="{ width: size + 'px', height: size + 'px', fontSize: size * 0.45 + 'px', background: cover, color: onColor(cover) }"
-    :title="profile?.display_name" aria-hidden="true">
+  <span
+    class="ua"
+    :style="{
+      width: size + 'px',
+      height: size + 'px',
+      fontSize: size * 0.45 + 'px',
+      background: cover,
+      color: onColor(cover)
+    }"
+    :title="profile?.display_name"
+    aria-hidden="true"
+  >
     {{ initial }}
     <span v-if="showLevel" class="lvl">L{{ level }}</span>
   </span>

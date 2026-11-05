@@ -13,7 +13,9 @@ import { resolveJoin } from './joinResolver.js'
 
 export class GuestModeError extends Error {
   constructor() {
-    super('Social quests need an email account. Guest mode keeps everything on this phone, so nobody else can see your stops.')
+    super(
+      'Social quests need an email account. Guest mode keeps everything on this phone, so nobody else can see your stops.'
+    )
     this.name = 'GuestModeError'
   }
 }
@@ -39,9 +41,18 @@ async function myId(client) {
 /** Open windows that haven't ended, each with "who's going" (host first, with joined stop ranges). */
 export async function listOpenQuests() {
   const client = await sb()
-  const quests = must(await client.from('parties').select('*').in('status', ['open', 'full'])
-    .gt('ends_at', new Date().toISOString()).order('starts_at').limit(30))
-  const rosters = await Promise.all(quests.map((q) => client.rpc('quest_roster', { p_party: q.id }).then(must)))
+  const quests = must(
+    await client
+      .from('parties')
+      .select('*')
+      .in('status', ['open', 'full'])
+      .gt('ends_at', new Date().toISOString())
+      .order('starts_at')
+      .limit(30)
+  )
+  const rosters = await Promise.all(
+    quests.map((q) => client.rpc('quest_roster', { p_party: q.id }).then(must))
+  )
   return quests.map((q, i) => ({ ...q, roster: rosters[i] }))
 }
 
@@ -53,7 +64,13 @@ export async function getQuest(id) {
   const me = await myId(client)
   const [roster, mine] = await Promise.all([
     client.rpc('quest_roster', { p_party: id }).then(must),
-    client.from('party_members').select('*').eq('party_id', id).eq('user_id', me).maybeSingle().then(must)
+    client
+      .from('party_members')
+      .select('*')
+      .eq('party_id', id)
+      .eq('user_id', me)
+      .maybeSingle()
+      .then(must)
   ])
   return { ...quest, roster, mine }
 }
@@ -64,16 +81,31 @@ export async function getQuest(id) {
 export async function getHostedWindow(missionId) {
   const client = await sb()
   const me = await myId(client)
-  const quest = must(await client.from('parties').select('*').eq('host_id', me).eq('mission_id', missionId)
-    .neq('status', 'closed').gt('ends_at', new Date().toISOString())
-    .order('created_at', { ascending: false }).limit(1).maybeSingle())
+  const quest = must(
+    await client
+      .from('parties')
+      .select('*')
+      .eq('host_id', me)
+      .eq('mission_id', missionId)
+      .neq('status', 'closed')
+      .gt('ends_at', new Date().toISOString())
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+  )
   if (!quest) return null
   return { ...quest, roster: must(await client.rpc('quest_roster', { p_party: quest.id })) }
 }
 
-/** Stops a host can open: their own upcoming visits (not ones joined from someone else), starting 15+ min from now. */
+/**
+ * Stops a host can open: their own visits (not ones joined from someone else) that have not finished yet,
+ * so a quest can start straight away, even at the stop they are on now.
+ */
 export function openableStops(mission, nowMs = Date.now()) {
-  return (mission?.legs || []).filter((l) => l.kind === 'visit' && l.status === 'pending' && !l.fixed && Date.parse(l.arrive_iso) > nowMs + 15 * 60000)
+  return (mission?.legs || []).filter(
+    (l) =>
+      l.kind === 'visit' && l.status === 'pending' && !l.fixed && Date.parse(l.depart_iso) > nowMs
+  )
 }
 
 /**
@@ -82,7 +114,14 @@ export function openableStops(mission, nowMs = Date.now()) {
  * "MRT Changi Airport → …" would reveal the host's airport.
  */
 export function toWindowStop(leg) {
-  return { kind: 'visit', place_id: leg.place_id, name: leg.name, arrive_iso: leg.arrive_iso, depart_iso: leg.depart_iso, xp: leg.xp }
+  return {
+    kind: 'visit',
+    place_id: leg.place_id,
+    name: leg.name,
+    arrive_iso: leg.arrive_iso,
+    depart_iso: leg.depart_iso,
+    xp: leg.xp
+  }
 }
 
 /** What a quest is called when the host doesn't name it: "Mei's quest". */
@@ -93,17 +132,23 @@ export function defaultQuestTitle(hostName) {
 export async function publishWindow({ mission, stops, capacity, note, title }) {
   const client = await sb()
   const me = await myId(client)
-  return must(await client.from('parties').insert({
-    host_id: me,
-    mission_id: mission.id,
-    title: (title?.trim() || mission.title).slice(0, 120),
-    style: mission.style,
-    capacity,
-    note: note?.trim() || null,
-    starts_at: stops[0].arrive_iso,        // the database recomputes these from the stops
-    meeting_place_id: stops[0].place_id,
-    stops: stops.map(toWindowStop)
-  }).select().single())
+  return must(
+    await client
+      .from('parties')
+      .insert({
+        host_id: me,
+        mission_id: mission.id,
+        title: (title?.trim() || mission.title).slice(0, 120),
+        style: mission.style,
+        capacity,
+        note: note?.trim() || null,
+        starts_at: stops[0].arrive_iso, // the database recomputes these from the stops
+        meeting_place_id: stops[0].place_id,
+        stops: stops.map(toWindowStop)
+      })
+      .select()
+      .single()
+  )
 }
 
 /** Returns { removed: [user ids], window_version } (guests whose joined stops changed go back to their own plan). */
@@ -130,11 +175,16 @@ export async function deleteQuest(id) {
  */
 export function windowAfterEdit(quest, mission) {
   const ids = new Set(quest.stops.map((s) => s.place_id))
-  const visits = mission.legs.filter((l) => l.kind === 'visit' && !l.fixed && l.status !== 'skipped')
+  const visits = mission.legs.filter(
+    (l) => l.kind === 'visit' && !l.fixed && l.status !== 'skipped'
+  )
   const first = visits.findIndex((l) => ids.has(l.place_id))
   const last = visits.findLastIndex((l) => ids.has(l.place_id))
   const next = first < 0 ? [] : visits.slice(first, last + 1)
-  const key = (list) => list.map((s) => `${s.place_id}@${Date.parse(s.arrive_iso)}-${Date.parse(s.depart_iso)}`).join('|')
+  const key = (list) =>
+    list
+      .map((s) => `${s.place_id}@${Date.parse(s.arrive_iso)}-${Date.parse(s.depart_iso)}`)
+      .join('|')
   return key(next) === key(quest.stops) ? null : next
 }
 
@@ -167,23 +217,52 @@ export function airportBy(mission) {
 export function stopsFit(stops, mission, nowMs = Date.now()) {
   const by = airportBy(mission)
   if (!mission || !Number.isFinite(by) || by < nowMs) {
-    return { ok: false, code: 'no_mission', reason: 'Plan your layover first so we can check it fits.' }
+    return {
+      ok: false,
+      code: 'no_mission',
+      reason: 'Plan your layover first so we can check it fits.'
+    }
   }
   const last = stops.at(-1)
-  const back = travel(last, mission.origin, { maxWalk: mission.prefs?.maxWalk, transport: mission.prefs?.transport, style: mission.style, atMs: Date.parse(last.depart_iso) })
+  const back = travel(last, mission.origin, {
+    maxWalk: mission.prefs?.maxWalk,
+    transport: mission.prefs?.transport,
+    style: mission.style,
+    atMs: Date.parse(last.depart_iso)
+  })
   const endMs = Date.parse(last.depart_iso)
   const backAt = endMs + back.minutes * 60000
   const outAt = Date.parse(mission.start_iso) + (mission.buffers?.exit_min || 0) * 60000
-  const base = { airportBy: by, backMin: back.minutes, backAt, spareMin: Math.round((by - backAt) / 60000) }
+  const base = {
+    airportBy: by,
+    backMin: back.minutes,
+    backAt,
+    spareMin: Math.round((by - backAt) / 60000)
+  }
   if (backAt > by) {
-    return { ...base, ok: false, code: 'too_late', reason: 'Ends after your return-by',
-      detail: `Ends ${formatTime(endMs)}, then ${back.minutes} min back to ${mission.origin.label}: you'd arrive ${formatTime(backAt)}, but you must be back by ${formatTime(by)}.` }
+    return {
+      ...base,
+      ok: false,
+      code: 'too_late',
+      reason: 'Ends after your return-by',
+      detail: `Ends ${formatTime(endMs)}, then ${back.minutes} min back to ${mission.origin.label}: you'd arrive ${formatTime(backAt)}, but you must be back by ${formatTime(by)}.`
+    }
   }
   if (Date.parse(stops[0].arrive_iso) < outAt) {
-    return { ...base, ok: false, code: 'too_early', reason: 'Starts before you land',
-      detail: `Starts ${formatTime(stops[0].arrive_iso)}, but you're only out of ${mission.origin.label} around ${formatTime(outAt)}.` }
+    return {
+      ...base,
+      ok: false,
+      code: 'too_early',
+      reason: 'Starts before you land',
+      detail: `Starts ${formatTime(stops[0].arrive_iso)}, but you're only out of ${mission.origin.label} around ${formatTime(outAt)}.`
+    }
   }
-  return { ...base, ok: true, reason: 'Fits your window', detail: `Back at ${mission.origin.label} by ${formatTime(backAt)}, ${base.spareMin} min to spare.` }
+  return {
+    ...base,
+    ok: true,
+    reason: 'Fits your window',
+    detail: `Back at ${mission.origin.label} by ${formatTime(backAt)}, ${base.spareMin} min to spare.`
+  }
 }
 
 // Joining (guest)
@@ -214,8 +293,12 @@ export function previewJoin(quest, from, to, mission) {
   const joinStops = quest.stops.slice(from - 1, to)
   const fit = stopsFit(joinStops, mission)
   const res = resolveJoin({
-    legs: mission.legs, joinStops, hostName: host?.display_name || 'the host', partyId: quest.id,
-    airportByMs: airportBy(mission), backMin: fit.backMin
+    legs: mission.legs,
+    joinStops,
+    hostName: host?.display_name || 'the host',
+    partyId: quest.id,
+    airportByMs: airportBy(mission),
+    backMin: fit.backMin
   })
   if (!res.ok && fit.detail) res.reason = `${res.reason}: ${fit.detail}`
   return { ...res, fit, joinStops, hostName: host?.display_name || 'the host' }
@@ -227,7 +310,11 @@ export function previewJoin(quest, from, to, mission) {
  * The return leg's arrival (back at the airport) follows the last stop.
  */
 export function withTravel(legs, mission) {
-  const opts = { maxWalk: mission.prefs?.maxWalk, transport: mission.prefs?.transport, style: mission.style }
+  const opts = {
+    maxWalk: mission.prefs?.maxWalk,
+    transport: mission.prefs?.transport,
+    style: mission.style
+  }
   let cur = mission.origin
   let t = Date.parse(mission.start_iso) + (mission.buffers?.exit_min || 0) * 60000
   return legs.map((l) => {
@@ -251,10 +338,15 @@ export function withTravel(legs, mission) {
 export async function joinWindow({ quest, from, to, mission }) {
   const client = await sb()
   const fit = stopsFit(quest.stops.slice(from - 1, to), mission)
-  return must(await client.rpc('join_window', {
-    p_party: quest.id, p_from: from, p_to: to,
-    p_airport_by: new Date(airportBy(mission)).toISOString(), p_back_min: fit.backMin ?? 0
-  }))
+  return must(
+    await client.rpc('join_window', {
+      p_party: quest.id,
+      p_from: from,
+      p_to: to,
+      p_airport_by: new Date(airportBy(mission)).toISOString(),
+      p_back_min: fit.backMin ?? 0
+    })
+  )
 }
 
 export async function leaveWindow(id) {
@@ -267,14 +359,26 @@ export async function leaveWindow(id) {
 export async function shareLocation(partyId, { lat, lng, accuracy }) {
   const client = await sb()
   const me = await myId(client)
-  must(await client.from('party_locations').upsert({
-    party_id: partyId, user_id: me, lat, lng, accuracy_m: accuracy ?? null, updated_at: new Date().toISOString()
-  }))
+  must(
+    await client.from('party_locations').upsert({
+      party_id: partyId,
+      user_id: me,
+      lat,
+      lng,
+      accuracy_m: accuracy ?? null,
+      updated_at: new Date().toISOString()
+    })
+  )
 }
 
 export async function listLocations(partyId) {
   const client = await sb()
-  return must(await client.from('party_locations').select('user_id, lat, lng, updated_at').eq('party_id', partyId))
+  return must(
+    await client
+      .from('party_locations')
+      .select('user_id, lat, lng, updated_at')
+      .eq('party_id', partyId)
+  )
 }
 
 export async function stopSharing(partyId) {
@@ -283,39 +387,69 @@ export async function stopSharing(partyId) {
   must(await client.from('party_locations').delete().eq('party_id', partyId).eq('user_id', me))
 }
 
-/** Calls onChange() whenever someone's location in this quest changes. Returns an unsubscribe function. */
+/**
+ * Calls onChange(payload) whenever someone's location in this quest changes: payload.eventType,
+ * payload.new (the row) and, for DELETE, payload.old (party_id + user_id). Returns an unsubscribe function.
+ */
 export async function watchLocations(partyId, onChange) {
   const client = await sb()
-  const channel = client.channel(`locations:${partyId}`)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'party_locations', filter: `party_id=eq.${partyId}` }, onChange)
+  const channel = client
+    .channel(`locations:${partyId}`)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'party_locations', filter: `party_id=eq.${partyId}` },
+      onChange
+    )
     .subscribe()
   return () => client.removeChannel(channel)
 }
 
 // Chat: one per quest, members only (RLS), messages from people I blocked are never returned
 
-export const QUICK_REPLIES = ['Running 5 min late', "I'm at the meeting point", 'On my way', 'Where are you?', 'Here! 👋']
+export const QUICK_REPLIES = [
+  'Running 5 min late',
+  "I'm at the meeting point",
+  'On my way',
+  'Where are you?',
+  'Here! 👋'
+]
 export const MESSAGE_MAX = 280
 
 export async function listMessages(partyId) {
   const client = await sb()
-  return must(await client.from('messages').select('id, party_id, user_id, type, body, meta, created_at')
-    .eq('party_id', partyId).order('created_at', { ascending: true }).limit(200))
+  return must(
+    await client
+      .from('messages')
+      .select('id, party_id, user_id, type, body, meta, created_at')
+      .eq('party_id', partyId)
+      .order('created_at', { ascending: true })
+      .limit(200)
+  )
 }
 
 /** type: 'text', or 'chip' for a quick reply. The database refuses it once the quest's chat has closed. */
 export async function sendMessage(partyId, body, type = 'text') {
   const client = await sb()
   const me = await myId(client)
-  return must(await client.from('messages').insert({ party_id: partyId, user_id: me, type, body: body.trim().slice(0, MESSAGE_MAX) })
-    .select('id, party_id, user_id, type, body, meta, created_at').single())
+  return must(
+    await client
+      .from('messages')
+      .insert({ party_id: partyId, user_id: me, type, body: body.trim().slice(0, MESSAGE_MAX) })
+      .select('id, party_id, user_id, type, body, meta, created_at')
+      .single()
+  )
 }
 
 /** Calls onMessage(row) for each new message in this quest. Returns an unsubscribe function. */
 export async function watchMessages(partyId, onMessage) {
   const client = await sb()
-  const channel = client.channel(`messages:${partyId}`)
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `party_id=eq.${partyId}` }, (e) => onMessage(e.new))
+  const channel = client
+    .channel(`messages:${partyId}`)
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'messages', filter: `party_id=eq.${partyId}` },
+      (e) => onMessage(e.new)
+    )
     .subscribe()
   return () => client.removeChannel(channel)
 }
@@ -338,12 +472,25 @@ export async function blockUser(userId) {
   if (error && error.code !== '23505') throw new Error(error.message) // already blocked is fine
 }
 
-export async function reportUser({ userId, partyId = null, messageId = null, reason, details = '' }) {
+export async function reportUser({
+  userId,
+  partyId = null,
+  messageId = null,
+  reason,
+  details = ''
+}) {
   const client = await sb()
   const me = await myId(client)
-  must(await client.from('reports').insert({
-    reporter_id: me, reported_id: userId, party_id: partyId, message_id: messageId, reason, details: details.trim().slice(0, 500) || null
-  }))
+  must(
+    await client.from('reports').insert({
+      reporter_id: me,
+      reported_id: userId,
+      party_id: partyId,
+      message_id: messageId,
+      reason,
+      details: details.trim().slice(0, 500) || null
+    })
+  )
 }
 
 // Co-op stamps (given by the database when two members stamp the same place together)
@@ -363,8 +510,13 @@ export async function markCoopSeen(ids) {
 export async function watchMyCoop(onChange) {
   const client = await sb()
   const me = await myId(client)
-  const channel = client.channel(`coop:${me}`)
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'coop_stamps', filter: `user_id=eq.${me}` }, onChange)
+  const channel = client
+    .channel(`coop:${me}`)
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'coop_stamps', filter: `user_id=eq.${me}` },
+      onChange
+    )
     .subscribe()
   return () => client.removeChannel(channel)
 }

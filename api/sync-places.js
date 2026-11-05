@@ -13,7 +13,8 @@ export const config = { maxDuration: 300 }
 export default async function handler(req, res) {
   const secret = process.env.CRON_SECRET
   if (!secret) return res.status(503).json({ error: 'CRON_SECRET is not set' })
-  if (req.headers.authorization !== `Bearer ${secret}`) return res.status(401).json({ error: 'unauthorized' })
+  if (req.headers.authorization !== `Bearer ${secret}`)
+    return res.status(401).json({ error: 'unauthorized' })
 
   const db = placesDbFromEnv()
   if (!db) return res.status(503).json({ error: 'SUPABASE_URL / SUPABASE_SECRET_KEY not set' })
@@ -21,7 +22,8 @@ export default async function handler(req, res) {
   try {
     const previous = await db.select('places', 'select=*')
     const seed = previous.filter((place) => place.source === 'seed')
-    if (!seed.length) return res.status(500).json({ error: 'No hand-picked places in the table, nothing written' })
+    if (!seed.length)
+      return res.status(500).json({ error: 'No hand-picked places in the table, nothing written' })
     const { ok, report, places } = await syncPlaces({ seed, previous })
     if (!ok) return res.status(502).json({ error: 'OpenStreetMap failed, nothing written', report })
 

@@ -17,11 +17,22 @@ export function checkInStatus({ place, position, fake = false }) {
   if (!position) return { ok: false, code: 'no_gps', message: 'Waiting for GPS…' }
   const accuracy = position.accuracy ?? 999
   if (accuracy > CHECKIN.rejectAccuracyM && !fake) {
-    return { ok: false, code: 'accuracy', message: `GPS too fuzzy (±${Math.round(accuracy)} m). Step outside or wait a moment.` }
+    return {
+      ok: false,
+      code: 'accuracy',
+      message: `GPS too fuzzy (±${Math.round(accuracy)} m). Step outside or wait a moment.`
+    }
   }
   const radius = radiusFor(accuracy)
   const d = distanceM(position, place)
-  if (d > radius) return { ok: false, code: 'far', distance: d, radius, message: `${Math.round(d)} m away. Get within ${radius} m to stamp.` }
+  if (d > radius)
+    return {
+      ok: false,
+      code: 'far',
+      distance: d,
+      radius,
+      message: `${Math.round(d)} m away. Get within ${radius} m to stamp.`
+    }
   return { ok: true, distance: d, radius, message: 'In range. Stamp it!' }
 }
 

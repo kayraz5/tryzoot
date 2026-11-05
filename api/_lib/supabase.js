@@ -14,16 +14,20 @@ export function supabaseRest(url, key) {
   const headers = { apikey: key, 'Content-Type': 'application/json' }
   if (key.startsWith('eyJ')) headers.Authorization = `Bearer ${key}`
   const call = async (path, init) => {
-    const res = await fetch(`${url}/rest/v1/${path}`, { ...init, headers: { ...headers, ...init?.headers } })
+    const res = await fetch(`${url}/rest/v1/${path}`, {
+      ...init,
+      headers: { ...headers, ...init?.headers }
+    })
     if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`)
     return res.status === 204 ? null : res.json().catch(() => null)
   }
   return {
     select: (table, query) => call(`${table}?${query}`),
-    upsert: (table, rows, onConflict = 'id') => call(`${table}?on_conflict=${onConflict}`, {
-      method: 'POST',
-      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify(rows)
-    })
+    upsert: (table, rows, onConflict = 'id') =>
+      call(`${table}?on_conflict=${onConflict}`, {
+        method: 'POST',
+        headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify(rows)
+      })
   }
 }

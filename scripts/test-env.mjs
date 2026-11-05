@@ -12,7 +12,13 @@
  * a value, a file's contents, a URL or a response body.
  */
 import { fileURLToPath } from 'node:url'
-import { ALL_VARS, gateFor, loadTestEnv, presence, preflight } from '../tests/support/supabaseGate.js'
+import {
+  ALL_VARS,
+  gateFor,
+  loadTestEnv,
+  presence,
+  preflight
+} from '../tests/support/supabaseGate.js'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const MODES = ['test', 'development']
@@ -52,7 +58,8 @@ async function main() {
 
 main().catch((err) => {
   // Error name only: messages from env loading could quote file contents.
-  const name = typeof err?.name === 'string' && /^[A-Za-z]{1,40}$/.test(err.name) ? err.name : 'Error'
+  const name =
+    typeof err?.name === 'string' && /^[A-Za-z]{1,40}$/.test(err.name) ? err.name : 'Error'
   console.error(`test:env failed (${name})`)
   process.exitCode = 1
 })

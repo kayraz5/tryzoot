@@ -29,14 +29,20 @@ async function load() {
   await loadCatalog()
   if (route.params.id) await store.load(route.params.id)
   else await store.loadActive()
-  if (!ui.weather && store.mission) ui.loadWeather(store.mission.legs[0].lat, store.mission.legs[0].lng)
+  if (!ui.weather && store.mission)
+    ui.loadWeather(store.mission.legs[0].lat, store.mission.legs[0].lng)
   // Joined someone's quest? Check the host hasn't closed it or changed my stops.
   if (store.mission?.joined) store.checkJoined()
   focusCurrent()
 }
 onMounted(load)
 // The map is what asks for location; if it's already allowed, follow it here too (no prompt).
-onMounted(() => navigator.permissions?.query({ name: 'geolocation' }).then((p) => p.state === 'granted' && !geo.fake && startGps(), () => {}))
+onMounted(() =>
+  navigator.permissions?.query({ name: 'geolocation' }).then(
+    (p) => p.state === 'granted' && !geo.fake && startGps(),
+    () => {}
+  )
+)
 watch(() => route.params.id, load)
 
 const m = computed(() => store.mission)
@@ -56,7 +62,9 @@ async function focusCurrent() {
   el.scrollIntoView({ behavior: 'smooth', block: 'center' })
   el.querySelector('.stop-card')?.focus({ preventScroll: true })
   flash.value = next.seq
-  setTimeout(() => { if (flash.value === next.seq) flash.value = null }, 1600)
+  setTimeout(() => {
+    if (flash.value === next.seq) flash.value = null
+  }, 1600)
 }
 const companyOpen = ref(false) // "Open to company" sheet (group quests)
 const editingSchedule = ref(false) // stop cards swap for the compact order + stay-time editor
@@ -68,32 +76,64 @@ const leaveBy = computed(() => (clockStep.value, m.value ? store.leaveBy() : nul
 // Once they're out (trip started, or a stop already stamped) and there's a GPS fix, the next
 // stop's travel line is from where they actually are (matching the map's directions), not from
 // wherever the plan assumed they'd be.
-const isOut = () => now() >= Date.parse(m.value.start_iso) + m.value.buffers.exit_min * 60000 || store.stampedCount > 0
+const isOut = () =>
+  now() >= Date.parse(m.value.start_iso) + m.value.buffers.exit_min * 60000 ||
+  store.stampedCount > 0
 const liveNext = computed(() => {
   clockStep.value
   const next = store.nextLeg
   if (!m.value || !next || !hasFix() || !isOut()) return null
   const to = next.kind === 'return' ? m.value.return_to || m.value.origin : next
-  const tr = travel({ lat: geo.lat, lng: geo.lng }, to, { maxWalk: m.value.prefs?.maxWalk, transport: m.value.prefs?.transport, style: m.value.style, atMs: now() })
-  return { leg: next, mode: tr.mode, minutes: tr.minutes, detail: `From your location · ${tr.detail}` }
+  const tr = travel({ lat: geo.lat, lng: geo.lng }, to, {
+    maxWalk: m.value.prefs?.maxWalk,
+    transport: m.value.prefs?.transport,
+    style: m.value.style,
+    atMs: now()
+  })
+  return {
+    leg: next,
+    mode: tr.mode,
+    minutes: tr.minutes,
+    detail: `From your location · ${tr.detail}`
+  }
 })
-const travelOf = (leg) => (liveNext.value?.leg === leg ? liveNext.value : { mode: leg.travel_mode, minutes: leg.travel_min, detail: leg.travel_detail })
+const travelOf = (leg) =>
+  (liveNext.value?.leg === leg
+    ? liveNext.value
+    : { mode: leg.travel_mode, minutes: leg.travel_min, detail: leg.travel_detail })
 
-const modeIcon = { walk: 'bi-person-walking', mrt: 'bi-train-front', bus: 'bi-bus-front', taxi: 'bi-taxi-front' }
+const modeIcon = {
+  walk: 'bi-person-walking',
+  mrt: 'bi-train-front',
+  bus: 'bi-bus-front',
+  taxi: 'bi-taxi-front'
+}
 const modePill = { walk: '', mrt: 'ink', bus: 'ink', taxi: 'pale' }
 
 // Weather checker
 const wetLegs = computed(() => {
   if (!m.value) return []
   const rainAt = rainLookup(ui.weather, ui.forceRain)
-  return m.value.legs.filter((l) => l.kind === 'visit' && l.status === 'pending' && l.indoor === false && rainAt(Date.parse(l.arrive_iso)) > RAIN_LIMIT)
+  return m.value.legs.filter(
+    (l) =>
+      l.kind === 'visit' &&
+      l.status === 'pending' &&
+      l.indoor === false &&
+      rainAt(Date.parse(l.arrive_iso)) > RAIN_LIMIT
+  )
 })
 
 // Editing schedule
 const editing = ref(null)
 const editKey = (leg) => (leg.kind === 'return' ? 'end' : leg.place_id)
 const toggleEdit = (leg) => (editing.value = editing.value === editKey(leg) ? null : editKey(leg))
-watch(() => m.value?.id, () => { editing.value = null; editingSchedule.value = false })
+watch(
+  () => m.value?.id,
+  () => {
+    editing.value = null;
+    editingSchedule.value = false
+  }
+)
 
 // "New itinerary": different stops for the rest of the plan (the old one can be brought back).
 async function regenerate() {
@@ -121,13 +161,23 @@ async function regenerate() {
 
       <LayoverCard :mission="m" :leave-by-ms="leaveBy?.ms ?? null" class="mb-3" />
 
-      <div v-if="wetLegs.length" class="alert rain-alert d-flex align-items-center gap-3" role="alert">
+      <div
+        v-if="wetLegs.length"
+        class="alert rain-alert d-flex align-items-center gap-3"
+        role="alert"
+      >
         <i class="bi bi-cloud-lightning-rain fs-3"></i>
         <div class="flex-grow-1 small">
           <b>Rain likely during {{ wetLegs.map((l) => l.name).join(', ') }}.</b>
           Swap outdoor stops for indoor ones nearby?
         </div>
-        <button class="btn btn-sm" :disabled="store.status === 'planning'" @click="store.replan('rain')">Indoor rewrite</button>
+        <button
+          class="btn btn-sm"
+          :disabled="store.status === 'planning'"
+          @click="store.replan('rain')"
+        >
+          Indoor rewrite
+        </button>
       </div>
 
       <ScheduleEditor v-if="editingSchedule" class="mb-3" @done="editingSchedule = false" />
@@ -135,13 +185,27 @@ async function regenerate() {
       <ol v-else class="timeline list-unstyled">
         <li class="tl-start">
           <div class="dot start"><i class="bi bi-airplane-fill"></i></div>
-          <div class="small"><b class="mono">{{ formatTime(Date.parse(m.start_iso) + m.buffers.exit_min * 60000) }}</b> Leave {{ m.origin.label }}<span v-if="m.buffers.exit_min" class="text-muted"> (after {{ m.buffers.exit_min }} min immigration)</span></div>
+          <div class="small">
+            <b class="mono">{{
+              formatTime(Date.parse(m.start_iso) + m.buffers.exit_min * 60000)
+            }}</b>
+            Leave {{ m.origin.label
+            }}<span v-if="m.buffers.exit_min" class="text-muted">
+              (after {{ m.buffers.exit_min }} min immigration)</span
+            >
+          </div>
         </li>
 
         <li v-if="doneCount" class="tl-done-toggle">
           <div class="dot done"><i class="bi bi-check-lg"></i></div>
-          <button type="button" class="btn btn-link btn-sm p-0 text-reset fw-800" :aria-expanded="showDone" @click="showDone = !showDone">
-            {{ doneCount }} completed stop{{ doneCount === 1 ? '' : 's' }} · <span class="text-decoration-underline">{{ showDone ? 'Hide' : 'Show' }}</span>
+          <button
+            type="button"
+            class="btn btn-link btn-sm p-0 text-reset fw-800"
+            :aria-expanded="showDone"
+            @click="showDone = !showDone"
+          >
+            {{ doneCount }} completed stop{{ doneCount === 1 ? '' : 's' }} ·
+            <span class="text-decoration-underline">{{ showDone ? 'Hide' : 'Show' }}</span>
           </button>
         </li>
 
@@ -149,32 +213,60 @@ async function regenerate() {
           <!-- Done: a compact greyed line, only when expanded -->
           <template v-if="isDone(leg)">
             <li v-if="showDone" class="tl-done">
-              <div class="dot done"><i class="bi" :class="leg.status === 'stamped' ? 'bi-patch-check-fill' : 'bi-skip-forward-fill'"></i></div>
+              <div class="dot done">
+                <i
+                  class="bi"
+                  :class="leg.status === 'stamped' ? 'bi-patch-check-fill' : 'bi-skip-forward-fill'"
+                ></i>
+              </div>
               <div class="min-w-0 text-truncate small">
-                <RouterLink :to="`/place/${leg.place_id}`" class="text-reset fw-800">{{ leg.name }}</RouterLink>
-                <span class="text-muted"> · {{ leg.status === 'stamped' ? `Stamped ${leg.stamped_at ? formatTime(leg.stamped_at) : ''}` : 'Skipped' }}</span>
+                <RouterLink :to="`/place/${leg.place_id}`" class="text-reset fw-800">{{
+                  leg.name
+                }}</RouterLink>
+                <span class="text-muted">
+                  ·
+                  {{
+                    leg.status === 'stamped'
+                      ? `Stamped ${leg.stamped_at ? formatTime(leg.stamped_at) : ''}`
+                      : 'Skipped'
+                  }}</span
+                >
               </div>
             </li>
           </template>
 
           <template v-else>
-          <li class="tl-travel">
-            <span class="zt-pill" :class="modePill[travelOf(leg).mode]"><i class="bi" :class="modeIcon[travelOf(leg).mode]"></i> {{ travelOf(leg).minutes }} min</span>
-            <span class="tiny text-muted ms-2">{{ travelOf(leg).detail }}</span>
-          </li>
+            <li class="tl-travel">
+              <span class="zt-pill" :class="modePill[travelOf(leg).mode]"
+                ><i class="bi" :class="modeIcon[travelOf(leg).mode]"></i>
+                {{ travelOf(leg).minutes }} min</span
+              >
+              <span class="tiny text-muted ms-2">{{ travelOf(leg).detail }}</span>
+            </li>
 
-          <li :id="`leg-${leg.seq}`" :class="['tl-stop', leg.kind, leg.status, { next: store.nextLeg === leg, flash: flash === leg.seq }]">
-            <div class="dot">
-              <i v-if="leg.kind === 'return'" class="bi bi-house-door-fill"></i>
-              <i v-else-if="leg.status === 'stamped'" class="bi bi-patch-check-fill"></i>
-              <span v-else>{{ leg.seq }}</span>
-            </div>
+            <li
+              :id="`leg-${leg.seq}`"
+              :class="[
+                'tl-stop',
+                leg.kind,
+                leg.status,
+                { next: store.nextLeg === leg, flash: flash === leg.seq }
+              ]"
+            >
+              <div class="dot">
+                <i v-if="leg.kind === 'return'" class="bi bi-house-door-fill"></i>
+                <i v-else-if="leg.status === 'stamped'" class="bi bi-patch-check-fill"></i>
+                <span v-else>{{ leg.seq }}</span>
+              </div>
 
-            <StopCard :leg="leg" :open="editing === editKey(leg)" :tabindex="store.nextLeg === leg ? -1 : undefined"
-              @toggle="toggleEdit(leg)" @close="editing = null" />
-
-          </li>
-
+              <StopCard
+                :leg="leg"
+                :open="editing === editKey(leg)"
+                :tabindex="store.nextLeg === leg ? -1 : undefined"
+                @toggle="toggleEdit(leg)"
+                @close="editing = null"
+              />
+            </li>
           </template>
         </template>
       </ol>
@@ -182,10 +274,16 @@ async function regenerate() {
       <ReplanCard v-if="!m.completed" @finished="focusCurrent" />
 
       <div v-if="!m.completed" class="play-bar d-flex gap-2">
-        <button class="btn btn-soft btn-lg company-btn" @click="companyOpen = true" aria-label="Open to company">
+        <button
+          class="btn btn-soft btn-lg company-btn"
+          @click="companyOpen = true"
+          aria-label="Open to company"
+        >
           <i class="bi bi-people-fill"></i><span class="d-none d-sm-inline"> Open to company</span>
         </button>
-        <button class="btn btn-pop btn-lg flex-grow-1" @click="router.push('/map')"><i class="bi bi-controller"></i> Play on map</button>
+        <button class="btn btn-pop btn-lg flex-grow-1" @click="router.push('/map')">
+          <i class="bi bi-controller"></i> Play on map
+        </button>
       </div>
       <OpenToCompanySheet :mission="m" :open="companyOpen" @close="companyOpen = false" />
     </template>
@@ -286,7 +384,8 @@ async function regenerate() {
 }
 
 @keyframes leg-flash {
-  0%, 40% {
+  0%,
+  40% {
     outline: 4px solid var(--zt-pink);
     outline-offset: 4px;
   }

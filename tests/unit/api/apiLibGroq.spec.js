@@ -2,12 +2,7 @@
 // @vitest-environment node
 
 import { describe, expect, it, vi } from 'vitest'
-import {
-  GROQ_URL,
-  groqConfig,
-  groqJson,
-  tooLarge,
-} from '../../../api/_lib/groq.js'
+import { GROQ_URL, groqConfig, groqJson, tooLarge, } from '../../../api/_lib/groq.js'
 import { jsonResponse, stubFetch, textResponse, useCleanSlate } from '../../support/unit/index.js'
 
 useCleanSlate()
@@ -55,21 +50,25 @@ describe('groqJson', () => {
     vi.stubEnv('GROQ_API_KEY', 'test-key')
     vi.stubEnv('GROQ_MODEL', 'test-model')
     let requestBody
-    const fetch = stubFetch([[
-      GROQ_URL,
-      (_url, init) => {
-        requestBody = JSON.parse(init.body)
-        return jsonResponse({
-          model: 'response-model',
-          choices: [{ message: { content: '{"answer":"ok"}' } }],
-        })
-      },
-    ]])
+    const fetch = stubFetch([
+      [
+        GROQ_URL,
+        (_url, init) => {
+          requestBody = JSON.parse(init.body)
+          return jsonResponse({
+            model: 'response-model',
+            choices: [{ message: { content: '{"answer":"ok"}' } }],
+          })
+        },
+      ]
+    ])
 
-    await expect(groqJson({
-      system: 'Return JSON.',
-      user: { prompt: 'hello' },
-    })).resolves.toEqual({
+    await expect(
+      groqJson({
+        system: 'Return JSON.',
+        user: { prompt: 'hello' },
+      })
+    ).resolves.toEqual({
       model: 'response-model',
       data: { answer: 'ok' },
     })
@@ -96,13 +95,11 @@ describe('groqJson', () => {
 
   it('throws when the successful response content is not JSON', async () => {
     vi.stubEnv('GROQ_API_KEY', 'test-key')
-    stubFetch([[
-      GROQ_URL,
-      () => jsonResponse({ choices: [{ message: { content: 'not JSON' } }] }),
-    ]])
+    stubFetch([[GROQ_URL, () => jsonResponse({ choices: [{ message: { content: 'not JSON' } }] }),]])
 
-    await expect(groqJson({ system: 'Return JSON.', user: 'hello' }))
-      .rejects.toBeInstanceOf(SyntaxError)
+    await expect(groqJson({ system: 'Return JSON.', user: 'hello' })).rejects.toBeInstanceOf(
+      SyntaxError
+    )
   })
 
   it.each([
@@ -113,13 +110,15 @@ describe('groqJson', () => {
     vi.stubEnv('GROQ_API_KEY', 'test-key')
     vi.stubEnv('GROQ_MODEL', model)
     let requestBody
-    stubFetch([[
-      GROQ_URL,
-      (_url, init) => {
-        requestBody = JSON.parse(init.body)
-        return jsonResponse({ choices: [{ message: { content: '{}' } }] })
-      },
-    ]])
+    stubFetch([
+      [
+        GROQ_URL,
+        (_url, init) => {
+          requestBody = JSON.parse(init.body)
+          return jsonResponse({ choices: [{ message: { content: '{}' } }] })
+        },
+      ]
+    ])
 
     await groqJson({ system: 'Return JSON.', user: 'hello' })
 

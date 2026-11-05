@@ -22,8 +22,8 @@ export function redact(text, values = []) {
   }
 
   return out
-    // http(s) per the design, plus ws(s) so realtime WebSocket URLs are covered too.
-    .replace(/(?:https?|wss?):\/\/[a-z0-9-]+\.supabase\.(co|in)/gi, '<SUPABASE_URL>')
-    .replace(/eyJ[\w-]+\.[\w-]+\.[\w-]+/g, '<redacted>')
-    .replace(/sb_(publishable|secret)_[\w-]+/g, '<redacted>')
+      // http(s) per the design, plus ws(s) so realtime WebSocket URLs are covered too.
+      .replace(/(?:https?|wss?):\/\/[a-z0-9-]+\.supabase\.(co|in)/gi, '<SUPABASE_URL>')
+      .replace(/eyJ[\w-]+\.[\w-]+\.[\w-]+/g, '<redacted>')
+      .replace(/sb_(publishable|secret)_[\w-]+/g, '<redacted>')
 }

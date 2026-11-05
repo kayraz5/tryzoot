@@ -33,11 +33,12 @@ beforeEach(() => {
   vi.stubEnv('CRON_SECRET', SECRET)
 })
 
-const request = (method = 'GET', headers = {}) => mockReq({
-  method,
-  url: '/api/sync-places',
-  headers,
-})
+const request = (method = 'GET', headers = {}) =>
+  mockReq({
+    method,
+    url: '/api/sync-places',
+    headers,
+  })
 
 const authorizedRequest = (method = 'GET') => request(method, { authorization })
 

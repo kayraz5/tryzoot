@@ -29,12 +29,15 @@ describe('character store initial state', () => {
   })
 
   it('uses defaults for saved fields that are not strings', () => {
-    localStorage.setItem('zoot.character', JSON.stringify({
-      outfit: 42,
-      fur: null,
-      hat: { name: 'beanie' },
-      eyewear: true,
-    }))
+    localStorage.setItem(
+      'zoot.character',
+      JSON.stringify({
+        outfit: 42,
+        fur: null,
+        hat: { name: 'beanie' },
+        eyewear: true,
+      })
+    )
 
     const character = useCharacterStore()
 

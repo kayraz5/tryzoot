@@ -12,6 +12,16 @@ defineEmits(['toggle'])
 </template>
 
 <style scoped>
-.map-btn.menu-btn { background: var(--zt-yellow); color: #000; border-color: #000; box-shadow: 3px 3px 0 #000; }
-.map-btn.menu-btn.open { background: var(--zt-black); color: var(--zt-yellow); border-color: var(--zt-yellow); box-shadow: 3px 3px 0 var(--zt-yellow); }
+.map-btn.menu-btn {
+  background: var(--zt-yellow);
+  color: #000;
+  border-color: #000;
+  box-shadow: 3px 3px 0 #000;
+}
+.map-btn.menu-btn.open {
+  background: var(--zt-black);
+  color: var(--zt-yellow);
+  border-color: var(--zt-yellow);
+  box-shadow: 3px 3px 0 var(--zt-yellow);
+}
 </style>

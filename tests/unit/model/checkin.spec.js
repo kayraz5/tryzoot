@@ -3,7 +3,12 @@ import { describe, expect, it } from 'vitest'
 import { at, T, useCleanSlate } from '../../support/unit/index.js'
 import { forAll, int } from '../../support/unit/gen.js'
 import { CHECKIN } from '../../../src/model/services/config.js'
-import { checkInStatus, getSgTimeParts, radiusFor, sameSgDay } from '../../../src/model/services/checkin.js'
+import {
+  checkInStatus,
+  getSgTimeParts,
+  radiusFor,
+  sameSgDay
+} from '../../../src/model/services/checkin.js'
 
 useCleanSlate()
 
@@ -42,7 +47,9 @@ describe('checkInStatus', () => {
       ok: false,
       code: 'accuracy',
     })
-    expect(checkInStatus({ place, position: { ...poorPosition, accuracy: undefined } })).toMatchObject({
+    expect(
+      checkInStatus({ place, position: { ...poorPosition, accuracy: undefined } })
+    ).toMatchObject({
       ok: false,
       code: 'accuracy',
     })
@@ -76,32 +83,33 @@ describe('checkInStatus', () => {
 
   // Feature: test-coverage-expansion, Property 5: Check-in geofence rule
   it('follows configured radius and fake-mode accuracy rules for generated positions', () => {
-    forAll((r) => ({
-      accuracy: int(r, 0, 200),
-      distanceM: int(r, 0, 200),
-      fake: r() < 0.5,
-    }), ({ accuracy, distanceM, fake }) => {
-      const position = positionAt(accuracy, {
-        lat: place.lat + distanceM / 111_320,
-      })
-      const result = checkInStatus({ place, position, fake })
-      const radius = accuracy > CHECKIN.poorAccuracyM
-        ? CHECKIN.poorAccuracyRadiusM
-        : CHECKIN.radiusM
+    forAll(
+      (r) => ({
+        accuracy: int(r, 0, 200),
+        distanceM: int(r, 0, 200),
+        fake: r() < 0.5,
+      }),
+      ({ accuracy, distanceM, fake }) => {
+        const position = positionAt(accuracy, {
+          lat: place.lat + distanceM / 111_320,
+        })
+        const result = checkInStatus({ place, position, fake })
+        const radius =
+          accuracy > CHECKIN.poorAccuracyM ? CHECKIN.poorAccuracyRadiusM : CHECKIN.radiusM
 
-      if (!fake && accuracy > CHECKIN.rejectAccuracyM) {
-        expect(result).toMatchObject({ ok: false, code: 'accuracy' })
-        return
+        if (!fake && accuracy > CHECKIN.rejectAccuracyM) {
+          expect(result).toMatchObject({ ok: false, code: 'accuracy' })
+          return
+        }
+
+        expect(result.radius).toBe(radius)
+        expect(result.ok).toBe(result.distance <= radius)
       }
-
-      expect(result.radius).toBe(radius)
-      expect(result.ok).toBe(result.distance <= radius)
-    })
+    )
   })
 
   // **Validates: Requirements 2.2, 2.3**
 })
-
 
 describe('Singapore day helpers', () => {
   it('rolls to the next Singapore day at 16:00Z', () => {

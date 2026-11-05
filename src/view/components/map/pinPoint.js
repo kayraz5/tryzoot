@@ -40,7 +40,14 @@ function pinGlowTexture() {
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = size
   const ctx = canvas.getContext('2d')
-  const gradient = ctx.createRadialGradient(size / 2, size / 2, size * 0.16, size / 2, size / 2, size / 2)
+  const gradient = ctx.createRadialGradient(
+    size / 2,
+    size / 2,
+    size * 0.16,
+    size / 2,
+    size / 2,
+    size / 2
+  )
   gradient.addColorStop(0, 'rgba(255, 255, 255, 0)')
   gradient.addColorStop(0.34, 'rgba(255, 255, 255, 0.9)')
   gradient.addColorStop(0.55, 'rgba(255, 255, 255, 0.32)')
@@ -131,12 +138,12 @@ export class PinLayer {
     this.id = id
     this.lng = lng
     this.lat = lat
-    this.badgeLabel = label    // sequence number ("1", "2", …), "home" or "landmark"
-    this.isNext = isNext       // the stop the traveller is heading to now
+    this.badgeLabel = label // sequence number ("1", "2", …), "home" or "landmark"
+    this.isNext = isNext // the stop the traveller is heading to now
     this.phase = phaseFor(id)
 
-    this.spawn = 0            // 0 → 1 entrance growth
-    this.nearness = 0         // smoothed 0 (far) → 1 (close)
+    this.spawn = 0 // 0 → 1 entrance growth
+    this.nearness = 0 // smoothed 0 (far) → 1 (close)
     this.targetNearness = 0
     this.lastFrame = 0
 
@@ -154,13 +161,22 @@ export class PinLayer {
     const material = (color, emissive = 0x000000, emissiveIntensity = 0) =>
       new THREE.MeshLambertMaterial({ color, emissive, emissiveIntensity, flatShading: true })
 
-    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.14, 2.2, 6), material(PIN_CREAM))
+    const pillar = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.1, 0.14, 2.2, 6),
+      material(PIN_CREAM)
+    )
     pillar.position.y = 1.2 // lift the base to ground level
 
-    const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.55, 0), material(BRAND.pink, 0x8a0030, 0.7))
+    const gem = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.55, 0),
+      material(BRAND.pink, 0x8a0030, 0.7)
+    )
     gem.position.y = PIN_TOP_Y // sits on top of the pillar
 
-    const halo = new THREE.Mesh(new THREE.TorusGeometry(0.72, 0.07, 6, 24), material(0x211a00, 0xffa400, 0.45))
+    const halo = new THREE.Mesh(
+      new THREE.TorusGeometry(0.72, 0.07, 6, 24),
+      material(0x211a00, 0xffa400, 0.45)
+    )
     halo.position.y = PIN_TOP_Y // rings the gem
 
     const ping = new THREE.Mesh(
@@ -231,20 +247,24 @@ export class PinLayer {
     this.glow = glow
     this.groundRing = groundRing
 
-// meterInMercatorCoordinateUnits() keeps the pin a consistent real-world size
+    // meterInMercatorCoordinateUnits() keeps the pin a consistent real-world size
     // regardless of latitude.
     const position = MercatorCoordinate.fromLngLat([this.lng, this.lat], 0)
     const scale = position.meterInMercatorCoordinateUnits() * PIN_SCALE
 
-// Three.js Y-up rotated into the map's Z-up.
+    // Three.js Y-up rotated into the map's Z-up.
     this.baseTransform = new THREE.Matrix4()
       .makeTranslation(position.x, position.y, position.z)
       .scale(new THREE.Vector3(scale, -scale, scale))
       .multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2))
 
-// Reuse the map's canvas and context so Three draws into the same frame.
-    this.renderer = new THREE.WebGLRenderer({ canvas: map.getCanvas(), context: gl, antialias: true })
-// MapLibre has already drawn the map; clearing here would erase it.
+    // Reuse the map's canvas and context so Three draws into the same frame.
+    this.renderer = new THREE.WebGLRenderer({
+      canvas: map.getCanvas(),
+      context: gl,
+      antialias: true
+    })
+    // MapLibre has already drawn the map; clearing here would erase it.
     this.renderer.autoClear = false
   }
 
@@ -297,14 +317,16 @@ export class PinLayer {
     const glowScale = 3.4 + near * 0.25 + active * 0.2 + shimmer * 0.1
     this.glow.scale.set(glowScale, glowScale, 1)
 
-    this.groundRing.material.opacity = 0.2 + near * 0.24 + active * 0.22 + shimmer * (0.04 + active * 0.06)
+    this.groundRing.material.opacity =
+      0.2 + near * 0.24 + active * 0.22 + shimmer * (0.04 + active * 0.06)
     this.groundRing.scale.setScalar(1 + (0.03 + active * 0.04) * shimmer)
 
     const beat = 1 + near * 0.12 * (0.5 + 0.5 * Math.sin(t * 6 + this.phase))
     this.gem.scale.setScalar(beat)
 
     if (this.badge) {
-      const badgeScale = BADGE_SCALE * (1 + active * 0.045 * (0.5 + 0.5 * Math.sin(t * 4 + this.phase)))
+      const badgeScale =
+        BADGE_SCALE * (1 + active * 0.045 * (0.5 + 0.5 * Math.sin(t * 4 + this.phase)))
       this.badge.scale.set(badgeScale, badgeScale, 1)
     }
 
@@ -331,20 +353,20 @@ export class PinLayer {
     const projection = new THREE.Matrix4().fromArray(args.defaultProjectionData.mainMatrix)
     this.camera.projectionMatrix = projection.multiply(this.baseTransform)
 
-// The shared context's GL state was last set by MapLibre; reset it first.
+    // The shared context's GL state was last set by MapLibre; reset it first.
     this.renderer.resetState()
     this.renderer.render(this.scene, this.camera)
 
-// MapLibre only repaints on change; the pins move on their own, so keep asking.
+    // MapLibre only repaints on change; the pins move on their own, so keep asking.
     this.map.triggerRepaint()
   }
 
   onRemove() {
     this.scene.traverse((object) => {
-// Sprites share one internal geometry, so only meshes own theirs.
+      // Sprites share one internal geometry, so only meshes own theirs.
       if (object.isMesh) object.geometry.dispose()
       if (!object.material) return
-// The glow texture is shared by every pin; the badge texture is this pin's.
+      // The glow texture is shared by every pin; the badge texture is this pin's.
       if (object.material.map && object.material.map !== sharedGlowTexture) {
         object.material.map.dispose()
       }

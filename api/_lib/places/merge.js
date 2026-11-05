@@ -4,18 +4,106 @@ import { parseOsmHours } from './osm.js'
 
 // Defaults per place kind. Hours here are a guess (outdoor parks, landmarks and memorials have no gate) and get flagged hours_verified: false.
 const PROFILES = {
-  museum: { label: 'A museum', tags: ['museum', 'culture'], indoor: true, duration_min: 60, cost_band: 1, hours: [['10:00', '18:00']] },
-  arts: { label: 'An arts space', tags: ['art', 'culture'], indoor: true, duration_min: 45, cost_band: 1, hours: [['11:00', '18:00']] },
-  worship: { label: 'A place of worship', tags: ['heritage', 'culture', 'temple'], indoor: true, duration_min: 30, cost_band: 0, hours: [['09:00', '17:00']] },
-  memorial: { label: 'A memorial', tags: ['heritage', 'photo'], indoor: false, duration_min: 20, cost_band: 0, hours: '24h' },
-  landmark: { label: 'A landmark', tags: ['architecture', 'photo', 'heritage'], indoor: false, duration_min: 30, cost_band: 0, hours: '24h' },
-  park: { label: 'A park', tags: ['nature', 'gardens', 'photo'], indoor: false, duration_min: 45, cost_band: 0, hours: '24h' },
-  nature: { label: 'A nature spot', tags: ['nature', 'views'], indoor: false, duration_min: 90, cost_band: 0, hours: [['07:00', '18:30']], min_window_h: 8 },
-  lookout: { label: 'A viewpoint', tags: ['views', 'photo'], indoor: false, duration_min: 30, cost_band: 1, hours: [['09:00', '21:00']] },
-  zoo: { label: 'A wildlife park', tags: ['nature', 'family'], indoor: false, duration_min: 150, cost_band: 3, hours: [['09:00', '17:30']], min_window_h: 10 },
-  aquarium: { label: 'An aquarium', tags: ['family'], indoor: true, duration_min: 120, cost_band: 3, hours: [['10:00', '17:00']], min_window_h: 8 },
-  themepark: { label: 'A theme park', tags: ['family', 'rides'], indoor: false, duration_min: 180, cost_band: 3, hours: [['10:00', '18:00']], min_window_h: 12 },
-  hawker: { label: 'A hawker centre', tags: ['hawker', 'food'], indoor: true, duration_min: 45, cost_band: 0, hours: [['08:00', '21:00']] }
+  museum: {
+    label: 'A museum',
+    tags: ['museum', 'culture'],
+    indoor: true,
+    duration_min: 60,
+    cost_band: 1,
+    hours: [['10:00', '18:00']]
+  },
+  arts: {
+    label: 'An arts space',
+    tags: ['art', 'culture'],
+    indoor: true,
+    duration_min: 45,
+    cost_band: 1,
+    hours: [['11:00', '18:00']]
+  },
+  worship: {
+    label: 'A place of worship',
+    tags: ['heritage', 'culture', 'temple'],
+    indoor: true,
+    duration_min: 30,
+    cost_band: 0,
+    hours: [['09:00', '17:00']]
+  },
+  memorial: {
+    label: 'A memorial',
+    tags: ['heritage', 'photo'],
+    indoor: false,
+    duration_min: 20,
+    cost_band: 0,
+    hours: '24h'
+  },
+  landmark: {
+    label: 'A landmark',
+    tags: ['architecture', 'photo', 'heritage'],
+    indoor: false,
+    duration_min: 30,
+    cost_band: 0,
+    hours: '24h'
+  },
+  park: {
+    label: 'A park',
+    tags: ['nature', 'gardens', 'photo'],
+    indoor: false,
+    duration_min: 45,
+    cost_band: 0,
+    hours: '24h'
+  },
+  nature: {
+    label: 'A nature spot',
+    tags: ['nature', 'views'],
+    indoor: false,
+    duration_min: 90,
+    cost_band: 0,
+    hours: [['07:00', '18:30']],
+    min_window_h: 8
+  },
+  lookout: {
+    label: 'A viewpoint',
+    tags: ['views', 'photo'],
+    indoor: false,
+    duration_min: 30,
+    cost_band: 1,
+    hours: [['09:00', '21:00']]
+  },
+  zoo: {
+    label: 'A wildlife park',
+    tags: ['nature', 'family'],
+    indoor: false,
+    duration_min: 150,
+    cost_band: 3,
+    hours: [['09:00', '17:30']],
+    min_window_h: 10
+  },
+  aquarium: {
+    label: 'An aquarium',
+    tags: ['family'],
+    indoor: true,
+    duration_min: 120,
+    cost_band: 3,
+    hours: [['10:00', '17:00']],
+    min_window_h: 8
+  },
+  themepark: {
+    label: 'A theme park',
+    tags: ['family', 'rides'],
+    indoor: false,
+    duration_min: 180,
+    cost_band: 3,
+    hours: [['10:00', '18:00']],
+    min_window_h: 12
+  },
+  hawker: {
+    label: 'A hawker centre',
+    tags: ['hawker', 'food'],
+    indoor: true,
+    duration_min: 45,
+    cost_band: 0,
+    hours: [['08:00', '21:00']]
+  }
 }
 
 // A seed point can sit at an entrance while OSM uses the centre, so similar names can match further apart
@@ -37,7 +125,11 @@ export function mergePlaces({ seed, osm, previous = [] }) {
 
   // Places from last run first so their ids stay put, then the well-known and bigger ones,
   // so a maze inside a park can't block the park itself
-  const rank = (item) => [previousByRef.get(item.ref)?.active === false || !previousByRef.has(item.ref), !item.blurb, OSM_TYPE_RANK[osmType(item)]]
+  const rank = (item) => [
+    previousByRef.get(item.ref)?.active === false || !previousByRef.has(item.ref),
+    !item.blurb,
+    OSM_TYPE_RANK[osmType(item)]
+  ]
   const order = (a, b) => rank(a).reduce((diff, x, i) => diff || Number(x) - Number(rank(b)[i]), 0)
 
   for (const item of [...osm].sort(order)) {
@@ -102,7 +194,17 @@ function isSamePlace(place, item) {
   return d <= MATCH_RADIUS_M && similarNames(place.name, item.name)
 }
 
-const STOP_WORDS = new Set(['the', 'singapore', 'of', 'and', 'at', 'park', 'museum', 'centre', 'center'])
+const STOP_WORDS = new Set([
+  'the',
+  'singapore',
+  'of',
+  'and',
+  'at',
+  'park',
+  'museum',
+  'centre',
+  'center'
+])
 
 function nameTokens(name) {
   return name
@@ -165,7 +267,9 @@ function distanceM(a, b) {
   const rad = Math.PI / 180
   const dLat = (b.lat - a.lat) * rad
   const dLng = (b.lng - a.lng) * rad
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2
   return 2 * 6371000 * Math.asin(Math.sqrt(h))
 }
 

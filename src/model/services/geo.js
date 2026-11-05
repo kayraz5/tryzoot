@@ -88,7 +88,7 @@ export async function startHeading() {
         return false
       }
     } catch {
-// Not from a gesture, or dismissed: retry on a tap.
+      // Not from a gesture, or dismissed: retry on a tap.
       return false
     }
   }
@@ -97,7 +97,10 @@ export async function startHeading() {
     let degrees = null
 
     // iOS reports a ready-made compass heading (clockwise from magnetic north).
-    if (typeof event.webkitCompassHeading === 'number' && Number.isFinite(event.webkitCompassHeading)) {
+    if (
+      typeof event.webkitCompassHeading === 'number' &&
+      Number.isFinite(event.webkitCompassHeading)
+    ) {
       degrees = event.webkitCompassHeading
     } else if (
       Number.isFinite(event.alpha) &&

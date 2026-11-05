@@ -17,10 +17,9 @@ Live app: **https://tryzoot.vercel.app**
 - [Main features](#main-features)
 - [Tech stack](#tech-stack)
 - [How the code is organised](#how-the-code-is-organised)
-- [Setting up your own Supabase](#setting-up-your-own-supabase)
 - [Testing](#testing)
-- [Deployment](#deployment)
 - [Team](#team)
+- [AI declaration](#ai-declaration)
 
 ---
 
@@ -31,7 +30,7 @@ Live app: **https://tryzoot.vercel.app**
 | Email | `test@gmail.com` |
 | Password | `adminuser` |
 
-Sign in at **/auth** on the live site or on your local dev server. You can also tap **Continue as guest**, which needs no account. Guest progress is saved in your browser only (via localStorage) but multiplayer quests feature is off.
+You can also tap **Continue as guest**, which needs no account. Guest progress is saved in your browser only (via localStorage) but multiplayer quests feature is off.
 
 ---
 
@@ -51,10 +50,7 @@ pnpm install
 pnpm dev
 ```
 
-Open **http://localhost:5173**.
-
-
-### 3. Add keys for the full app (optional)
+### 3. Add keys for the full app (Localhost, optional)
 
 Copy the example env file, with the following details:
 
@@ -65,16 +61,8 @@ Copy the example env file, with the following details:
 | `ONEMAP_EMAIL`, `ONEMAP_PASSWORD` | Full bus + MRT routes with changes ([free account](https://www.onemap.gov.sg/apidocs/register)) | MRT and direct buses from bundled data |
 | `LTA_ACCOUNT_KEY` | Live bus arrival times from LTA DataMall | Public arrivals mirror |
 | `ORS_API_KEY` | Backup street routing if the free routers are down | Free routers only |
-| `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `CRON_SECRET` | Daily places sync and the shared route cache (server only) | Bundled place list |
+| `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `CRON_SECRET` | Daily places sync and the shared route cache (server only) | Place list |
 | `VITE_DEV_PANEL` | The `/dev` panel on a production build (always on in `pnpm dev`) | Hidden in production |
-
-### How the dev server works
-
-`pnpm dev` starts Vite at http://localhost:5173 with hot reload. It also serves the serverless functions in `api/` at `/api/*` (see `vite.config.js`), so the AI planner, routing and bus arrivals work locally exactly as they do on Vercel, with no separate backend to start.
-
-### The dev panel
-
-While the dev server is running, open **http://localhost:5173/dev** (or **Me → Dev**). It lets you skip the app clock forward (to test a quest that starts later), fake your GPS position, and force rain. On the map, **Enable Demo-Walk** lets you walk around with WASD or taps instead of real GPS.
 
 ### Useful commands
 
@@ -111,7 +99,7 @@ While the dev server is running, open **http://localhost:5173/dev** (or **Me →
 | **Passport & stamps** | A flip-book passport that fills with stamps and badges, plus the City Codex of everything you've found | Shrey, Hulbert |
 | **Weather** | Live rain, haze and temperature; rain effects on screen, and indoor swaps when rain is likely | Hulbert |
 | **Sidequest deck** | Swipe right on small nearby detours that still fit your time | Hulbert |
-| **Multiplayer quests** | Open some of your stops to other travellers, join someone else's, chat, see each other live on the map, and earn co-op stamps together | Eudale (Kayra: live map chips) |
+| **Multiplayer quests** | Open some of your stops to other travellers, join someone else's, chat, see each other live on the map, and earn co-op stamps together | Eudale |
 | **Testing & CI** | Unit, browser and Supabase-gated test suites, run on every push | Steven |
 
 ---
@@ -120,7 +108,7 @@ While the dev server is running, open **http://localhost:5173/dev** (or **Me →
 
 | Layer | Tools |
 |---|---|
-| Frontend | Vue 3 (`<script setup>`), Vite, Vue Router, Pinia |
+| Frontend | Vue 3, Vite, Vue Router, Pinia |
 | UI | Bootstrap 5, Bootstrap Icons, custom CSS (`src/view/styles/`) |
 | Maps & 3D | MapLibre GL (OpenFreeMap tiles), Three.js, Turf |
 | Backend | Supabase (Postgres, Auth, Realtime, row-level security) and Vercel serverless functions (`api/`) |
@@ -129,7 +117,7 @@ While the dev server is running, open **http://localhost:5173/dev** (or **Me →
 | Testing | Vitest + Vue Test Utils (unit), Playwright (browser), GitHub Actions (CI) |
 | Hosting | Vercel, with a daily cron job for the places sync |
 
-There is no separate server to run. The browser talks to Supabase directly, and row-level security decides what each user can read or write. Anything that needs a secret key (Groq, OneMap, LTA, the places sync) runs as a Vercel function in `api/`.
+There is no separate server to run. The browser talks to Supabase directly. Row-level security decides what each user can read or write. Anything that needs a secret key is run as a Vercel function in  `api/`.
 
 ---
 
@@ -176,14 +164,18 @@ zoot-/
 ```
 
 ### Where new code goes
-
-- **New page:** add a file in `src/view/views/` and a route in `src/controller/router/index.js`.
-- **A part of a page:** put it in `src/view/components/<feature>/`. Move it to `src/view/common/` only once a second feature needs it.
-- **State shared between pages:** a Pinia store in `src/model/stores/`.
-- **Logic (calculations, API calls, rules):** a service in `src/model/services/`, not inside a component. That keeps it testable without a browser.
-- **Anything that needs a secret key:** a function in `api/`, never in `src/`.
-
----
+| You're adding… | Put it in | Notes |
+|---|---|---|
+| A new page | `src/view/views/` | Add its route in `src/controller/router/index.js`. |
+| A part of a page | `src/view/components/<feature>/` | Move it to `src/view/common/` only once a second feature needs it. |
+| A reusable piece of page behaviour | `use<Name>.js` next to the components that use it | Like `useActiveQuest.js` or `useCooldown.js`. |
+| State shared between pages | A Pinia store in `src/model/stores/` | |
+| Logic (calculations, API calls, rules) | A service in `src/model/services/` | Not inside a component, so it can be tested without a browser. |
+| Fixed data (places, MRT lines, interests) | `src/model/data/` | Synced files come from `pnpm sync:*`. Don't edit those by hand. |
+| Images and other static files | `public/` | For stamp art, add `public/stamps/<place id>.png`, then run `pnpm gen:stamps`. |
+| Anything that needs a secret key | A function in `api/` | Never in `src/`. Anything in `src/` ends up in the browser. |
+| A database change | A `.sql` file in `supabase/` | Write it so it can safely run again, then run it in the Supabase SQL editor. |
+| Tests | `tests/unit/<model, view, controller or api>/`, or `e2e/journeys/` for browser tests | Social tests that need a Supabase account go in `e2e/social/`. |
 
 ## Testing
 
@@ -216,3 +208,13 @@ Then run `pnpm test:supabase`. Use `pnpm test:env` to see which test variables a
 | **Hulbert** | AI itinerary prompts, weather, check-ins and XP, sidequests, place pages, dev panel |
 | **Steven** | Supabase integration, onboarding, test suites and CI |
 | **Kayra** | Layover planner, itinerary engine, mission page, public transport, Supabase integration |
+
+--- 
+
+## AI declaration:
+We used AI to:
+1. To help create the 3D assets, stop designs, and otter design and costume, as this was outside the scope of our study. 3D buildings are pre-loaded using MapLibre API.
+2. To add the dev panel and Demo walk plan feature. Both are demo-only and not core deliverables.
+3. To quickly understand how to route the MapLibre layout and feature API for the 3D map and manipulate it for different features
+4. To mock up the initial landing page design. The current landing page used a Claude Skill to help design the page flow and layout.
+5. To generate more test cases covering different functions and methods in the app, and to separate test folders for repo clarity.

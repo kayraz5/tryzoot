@@ -28,7 +28,10 @@ function nearestIndex(coords, p) {
     // Squared degree-distance, just to pick the nearest vertex — Singapore's small enough
     // that latitude distortion doesn't change which point is nearest.
     const d = (coords[i][0] - p.lng) ** 2 + (coords[i][1] - p.lat) ** 2
-    if (d < bestD) { bestD = d; best = i }
+    if (d < bestD) {
+      bestD = d;
+      best = i
+    }
   }
   return best
 }
@@ -36,7 +39,10 @@ function nearestIndex(coords, p) {
 function pathLength(coords) {
   let m = 0
   for (let i = 1; i < coords.length; i++) {
-    m += distanceM({ lng: coords[i - 1][0], lat: coords[i - 1][1] }, { lng: coords[i][0], lat: coords[i][1] })
+    m += distanceM(
+      { lng: coords[i - 1][0], lat: coords[i - 1][1] },
+      { lng: coords[i][0], lat: coords[i][1] }
+    )
   }
   return m
 }
@@ -65,10 +71,18 @@ function exitNear(hub, p) {
     const d = distanceM(exit, p)
     if (!best || d < best.d) best = { ...exit, d }
   }
-  return best ? { lat: best.lat, lng: best.lng, exit: best.name } : { lat: hub.lat, lng: hub.lng, exit: null }
+  return best
+    ? { lat: best.lat, lng: best.lng, exit: best.name }
+    : { lat: hub.lat, lng: hub.lng, exit: null }
 }
 
-const stop = (id) => ({ id, name: HUBS[id].name, code: HUBS[id].code, lat: HUBS[id].lat, lng: HUBS[id].lng })
+const stop = (id) => ({
+  id,
+  name: HUBS[id].name,
+  code: HUBS[id].code,
+  lat: HUBS[id].lat,
+  lng: HUBS[id].lng
+})
 
 /**
  * Also returns `parts`: one entry per thing the traveller does, in order, for the map
@@ -88,7 +102,14 @@ export async function getMrtRoute(from, to) {
   const [startWalk, endWalk] = await Promise.all([walkLeg(from, entrance), walkLeg(exit, to)])
   if (!startWalk || !endWalk) return null
 
-  const parts = [{ mode: 'walk', coords: startWalk.coords, minutes: t.walkToHubMin, to: { ...stop(t.fromHub), kind: 'station', exit: entrance.exit } }]
+  const parts = [
+    {
+      mode: 'walk',
+      coords: startWalk.coords,
+      minutes: t.walkToHubMin,
+      to: { ...stop(t.fromHub), kind: 'station', exit: entrance.exit }
+    }
+  ]
 
   for (const run of t.runs) {
     const a = t.path.indexOf(run.from)
@@ -98,7 +119,13 @@ export async function getMrtRoute(from, to) {
       const a = HUBS[t.path[i]]
       const b = HUBS[t.path[i + 1]]
       // The Sentosa Express monorail has no track dataset; it's short and nearly straight.
-      const seg = t.edgeLines[i] === 'SE' ? [[a.lng, a.lat], [b.lng, b.lat]] : sliceLine(t.edgeLines[i], a, b)
+      const seg =
+        t.edgeLines[i] === 'SE'
+          ? [
+              [a.lng, a.lat],
+              [b.lng, b.lat]
+            ]
+          : sliceLine(t.edgeLines[i], a, b)
       if (!seg) return null
       coords.push(...seg)
     }
@@ -116,7 +143,13 @@ export async function getMrtRoute(from, to) {
     })
   }
 
-  parts.push({ mode: 'walk', coords: endWalk.coords, minutes: t.walkFromHubMin, from: { ...stop(t.toHub), exit: exit.exit }, to: { name: to.name, kind: 'place', lat: to.lat, lng: to.lng } })
+  parts.push({
+    mode: 'walk',
+    coords: endWalk.coords,
+    minutes: t.walkFromHubMin,
+    from: { ...stop(t.toHub), exit: exit.exit },
+    to: { name: to.name, kind: 'place', lat: to.lat, lng: to.lng }
+  })
 
   const coords = parts.flatMap((p) => p.coords)
   return { coords, parts, minutes: t.minutes, distance_m: pathLength(coords) }

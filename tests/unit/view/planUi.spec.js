@@ -44,13 +44,16 @@ beforeEach(() => {
 describe('plan UI constants and formatting', () => {
   it('defines interest tiles with ids, labels, icons and catalog tags', () => {
     expect(TILES.length).toBeGreaterThan(0)
-    expect(TILES.every((tile) => (
-      typeof tile.id === 'string'
-      && typeof tile.label === 'string'
-      && typeof tile.icon === 'string'
-      && Array.isArray(tile.tags)
-      && tile.tags.length > 0
-    ))).toBe(true)
+    expect(
+      TILES.every(
+        (tile) =>
+          (typeof tile.id === 'string' &&
+          typeof tile.label === 'string' &&
+          typeof tile.icon === 'string' &&
+          Array.isArray(tile.tags) &&
+          tile.tags.length > 0
+      )
+    )).toBe(true)
   })
 
   it('defines walk choices and food choices with the expected shapes', () => {
@@ -92,7 +95,15 @@ describe('plan UI composables', () => {
 
     const { stop } = runInScope(() => usePrePickedInterests())
     expect(trip.draft.interestsTouched).toBe(false)
-    expect(trip.draft.interests).toEqual(['hawker', 'food', 'gardens', 'nature', 'beach', 'views', 'photo'])
+    expect(trip.draft.interests).toEqual([
+      'hawker',
+      'food',
+      'gardens',
+      'nature',
+      'beach',
+      'views',
+      'photo'
+    ])
 
     trip.setInterests(['museum'], { touched: true })
     user.profile = { style: 'party' }
