@@ -83,9 +83,6 @@ export const localDb = {
         write(state.session, session);
         return session;
     },
-    async signInWithEmail() {
-        throw new Error('Email sign-in needs Supabase keys. Use guest mode for now.');
-    },
     async signInWithPassword() {
         throw new Error('Password sign-in needs Supabase keys. Use guest mode for now.');
     },

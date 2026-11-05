@@ -99,15 +99,6 @@ export const useUserStore = defineStore('user', {
             this.ready = true;
         },
         
-        // magic link to authenticate with email without password
-        async sendMagicLink(email) {
-            setGuestMode(false);
-            this._init = null;
-            
-            const db = await getDb();
-            await db.signInWithEmail(email);
-        },
-        
         // resend the "confirm your email" message after creating an account
         async resendConfirmation(email) {
             const db = await getDb();
