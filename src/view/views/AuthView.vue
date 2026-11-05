@@ -10,12 +10,10 @@ const user = useUserStore();
 const route = useRoute();
 const router = useRouter();
 
-const sent = ref(false);
 const confirmSent = ref(false);
 
 const email = ref('');
 const password = ref('');
-const method = ref('password'); // can be 'link' also
 /*
     Which tab to open on. An explicit ?mode wins, because a button that said
     "Sign up" has to produce a sign-up form. Without one — arriving by the
@@ -52,8 +50,8 @@ const next = () => {
     Leave the auth page, once.
 
     Two things call this, because neither covers the other. The watcher below
-    catches a session that turns up on its own — following a magic link back
-    into the tab. The buttons catch what the watcher structurally cannot see: a
+    catches a session that turns up on its own — following the confirmation
+    email's link back into the tab. The buttons catch what the watcher structurally cannot see: a
     visitor who was already holding a session when the page opened never
     transitions from signed out to signed in, so nothing fires, and the button
     they just pressed appears to do nothing at all.
@@ -99,22 +97,7 @@ async function submitPassword() {
     }
 }
 
-// The magic-link form submitted to this, but it was never written, so no link was ever sent.
-async function sendLink() {
-    error.value = '';
-    busy.value = true;
-    try {
-        await user.sendMagicLink(email.value.trim());
-        sent.value = true;
-        startCooldown();
-    } catch (err) {
-        error.value = friendly(err);
-    } finally {
-        busy.value = false;
-    }
-}
-
-// Resend whichever email we just sent. Supabase allows one per address per minute.
+// Resend the confirmation email. Supabase allows one per address per minute.
 const cooldown = ref(0);
 let cooldownTimer = null;
 function startCooldown() {
@@ -129,8 +112,7 @@ async function resend() {
     error.value = '';
     busy.value = true;
     try {
-        if (sent.value) await user.sendMagicLink(email.value.trim());
-        else await user.resendConfirmation(email.value.trim());
+        await user.resendConfirmation(email.value.trim());
         startCooldown();
     } catch (err) {
         error.value = friendly(err);
@@ -140,7 +122,6 @@ async function resend() {
 }
 onBeforeUnmount(() => clearInterval(cooldownTimer));
 function useAnotherEmail() {
-    sent.value = false;
     confirmSent.value = false;
     error.value = '';
 }
@@ -155,8 +136,8 @@ function friendly(err) {
     return msg;
 }
 
-async function switchMethod(m) {
-    method.value = m;
+function setMode(signUp) {
+    isSignUp.value = signUp;
     error.value = '';
 }
 
@@ -177,13 +158,16 @@ async function guest() {
         <div class="zt-card overflow-hidden">
             <div class="banner" role="img" aria-label="A traveller reading a yellow Zoot passport" />
             <div class="p-4">
-                <h1 class="title mb-1">Board the quest</h1>
-                <p class="text-muted">Your stamps, XP and passport follow your account.</p>
+                <h1 class="title mb-1">{{ isSignUp ? 'Create your account' : 'Welcome back' }}</h1>
+                <p class="text-muted">
+                    {{ isSignUp
+                        ? 'New to Zoot? Make an account so your stamps, XP and passport follow you to any device.'
+                        : 'Sign in with your email and password to pick up where you left off.' }}
+                </p>
 
-                <div v-if="sent || confirmSent" class="alert alert-success">
+                <div v-if="confirmSent" class="alert alert-success">
                     <i class="bi bi-envelope-check"></i>
-                    <template v-if="sent">Check <b>{{ email }}</b> and tap the link on this device.</template>
-                    <template v-else>Account created. Check <b>{{ email }}</b> to confirm it, then sign in.</template>
+                    Account created. Check <b>{{ email }}</b> to confirm it, then sign in.
                     <div class="small mt-2">Nothing after a minute? Check your spam folder, or resend it.</div>
                     <div class="d-flex flex-wrap gap-2 mt-2">
                         <button type="button" class="btn btn-sm btn-dark" :disabled="busy || cooldown > 0" @click="resend">
@@ -193,19 +177,19 @@ async function guest() {
                     </div>
                 </div>
                 <template v-else-if="user.canUseEmail">
-                    <!-- login/signup forms -->
-                    <div class="btn-group w-100 mb-3" role="group" aria-label="Sign-in method">
-                        <button type="button" class="btn btn-sm" :class="method === 'password' ? 'btn-dark' : 'btn-outline-dark'" @click="switchMethod('password')">Password</button>
-                        <button type="button" class="btn btn-sm" :class="method === 'link' ? 'btn-dark' : 'btn-outline-dark'" @click="switchMethod('link')">Magic link</button>
+                    <!-- sign in / create account -->
+                    <div class="btn-group w-100 mb-3" role="group" aria-label="Sign in or create an account">
+                        <button type="button" class="btn mode-tab" :class="{ active: !isSignUp }" :aria-pressed="!isSignUp" @click="setMode(false)">Sign in</button>
+                        <button type="button" class="btn mode-tab" :class="{ active: isSignUp }" :aria-pressed="isSignUp" @click="setMode(true)">Create account</button>
                     </div>
 
-                    <form v-if="method === 'password'" @submit.prevent="submitPassword" class="mb-3">
+                    <form @submit.prevent="submitPassword" class="mb-3">
                         <label class="form-label" for="email">Email</label>
                         <input id="email" v-model="email" type="email" class="form-control mb-2" placeholder="email@example.com" required autocomplete="email" />
 
                         <label class="form-label" for="password">Password</label>
                         <input id="password" v-model="password" type="password" minlength="6" 
-                            class="form-control mb-2" placeholder="At least 6 characters" required 
+                            class="form-control mb-2" :placeholder="isSignUp ? 'Enter a password (at least 6 characters)' : 'Your password'" required 
                             :autocomplete="isSignUp ? 'new-password' : 'current-password'" />
 
                         <button class="btn btn-primary w-100" :disabled="busy || !email || password.length < 6">
@@ -213,16 +197,10 @@ async function guest() {
                         </button>
                         <p class="small text-center mt-2 mb-0">
                             {{ isSignUp ? 'Already have an account?' : 'New here?' }}
-                            <button type="button" class="btn btn-link btn-sm p-0 align-baseline" @click="isSignUp = !isSignUp; error = ''">
+                            <button type="button" class="btn btn-link btn-sm p-0 align-baseline" @click="setMode(!isSignUp)">
                                 {{ isSignUp ? 'Sign in' : 'Create an account' }}
                             </button>
                         </p>
-                    </form>
-
-                    <form v-else @submit.prevent="sendLink" class="mb-3">
-                        <label class="form-label" for="email">Email magic link</label>
-                        <input id="email" v-model="email" type="email" class="form-control mb-2" placeholder="email@example.com" required autocomplete="email"/>
-                        <button class="btn btn-primary w-100" :disabled="busy || !email">Send me a link</button>
                     </form>
                 </template>
 
@@ -247,6 +225,23 @@ async function guest() {
 </template>
 
 <style scoped>
+/* Theme tokens, not btn-outline-dark, so both tabs stay readable in dark mode. */
+.mode-tab {
+    background: var(--zt-card);
+    color: var(--zt-ink);
+    border-color: var(--zt-line);
+}
+.mode-tab:hover {
+    background: var(--zt-bg);
+    color: var(--zt-ink);
+    border-color: var(--zt-line);
+}
+.mode-tab.active,
+.mode-tab.active:hover {
+    background: var(--zt-yellow);
+    color: #111;
+    border-color: var(--zt-line);
+}
 .divider {
     display: flex;
     align-items: center;

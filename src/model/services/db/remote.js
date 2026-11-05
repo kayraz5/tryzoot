@@ -37,9 +37,6 @@ export function createRemoteDb() {
             const { data } = db.auth.onAuthStateChange((_event, session) => cb(session));
             return () => data.subscription.unsubscribe();
         },
-        async signInWithEmail(email) {
-            must(await db.auth.signInWithOtp({ email, options: { emailRedirectTo: `${location.origin}/auth` } }));
-        },
         async signInWithPassword(email, password) {
             return must(await db.auth.signInWithPassword({ email, password })).session;
         },
@@ -48,7 +45,7 @@ export function createRemoteDb() {
             // Supabase answers a sign-up for an email that already has an account with a fake user
             // (no identities) and sends no email, so the app must not say "check your inbox".
             if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-                throw new Error('An account with this email already exists. Sign in instead, or use a magic link.');
+                throw new Error('An account with this email already exists. Sign in instead.');
             }
             return data?.session ?? null;
         },

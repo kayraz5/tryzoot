@@ -26,8 +26,7 @@ describe('localDb guest authentication and profiles', () => {
     expect(await localDb.getSession()).toEqual(second)
   })
 
-  it('rejects email and password authentication methods without Supabase keys', async () => {
-    await expect(localDb.signInWithEmail()).rejects.toThrow('needs Supabase keys')
+  it('rejects password sign-in and sign-up without Supabase keys', async () => {
     await expect(localDb.signInWithPassword()).rejects.toThrow('needs Supabase keys')
     await expect(localDb.signUpWithPassword()).rejects.toThrow('needs Supabase keys')
   })
