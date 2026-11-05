@@ -24,10 +24,10 @@ Live app: **https://tryzoot.vercel.app**
 
 | | |
 |---|---|
-| Email | `TODO` |
-| Password | `TODO` |
+| Email | `test@gmail.com` |
+| Password | `adminuser` |
 
-Sign in at **/auth** on the live site or on your local dev server. You can also tap **Continue as guest**, which needs no account: guest progress is saved in your browser only, and multiplayer quests are switched off.
+Sign in at **/auth** on the live site or on your local dev server. You can also tap **Continue as guest**, which needs no account. Guest progress is saved in your browser only (via localStorage) but multiplayer quests feature is off.
 
 ---
 
@@ -49,15 +49,10 @@ pnpm dev
 
 Open **http://localhost:5173**.
 
-That's enough to try the app. With no keys at all, Zoot runs in guest mode: data is stored in your browser, and itineraries come from the built-in offline planner instead of the AI.
 
 ### 3. Add keys for the full app (optional)
 
-Copy the example env file and fill in what you have:
-
-```sh
-cp .env.example .env
-```
+Copy the example env file, with the following details:
 
 | Variable | What it turns on | Without it |
 |---|---|---|
@@ -68,8 +63,6 @@ cp .env.example .env
 | `ORS_API_KEY` | Backup street routing if the free routers are down | Free routers only |
 | `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `CRON_SECRET` | Daily places sync and the shared route cache (server only) | Bundled place list |
 | `VITE_DEV_PANEL` | The `/dev` panel on a production build (always on in `pnpm dev`) | Hidden in production |
-
-Keys without the `VITE_` prefix stay on the server and never reach the browser. Never commit `.env`.
 
 ### How the dev server works
 
@@ -186,23 +179,6 @@ zoot-/
 - **Logic (calculations, API calls, rules):** a service in `src/model/services/`, not inside a component. That keeps it testable without a browser.
 - **Anything that needs a secret key:** a function in `api/`, never in `src/`.
 
-Every source file starts with an `EDITOR:` comment naming who owns it. Check with that person before making big changes to their file.
-
----
-
-## Setting up your own Supabase
-
-Only needed if you want accounts and multiplayer against your own database.
-
-1. Create a free project at [supabase.com](https://supabase.com) and copy its URL and anon key into `.env`.
-2. In **SQL Editor**, run these files from `supabase/` in this order:
-   1. `schema.sql`: tables, security rules and functions
-   2. `seed.sql`: the place catalog and sidequests
-   3. `passport_pages.sql`, `places_sync.sql`, `route_cache.sql`
-   4. `social.sql`: multiplayer quests
-   5. `social_seed.sql` (optional): demo travellers you can quest with on your own. Re-run it whenever the demo quests have ended.
-3. In **Authentication → URL Configuration**, set the Site URL to your deployed address, and add `http://localhost:5173/**` and your deployed address with `/**` under Redirect URLs. Without this, email confirmation links send people to the wrong address.
-
 ---
 
 ## Testing
@@ -226,19 +202,13 @@ Then run `pnpm test:supabase`. Use `pnpm test:env` to see which test variables a
 
 ---
 
-## Deployment
-
-The app is deployed on **Vercel**. Pushing to `main` deploys to production, and other branches get preview links. Set the same environment variables in **Vercel → Settings → Environment Variables**. `vercel.json` sends every non-`/api` path to the app, and runs `/api/sync-places` daily at 03:00 Singapore time.
-
----
-
 ## Team
 
 | | Main areas |
 |---|---|
-| **Kayra** | Layover planner, itinerary engine, mission page, public transport, Explore, database schema |
 | **Matthew** | 3D quest map, traveller avatar and wardrobe, landing story, sign-in |
 | **Eudale** | Multiplayer quests: hosting, joining, chat, live location, co-op stamps; place photos |
 | **Shrey** | Place catalog and daily sync, passport and stamps, visa / entry check |
 | **Hulbert** | AI itinerary prompts, weather, check-ins and XP, sidequests, place pages, dev panel |
 | **Steven** | Supabase integration, onboarding, test suites and CI |
+| **Kayra** | Layover planner, itinerary engine, mission page, public transport, Supabase integration |
