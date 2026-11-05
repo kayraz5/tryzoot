@@ -1,3 +1,4 @@
+// EDITOR: SHREY
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { getDb } from '../services/db/index.js'
 import { entryStatus, withTransitVisa, CAN_LEAVE } from '../services/immigration.js'

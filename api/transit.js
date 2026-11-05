@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 import { decodePolyline } from '../src/model/services/transit/polyline.js'
 
 /**

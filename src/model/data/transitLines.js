@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 /**
  * How each rail line is named and coloured for travellers. Station order and positions
  * live in mrtNetwork.sg.json (pnpm sync:transit); this file is the hand-written part.

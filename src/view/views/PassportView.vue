@@ -1,3 +1,4 @@
+<!-- EDITOR: SHREY -->
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Flipbook from 'flipbook-vue'

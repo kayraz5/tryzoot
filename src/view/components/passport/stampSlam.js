@@ -1,3 +1,4 @@
+// EDITOR: SHREY
 import * as THREE from 'three'
 
 // Transparent Three.js layer over the passport that drops a 3D rubber stamp onto the page.

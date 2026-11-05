@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 import mrtLines from '../../../../model/data/mrtLines.sg.json'
 import network from '../../../../model/data/mrtNetwork.sg.json'
 import { LINES, BUS_HEX } from '../../../../model/data/transitLines.js'

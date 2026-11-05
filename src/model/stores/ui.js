@@ -1,3 +1,4 @@
+// EDITOR: HULBERT
 import { defineStore } from 'pinia'
 import { fetchForecast, fetchHaze, fetchLightning } from '../services/weather.js'
 

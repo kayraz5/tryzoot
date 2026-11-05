@@ -1,3 +1,4 @@
+// EDITOR: HULBERT
 import { CITY } from './config.js'
 
 // 1. Turning weather codes into words and icons

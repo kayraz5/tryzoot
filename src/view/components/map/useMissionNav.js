@@ -1,3 +1,4 @@
+// EDITOR: MATTHEW
 import { computed } from 'vue'
 import { useMissionStore } from '../../../model/stores/mission.js'
 import { geo, hasFix } from '../../../model/services/geo.js'

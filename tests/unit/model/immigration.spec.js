@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 import { describe, expect, it } from 'vitest'
 import snapshot from '../../../src/model/data/sgEntrySnapshot.js'
 import {

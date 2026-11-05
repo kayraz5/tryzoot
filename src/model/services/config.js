@@ -1,3 +1,4 @@
+// EDITOR: HULBERT
 /** Runtime flags derived from env. Import these instead of reading import.meta.env everywhere. */
 const env = import.meta.env || {}
 

@@ -1,3 +1,4 @@
+// EDITOR: SHREY
 // Can a traveller leave Changi on a layover? Singapore's entry rule for each passport (ISO 3166 alpha-2 code).
 // ICA's own visa list wins; the Passport Index dataset (MIT) covers every other passport.
 // Used by /api/entry-rule (live data) and by the app (saved copy, when the API can't be reached).

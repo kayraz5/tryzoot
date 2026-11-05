@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 import { redact } from './redact.js'
 
 const MARK = Symbol.for('zoot.networkGuard')

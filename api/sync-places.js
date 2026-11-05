@@ -1,3 +1,4 @@
+// EDITOR: SHREY
 import { syncPlaces } from './_lib/places/index.js'
 import { placesDbFromEnv, savePlaces } from './_lib/places/supabase.js'
 

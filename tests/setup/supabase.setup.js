@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 import { afterAll, afterEach } from 'vitest'
 import { installNetworkGuard, readOnlyRestAllow } from '../support/networkGuard.js'
 import { redact } from '../support/redact.js'

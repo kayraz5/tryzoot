@@ -1,3 +1,4 @@
+<!-- EDITOR: MATTHEW -->
 <script setup>
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { airportPlan } from '../../../model/services/airport.js'

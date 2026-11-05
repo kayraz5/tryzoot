@@ -1,3 +1,4 @@
+// EDITOR: MATTHEW
 import { describe, expect, it, vi } from 'vitest'
 import { updatePinProximity } from '../../../src/view/components/map/pinPoint.js'
 

@@ -1,3 +1,4 @@
+// EDITOR: SHREY
 import { placeById } from './catalog.js'
 import { placeStamp, areaStamp } from '../data/stampArt.js'
 

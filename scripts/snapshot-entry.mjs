@@ -1,3 +1,4 @@
+// EDITOR: SHREY
 // pnpm snapshot:entry -> saves today's ICA visa list, Passport Index rules for Singapore and 3-letter country codes into
 // src/model/data/sgEntrySnapshot.js, the fallback the app and /api/entry-rule use when the live sources fail.
 import { writeFileSync } from 'node:fs'

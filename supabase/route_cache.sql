@@ -1,3 +1,4 @@
+-- EDITOR: MATTHEW
 -- Run once after schema.sql: shared cache for /api/route (api/route.js), the OpenRouteService
 -- failover behind routing.js's primary OSRM calls. No policies on purpose — only the service-role
 -- key (server-side, see api/_lib/supabase.js) ever touches this table; the client never queries it

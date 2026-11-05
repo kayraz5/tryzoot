@@ -1,3 +1,4 @@
+<!-- EDITOR: EUDALE -->
 <script setup>
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 import { usePartyStore } from '../../../model/stores/party.js'

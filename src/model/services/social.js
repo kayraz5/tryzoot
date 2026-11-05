@@ -1,3 +1,4 @@
+// EDITOR: EUDALE
 import { getDb } from './db/index.js'
 import { travel } from './travel.js'
 import { formatTime } from './hours.js'

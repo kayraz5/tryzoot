@@ -1,3 +1,4 @@
+// EDITOR: MATTHEW
 import * as THREE from 'three'
 import { MercatorCoordinate } from 'maplibre-gl'
 import { distanceM } from '../../../model/services/travel.js'

@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 /**
  * Journey — Feature: live map countdown and next-stop navigation card.
  * Runs in the guest harness (zoot.guest='1'); the harness aborts external map-tile requests.

@@ -1,3 +1,4 @@
+// EDITOR: EUDALE
 import { computed } from 'vue'
 import { useMissionStore } from '../../../model/stores/mission.js'
 import { usePartyStore } from '../../../model/stores/party.js'

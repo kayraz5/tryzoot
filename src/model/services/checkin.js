@@ -1,3 +1,4 @@
+// EDITOR: HULBERT
 import { CHECKIN } from './config.js'
 import { distanceM } from './travel.js'
 import { getSgTimeParts } from './hours.js'
