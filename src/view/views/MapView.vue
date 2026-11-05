@@ -142,6 +142,11 @@ const OTTER_VIEW = {
   smoothMs: 120 // time constant for smoothing position jumps
 }
 
+// Flat view's camera. Tilted enough to read as "looking ahead down the street"
+// rather than straight down at a plan, but far shallower than the otter lock —
+// you are still looking at a map, just one pointed where you are pointed.
+const FLAT_VIEW = { pitch: 32 }
+
 // Time constant for turning the character/camera. ~95% of a turn settles in ~3×.
 const HEADING_SMOOTH_MS = 160
 // Flat view's compass lock turns the whole map, so it eases slower than the
@@ -236,7 +241,15 @@ const MAP_PALETTE = {
 // 3. UI state (everything the template binds to)
 const mapContainer = ref(null)          // the <div> MapLibre renders into
 const mapReady = ref(false)             // style loaded + quest layers added
-const following = ref(true)             // camera tracks the traveller until a user gesture
+const following = ref(true)             // camera tracks the traveller right now
+// Whether the user *wants* to be followed. `following` is the live state and a drag
+// pauses it; this is the intent behind it, so an explicit "off" survives the next
+// gesture. Driven by the camera-lock button.
+const followEnabled = ref(true)
+// What the lock button shows, and therefore what a tap must reverse: entering flat
+// view or dragging pauses `following` while the intent is still on, and in that
+// state a tap has to switch the lock *on*, not off.
+const cameraFollowing = computed(() => followEnabled.value && following.value)
 const stamping = ref(false)             // a stamp request is in flight
 const helpOpen = ref(false)             // "Need help?" replan dialog
 const airportOpen = ref(false)          // "Get to the airport" dialog
@@ -428,7 +441,7 @@ function onMapMoveStart(event) {
 
 /** When a real gesture ends, settle back onto the traveller (unless free-roaming). */
 function onMapMoveEnd(event) {
-  if (!event.originalEvent || flatMode.value) return
+  if (!event.originalEvent || flatMode.value || !followEnabled.value) return
   following.value = true
   if (here.value) map.easeTo({ center: [here.value.lng, here.value.lat], duration: 500 })
 }
@@ -579,10 +592,13 @@ function setFlatMode(isFlat) {
   flatMode.value = isFlat
 
   if (isFlat) {
-    // Flat free-roam and a locked third-person camera are mutually exclusive.
+    // The two locks are mutually exclusive: flat view has its own, gentler one.
     otterView.value = false
     otterCamera = null
-    following.value = false
+    // Arrive locked — following the dot, tilted, turned to the facing. Panning
+    // stays enabled, so a drag still breaks out into free roam whenever you want.
+    followEnabled.value = true
+    following.value = true
     map.dragPan.enable()
     animateToFlat()
     showTraveller3D.value = false
@@ -600,6 +616,9 @@ function setFlatMode(isFlat) {
   }
   showTraveller3D.value = true
   showStopPins3D.value = true
+  // The guided 3D view is a chase camera by nature. Re-arm the intent so a "lock
+  // off" chosen back in flat view cannot leave 3D unable to track the traveller.
+  followEnabled.value = true
 }
 
 function toggleFlatMode() {
@@ -1012,6 +1031,7 @@ watch(() => party.liveFocus, (focus) => focus && showMembers(focus.userId))
 
 /** Recentre on the traveller (or explain why we cannot). */
 function centerOnMe(notifyOnFail = true) {
+  followEnabled.value = true // asking to be centred is asking to be followed
   following.value = true
   if (!geo.fake) {
     startGps()
@@ -1042,7 +1062,13 @@ function zoomOut() {
 }
 
 function animateToFlat() {
-  map.easeTo({ pitch: 0, bearing: 0, duration: 600 })
+  // Arrive already pointed the right way, so the lock does not have to swing the
+  // whole world around the moment the transition lands. With no real facing to
+  // use, fall back to north-up.
+  const facing = headingIsKnown() && displayHeading != null ? displayHeading : 0
+  const camera = { pitch: FLAT_VIEW.pitch, bearing: facing, duration: 600 }
+  if (here.value) camera.center = [here.value.lng, here.value.lat]
+  map.easeTo(camera)
 }
 
 function animateTo3D() {
@@ -1068,6 +1094,15 @@ function facingHeading() {
 
   if (travellerHeading != null) return travellerHeading
   return map?.getBearing() ?? 0
+}
+
+/**
+ * True when the facing is backed by something real — the compass, a Demo-Walk
+ * direction, or recent movement. facingHeading() otherwise falls back to the next
+ * stop or the camera, and turning the world to a guess is worse than not turning.
+ */
+function headingIsKnown() {
+  return hasHeading() || geo.fake || travellerHeading != null
 }
 
 /** Interpolate between two bearings along the shortest arc (359° → 0° safe). */
@@ -1110,10 +1145,10 @@ function updateFlatFacing(deltaMs) {
   // Only claim to know the facing when something real backs it: the compass, a
   // Demo-Walk direction, or recent movement. Otherwise facingHeading() is falling
   // back to the next stop or the camera, which is a guess, not a direction.
-  const known = hasHeading() || geo.fake || travellerHeading != null
+  const known = headingIsKnown()
   setPlayerFacing(player, displayHeading - map.getBearing(), known)
 
-  if (!flatMode.value || !following.value || !known) return
+  if (!flatMode.value || !cameraFollowing.value || !known) return
 
   const current = map.getBearing()
   const blend = 1 - Math.exp(-deltaMs / FLAT_BEARING_SMOOTH_MS)
@@ -1320,6 +1355,47 @@ function toggleDemoWalk() {
 // the panel flag set behind it, or the next press would hide an already-closed panel.
 watch(demo, (on) => { if (!on) demoPanelOpen.value = false })
 
+/**
+ * Is the camera locked onto the traveller, in whichever view is showing?
+ *
+ * The two views lock differently — 3D rides behind the character (otter view),
+ * flat follows the dot and turns the map — so one button reads and drives
+ * whichever of the two applies.
+ */
+const cameraLocked = computed(() => (flatMode.value ? cameraFollowing.value : otterView.value))
+
+const cameraLockLabel = computed(() => {
+  if (flatMode.value) return cameraLocked.value ? 'Stop following me' : 'Follow me, facing where I face'
+  return cameraLocked.value ? 'Unlock the camera' : 'Lock the camera behind me'
+})
+
+/** The one camera-lock button: hand off to whichever lock this view uses. */
+function toggleCameraLock() {
+  if (flatMode.value) {
+    toggleCameraFollow()
+    return
+  }
+  toggleOtterView()
+}
+
+/**
+ * Flat view's half of the camera lock: follow the dot and turn the map to the
+ * facing. Turning it on recentres straight away; turning it off leaves the map
+ * where it is and stops it chasing — the view cone still shows your facing, it
+ * just no longer drags the camera with it.
+ */
+function toggleCameraFollow() {
+  if (cameraFollowing.value) {
+    followEnabled.value = false
+    following.value = false
+    ui.toast('Camera lock off.', 'dark')
+    return
+  }
+
+  centerOnMe() // sets both flags, starts GPS/compass, and flies back to you
+  ui.toast('Following you, facing where you face.', 'dark')
+}
+
 /** Teleport a short distance before the next stop (demo shortcut). */
 function jumpNearNextStop(meters) {
   const place = pointNearNextStop(meters)
@@ -1383,7 +1459,7 @@ function demoWalkLoop(timestamp) {
       const metersPerSecond = 1.4 * demoSpeed.value // walking pace × demo multiplier
       const bearing = (Math.atan2(directionX, directionY) * 180) / Math.PI
       teleport(pointAtOffset(here.value, bearing, (metersPerSecond * deltaMs) / 1000))
-      following.value = true
+      if (followEnabled.value) following.value = true // never against an explicit "off"
     }
   } else {
     movementFrameBearing = null
@@ -1527,19 +1603,20 @@ function writeMissionCardFlag(open) {
     <MapMenuButton :open="mapToolsOpen" @toggle="mapToolsOpen = !mapToolsOpen" />
 
     <div class="map-tools" :class="{ open: mapToolsOpen }">
-      <!-- Otter view: locks the camera behind the traveller and looks along his
-           heading, so the screen roughly matches the real street ahead. -->
+      <!-- Camera lock. One control, whichever view you are in: in 3D it rides
+           behind the traveller looking along his heading, in flat view it follows
+           you and turns the map to face the way you face. -->
       <button
-        id="OtterView"
+        id="CameraLock"
         type="button"
         class="map-btn"
-        :class="{ active: otterView }"
-        :aria-pressed="otterView"
-        aria-label="Otter view: third-person camera behind the traveller"
-        title="Otter view"
-        @click="toggleOtterView()"
+        :class="{ active: cameraLocked }"
+        :aria-pressed="cameraLocked"
+        :aria-label="cameraLockLabel"
+        :title="cameraLockLabel"
+        @click="toggleCameraLock()"
       >
-        <i class="bi bi-binoculars-fill" aria-hidden="true"></i>
+        <i class="bi bi-cursor-fill" aria-hidden="true"></i>
       </button>
 
       <div id="zoom" class="map-btn" @click="zoomIn">
@@ -1550,15 +1627,8 @@ function writeMissionCardFlag(open) {
         <i class="bi bi-arrows-fullscreen"></i>
       </div>
 
-      <!-- Recentre, and in flat view engage the compass lock (the map turns to face
-           the way you do). Lights up while that lock is holding; a drag releases it. -->
-      <div
-        id="RealGps"
-        class="map-btn"
-        :class="{ active: flatMode && following }"
-        :title="flatMode ? 'Centre on me, and face the way I am facing' : 'Centre on me'"
-        @click="centerOnMe()"
-      >
+      <!-- Recentre. Also re-arms the lock, so it doubles as "get back on me". -->
+      <div id="RealGps" class="map-btn" title="Centre on me" @click="centerOnMe()">
         <i class="bi bi-crosshair"></i>
       </div>
 
