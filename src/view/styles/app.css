@@ -695,6 +695,12 @@ a {
   opacity: 0.5;
   filter: grayscale(0.6);
 }
+/* Fade in and out of stale (if afk for 2minutes) */
+.zt-member-marker {
+  transition:
+    opacity 0.4s ease,
+    filter 0.4s ease;
+}
 /* A quest's meeting point, opened from the quest page (memberMarkers.js meetingMarker) */
 .zt-meet-marker {
   display: flex;
