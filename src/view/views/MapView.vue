@@ -35,7 +35,7 @@
  *
  * Data shapes used across the rendering functions:
  *   - liveRoute:      { coords: [[lng, lat], …], from: {lat,lng}, to: leg }
- *   - plannedSegments [{ coords, mode: 'walk'|'mrt'|'taxi', active: false }]
+ *   - plannedSegments [{ coords, mode: 'walk'|'mrt'|'taxi', active: false }] (the leg into the next stop, or [])
  *   - orbit:          { pointerId, x, y, bearing, pitch } while a drag is active
  */
 
@@ -257,8 +257,8 @@ const demoSpeed = ref(20)               // Demo-Walk multiplier (1×, 6×, 20×)
 const wasdEnabled = ref(true)           // keyboard movement during Demo-Walk
 const demoPanelOpen = ref(false)        // the panel can be tucked away while Demo-Walk keeps running
 
-// Route geometry: the live leg's resolved street path, and the cached paths for
-// the legs after it. Both are produced by refreshLiveRoute/refreshPlannedRoutes.
+// Route geometry: the live leg's resolved street path, and the planned path into the
+// next stop (drawn until there's a live one). Produced by refreshLiveRoute/refreshPlannedRoutes.
 const liveRoute = ref(null)             // { coords, parts?, from, to }
 const plannedSegments = ref([])         // [{ coords, mode, parts?, active }]
 
@@ -691,8 +691,12 @@ function drawRoute() {
       points = live.parts ? transferPoints(parts.slice(index)) : []
     }
   }
-  for (const segment of plannedSegments.value) {
-    features.push(...routeFeatures(segment.parts || [{ mode: segment.mode, coords: segment.coords }]))
+  // Only the way to the next stop is drawn: live from the traveller when there's a fix,
+  // otherwise the planned leg into it. Later legs stay off the map until they're next.
+  if (!features.length) {
+    for (const segment of plannedSegments.value) {
+      features.push(...routeFeatures(segment.parts || [{ mode: segment.mode, coords: segment.coords }]))
+    }
   }
   setTransferPoints(map, points)
 
@@ -746,48 +750,45 @@ function legKey(a, b) {
   return `${a.seq}:${a.place_id || 'home'}>${b.seq}:${b.place_id || 'home'}`
 }
 
-/** Rebuild `plannedSegments` from whatever is already in the cache. */
-function syncPlannedSegments(pendingLegs) {
-  plannedSegments.value = pendingLegs
-    .slice(1)
-    .map((leg, index) => {
-      const segment = plannedRouteCache.get(legKey(pendingLegs[index], leg))
-      return segment && { coords: segment.coords, mode: segment.mode, parts: segment.parts, active: false }
-    })
-    .filter(Boolean)
+/** The planned leg into the next stop: [from, to], or null when nothing is pending. */
+function nextLegPair() {
+  const target = next.value
+  return target ? [previousPoint(target), target] : null
+}
 
+/** Rebuild `plannedSegments` from whatever is already in the cache. */
+function syncPlannedSegments(pair) {
+  const segment = pair && plannedRouteCache.get(legKey(...pair))
+  plannedSegments.value = segment ? [{ coords: segment.coords, mode: segment.mode, parts: segment.parts, active: false }] : []
   drawRoute()
 }
 
 /**
- * Fetch street geometry for every later pending leg, then redraw. The cache makes
- * this stale-while-revalidate: existing geometry renders immediately, fresh
- * results replace it as they arrive, and a failed fetch never erases a good route.
+ * Fetch street geometry for the leg into the next stop (shown until there's a GPS fix and a
+ * live route), then redraw. The cache makes this stale-while-revalidate: existing geometry
+ * renders immediately, a fresh result replaces it, and a failed fetch never erases a good route.
  */
 async function refreshPlannedRoutes() {
-  const pendingLegs = missionStore.legs.filter((leg) => leg.status === 'pending')
+  const pair = nextLegPair()
 
-  // Drop cache entries for pairs that no longer exist (replans, skips, reorders).
-  const activeKeys = new Set(pendingLegs.slice(1).map((leg, index) => legKey(pendingLegs[index], leg)))
+  // Drop cache entries for pairs that no longer apply (stamps, replans, skips, reorders).
+  const activeKey = pair && legKey(...pair)
   for (const key of plannedRouteCache.keys()) {
-    if (!activeKeys.has(key)) plannedRouteCache.delete(key)
+    if (key !== activeKey) plannedRouteCache.delete(key)
   }
 
-  syncPlannedSegments(pendingLegs)
+  syncPlannedSegments(pair)
+  if (!pair) return
 
-  await Promise.all(
-    pendingLegs.slice(1).map(async (leg, index) => {
-      const previous = pendingLegs[index]
-      const resolveRoute = ROUTE_BY_MODE[leg.travel_mode]
-      if (!resolveRoute) return
+  const [previous, leg] = pair
+  const resolveRoute = ROUTE_BY_MODE[leg.travel_mode]
+  if (!resolveRoute) return
 
-      const route = await resolveRoute(previous, leg)
-      if (!route) return // keep the cached geometry, if any
+  const route = await resolveRoute(previous, leg)
+  if (!route) return // keep the cached geometry, if any
 
-      plannedRouteCache.set(legKey(previous, leg), { coords: route.coords, mode: leg.travel_mode, parts: route.parts })
-      syncPlannedSegments(pendingLegs)
-    })
-  )
+  plannedRouteCache.set(activeKey, { coords: route.coords, mode: leg.travel_mode, parts: route.parts })
+  if (nextLegPair()?.[1] === leg) syncPlannedSegments(pair)
 }
 
 /**
