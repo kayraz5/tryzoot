@@ -165,14 +165,19 @@ zoot-/
 ```
 
 ### Where new code goes
-
-- **New page:** add a file in `src/view/views/` and a route in `src/controller/router/index.js`.
-- **A part of a page:** put it in `src/view/components/<feature>/`. Move it to `src/view/common/` only once a second feature needs it.
-- **State shared between pages:** a Pinia store in `src/model/stores/`.
-- **Logic (calculations, API calls, rules):** a service in `src/model/services/`, not inside a component. That keeps it testable without a browser.
-- **Anything that needs a secret key:** a function in `api/`, never in `src/`.
-
----
+Notes for reference
+| You're adding… | Put it in | Notes |
+|---|---|---|
+| A new page | `src/view/views/` | Add its route in `src/controller/router/index.js`. |
+| A part of a page | `src/view/components/<feature>/` | Move it to `src/view/common/` only once a second feature needs it. |
+| A reusable piece of page behaviour | `use<Name>.js` next to the components that use it | Like `useActiveQuest.js` or `useCooldown.js`. |
+| State shared between pages | A Pinia store in `src/model/stores/` | |
+| Logic (calculations, API calls, rules) | A service in `src/model/services/` | Not inside a component, so it can be tested without a browser. |
+| Fixed data (places, MRT lines, interests) | `src/model/data/` | Synced files come from `pnpm sync:*`. Don't edit those by hand. |
+| Images and other static files | `public/` | For stamp art, add `public/stamps/<place id>.png`, then run `pnpm gen:stamps`. |
+| Anything that needs a secret key | A function in `api/` | Never in `src/`. Anything in `src/` ends up in the browser. |
+| A database change | A `.sql` file in `supabase/` | Write it so it can safely run again, then run it in the Supabase SQL editor. |
+| Tests | `tests/unit/<model, view, controller or api>/`, or `e2e/journeys/` for browser tests | Social tests that need a Supabase account go in `e2e/social/`. |
 
 ## Testing
 
