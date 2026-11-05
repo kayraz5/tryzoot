@@ -84,7 +84,11 @@ describe('WeatherChip', () => {
     expect(icon(w)).toBe('bi-cloud-rain')
     expect(w.text()).toContain('2.5 mm')
     ui.weather = forecast(0, 0.4, 20)
-    expect(icon(mount(WeatherChip))).toBe('bi-cloud-rain')
+    expect(icon(mount(WeatherChip))).toBe('bi-cloud-drizzle')
+    ui.weather = forecast(0, 8, 90)
+    expect(icon(mount(WeatherChip))).toBe('bi-cloud-rain-heavy')
+    ui.weather = forecast(2, 0, 90) // a high chance alone is not rain
+    expect(icon(mount(WeatherChip))).toBe('bi-cloud-sun')
     ui.weather = forecast(0)
     ui.lightning = { count: 3, nearestKm: 8, nearby: true }
     expect(icon(mount(WeatherChip))).toBe('bi-cloud-lightning')
@@ -114,7 +118,7 @@ describe('WeatherChip', () => {
     ui.setForceLightning(true)
     const w = mount(WeatherChip)
     expect(icon(w)).toBe('bi-cloud-lightning-rain')
-    expect(w.text()).toContain('5 mm')
+    expect(w.text()).toContain('10 mm')
     expect(w.find('svg.face rect').exists()).toBe(true)
     expect(w.find('.wx').classes()).toEqual(['wx'])
   })
@@ -200,21 +204,22 @@ describe('SkyEffects', () => {
 })
 
 describe('RainOverlay', () => {
-  it('falls for forced rain or heavy rain right now (>= 4 mm/h, not just a high chance); not on other pages', () => {
-    expect(mount(RainOverlay).find('.rain').exists()).toBe(false)
+  it('falls only when it is actually raining right now (not just a high chance), by level; not on other pages', () => {
+    const rain = () => mount(RainOverlay).find('.rain')
+    expect(rain().exists()).toBe(false)
     ui.weather = forecast(0, 0, 30)
-    expect(mount(RainOverlay).find('.rain').exists()).toBe(false)
+    expect(rain().exists()).toBe(false)
     ui.weather = forecast(0, 0, 80)
-    expect(mount(RainOverlay).find('.rain').exists()).toBe(false)
+    expect(rain().exists()).toBe(false)
     ui.weather = forecast(0, 0.3, 10)
-    expect(mount(RainOverlay).find('.rain').exists()).toBe(false)
-    ui.weather = forecast(0, 3.9, 10)
-    expect(mount(RainOverlay).find('.rain').exists()).toBe(false)
-    ui.weather = forecast(0, 4, 10)
-    expect(mount(RainOverlay).find('.rain').exists()).toBe(true)
+    expect(rain().classes()).toContain('rain-light')
+    ui.weather = forecast(0, 2.5, 10)
+    expect(rain().classes()).toContain('rain-moderate')
+    ui.weather = forecast(0, 7.6, 10)
+    expect(rain().classes()).toContain('rain-heavy')
     ui.weather = null
     ui.setForceRain(true)
-    expect(mount(RainOverlay).find('.rain').exists()).toBe(true)
+    expect(rain().classes()).toContain('rain-heavy')
     route.name = 'dev'
     expect(mount(RainOverlay).find('.rain').exists()).toBe(false)
   })
