@@ -1,6 +1,12 @@
-# Zoot
+<p align="center">
+  <img src="public/brand/zoot-wordmark.png" alt="Zoot" width="260">
+</p>
 
-**Turn a Singapore layover into a quest.** Tell Zoot when you land at Changi and when your next flight leaves. It plans a few hours out in the city that fit your time and budget, guides you there on a 3D map, stamps a passport at each stop, and gets you back to the gate on time.
+<h1 align="center">Zoot</h1>
+
+# Zoot: Turn a Singapore layover into a quest. 
+
+Tell Zoot when you land at Changi and when your next flight leaves. It plans a few hours out in the city that fit your time and budget, guides you there on a 3D map, stamps a passport at each stop, and gets you back to the gate on time.
 
 Live app: **https://tryzoot.vercel.app**
 
