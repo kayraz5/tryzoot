@@ -13,6 +13,7 @@ import EntryBanner from '../components/plan/EntryBanner.vue'
 import TimeBudgetCard from '../components/plan/TimeBudgetCard.vue'
 import InterestTiles from '../components/plan/InterestTiles.vue'
 import StylePicker from '../components/plan/StylePicker.vue'
+import TransportPicker from '../components/plan/TransportPicker.vue'
 import MoreOptions from '../components/plan/MoreOptions.vue'
 import '../components/plan/plan.css'
 
@@ -122,6 +123,7 @@ async function submit() {
 				<InterestTiles v-if="showStep(2)" :wide="wide" />
 				<template v-if="showStep(3)">
 					<StylePicker :wide="wide" />
+					<TransportPicker :wide="wide" />
 					<MoreOptions :wide="wide" />
 				</template>
 

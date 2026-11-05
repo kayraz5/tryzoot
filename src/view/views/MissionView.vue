@@ -74,13 +74,13 @@ const liveNext = computed(() => {
   const next = store.nextLeg
   if (!m.value || !next || !hasFix() || !isOut()) return null
   const to = next.kind === 'return' ? m.value.return_to || m.value.origin : next
-  const tr = travel({ lat: geo.lat, lng: geo.lng }, to, { maxWalk: m.value.prefs?.maxWalk, style: m.value.style, atMs: now() })
+  const tr = travel({ lat: geo.lat, lng: geo.lng }, to, { maxWalk: m.value.prefs?.maxWalk, transport: m.value.prefs?.transport, style: m.value.style, atMs: now() })
   return { leg: next, mode: tr.mode, minutes: tr.minutes, detail: `From your location · ${tr.detail}` }
 })
 const travelOf = (leg) => (liveNext.value?.leg === leg ? liveNext.value : { mode: leg.travel_mode, minutes: leg.travel_min, detail: leg.travel_detail })
 
-const modeIcon = { walk: 'bi-person-walking', mrt: 'bi-train-front', taxi: 'bi-taxi-front' }
-const modePill = { walk: '', mrt: 'ink', taxi: 'pale' }
+const modeIcon = { walk: 'bi-person-walking', mrt: 'bi-train-front', bus: 'bi-bus-front', taxi: 'bi-taxi-front' }
+const modePill = { walk: '', mrt: 'ink', bus: 'ink', taxi: 'pale' }
 
 // Weather checker
 const wetLegs = computed(() => {

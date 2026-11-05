@@ -28,8 +28,8 @@ const ROUTE_WIDTH = {
 }
 
 const THEME = {
-  dark: { walk: BRAND.pink, mrt: BRAND.yellow, taxi: '#ff4d00', casing: BRAND.ink },
-  light: { walk: BRAND.pink, mrt: BRAND.ink, taxi: '#ff4d00', casing: '#ffffff' }
+  dark: { walk: BRAND.pink, mrt: BRAND.yellow, bus: '#3bceac', taxi: '#ff4d00', casing: BRAND.ink },
+  light: { walk: BRAND.pink, mrt: BRAND.ink, bus: '#1a9e80', taxi: '#ff4d00', casing: '#ffffff' }
 }
 
 export const FENCE = { out: BRAND.pink, in: BRAND.yellow }
@@ -106,13 +106,13 @@ export function setQuestColors(map, isDark) {
   if (!map.getLayer('zt-route-walk')) return
   const colors = isDark ? THEME.dark : THEME.light
   map.setPaintProperty('zt-route-walk', 'line-color', colors.walk)
-  map.setPaintProperty('zt-route-ride', 'line-color', ['match', ['get', 'mode'], 'mrt', colors.mrt, colors.taxi])
+  map.setPaintProperty('zt-route-ride', 'line-color', ['match', ['get', 'mode'], 'mrt', colors.mrt, 'bus', colors.bus, colors.taxi])
   map.setPaintProperty('zt-route-casing', 'line-color', colors.casing)
 }
 
 /**
  * Replace the route geometry.
- * @param {{ coords: number[][], mode: 'walk'|'mrt'|'taxi', active?: boolean }[]} segments
+ * @param {{ coords: number[][], mode: 'walk'|'mrt'|'bus'|'taxi', active?: boolean }[]} segments
  */
 export function setRoute(map, segments) {
   map.getSource('zt-route')?.setData({

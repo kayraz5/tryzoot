@@ -169,7 +169,7 @@ export function stopsFit(stops, mission, nowMs = Date.now()) {
     return { ok: false, code: 'no_mission', reason: 'Plan your layover first so we can check it fits.' }
   }
   const last = stops.at(-1)
-  const back = travel(last, mission.origin, { maxWalk: mission.prefs?.maxWalk, style: mission.style, atMs: Date.parse(last.depart_iso) })
+  const back = travel(last, mission.origin, { maxWalk: mission.prefs?.maxWalk, transport: mission.prefs?.transport, style: mission.style, atMs: Date.parse(last.depart_iso) })
   const endMs = Date.parse(last.depart_iso)
   const backAt = endMs + back.minutes * 60000
   const outAt = Date.parse(mission.start_iso) + (mission.buffers?.exit_min || 0) * 60000
@@ -226,7 +226,7 @@ export function previewJoin(quest, from, to, mission) {
  * The return leg's arrival (back at the airport) follows the last stop.
  */
 export function withTravel(legs, mission) {
-  const opts = { maxWalk: mission.prefs?.maxWalk, style: mission.style }
+  const opts = { maxWalk: mission.prefs?.maxWalk, transport: mission.prefs?.transport, style: mission.style }
   let cur = mission.origin
   let t = Date.parse(mission.start_iso) + (mission.buffers?.exit_min || 0) * 60000
   return legs.map((l) => {
