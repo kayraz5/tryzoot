@@ -26,6 +26,7 @@ import MapMenuButton from '../components/map/MapMenuButton.vue'
 import QuestMapLive from '../components/quests/QuestMapLive.vue'
 import { useMissionNav } from '../components/map/useMissionNav.js'
 import { useWeatherRefresh } from '../common/weather/useWeatherRefresh.js'
+import { useCooldown } from '../common/useCooldown.js'
 import { useMissionStore } from '../../model/stores/mission.js'
 import { useUiStore } from '../../model/stores/ui.js'
 import { usePartyStore } from '../../model/stores/party.js'
@@ -239,6 +240,7 @@ onMounted(async () => {
 
   window.addEventListener('keydown', onDemoKeyDown)
   window.addEventListener('keyup', onDemoKeyUp)
+  window.addEventListener('pointerdown', onPointerDownOutsideTools)
   raf = requestAnimationFrame(demoWalkLoop)
 })
 
@@ -249,6 +251,7 @@ onUnmounted(() => {
   clearTimeout(travellerStopTimer)
   window.removeEventListener('keydown', onDemoKeyDown)
   window.removeEventListener('keyup', onDemoKeyUp)
+  window.removeEventListener('pointerdown', onPointerDownOutsideTools)
   stopHeading()
   detachOrbitListeners()
   markers.clear()
@@ -838,6 +841,18 @@ function zoomOut() {
   map.zoomTo(12, { duration: 1500 })
 }
 
+/**
+ * Tapping anywhere off the drawer closes it, so the hamburger isn't the only way out.
+ * pointerdown rather than click, so dragging the map dismisses it as the drag starts
+ * instead of waiting for the gesture to end. The drawer and the hamburger are excluded:
+ * the tools inside stay tappable, and the hamburger's own toggle still works.
+ */
+function onPointerDownOutsideTools(event) {
+  if (!mapToolsOpen.value) return
+  if (event.target instanceof Element && event.target.closest('.map-tools, .menu-btn')) return
+  mapToolsOpen.value = false
+}
+
 function animateToFlat() {
   // Arrive already pointed the right way, so the lock does not have to swing the
     // whole world when the transition lands.
@@ -1003,11 +1018,15 @@ async function replan(mode) {
   await missionStore.replan(mode)
 }
 
-async function skipNextStop() {
+const { cooling: skipping, run: runSkip } = useCooldown()
+function skipNextStop() {
   helpOpen.value = false
   if (next.value?.kind !== 'visit') return
-  await missionStore.skip(next.value)
-  ui.toast('Stop skipped. On to the next one.', 'dark')
+  // Without the cooldown a fast double-tap skips two stops and toasts twice.
+  return runSkip(async () => {
+    await missionStore.skip(next.value)
+    ui.toast('Stop skipped. On to the next one.', 'dark')
+  })
 }
 
 function openAirportHelp() {
@@ -1321,7 +1340,7 @@ function writeMissionCardFlag(open) {
       :guidance="guidance"
       :steps="liveSteps"
       :step-index="liveStepIndex"
-      :bus-alt="busAlt"
+      :bus-alternative="busAlt"
       :check="check"
       :stamping="stamping"
       :stamped-count="missionStore.stampedCount"
@@ -1375,7 +1394,7 @@ function writeMissionCardFlag(open) {
       <button class="btn btn-warning btn-sm w-100 mb-2" :disabled="missionStore.status === 'planning'" @click="replan('less-walking')"><i class="bi bi-person-walking"></i> Less walking</button>
       <button class="btn btn-warning btn-sm w-100 mb-2" :disabled="missionStore.status === 'planning' || next?.kind !== 'visit'" @click="replan('swap')"><i class="bi bi-shuffle"></i> Swap this stop</button>
       <button class="btn btn-warning btn-sm w-100 mb-2" :disabled="missionStore.status === 'planning'" @click="replan('rain')"><i class="bi bi-cloud-rain-heavy-fill"></i> It's raining</button>
-      <button class="btn btn-outline-warning btn-sm w-100 mb-2" :disabled="next?.kind !== 'visit'" @click="skipNextStop"><i class="bi bi-skip-forward-fill"></i> Skip this stop</button>
+      <button class="btn btn-outline-warning btn-sm w-100 mb-2" :disabled="skipping || next?.kind !== 'visit'" @click="skipNextStop"><i class="bi bi-skip-forward-fill"></i> Skip this stop</button>
       <button class="btn btn-outline-warning btn-sm w-100" @click="router.push(mission ? `/mission/${mission.id}` : '/plan')"><i class="bi bi-list-ol"></i> See full itinerary</button>
       <div v-if="missionStore.status === 'planning'" class="help-note mt-2">{{ missionStore.statusText || 'Replanning…' }}</div>
     </div>

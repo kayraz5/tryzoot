@@ -94,6 +94,52 @@ describe('ui store preferences and notifications', () => {
     expect(store.toasts).toEqual([])
   })
 
+  it('folds a repeated toast into the one on screen and restarts its countdown', () => {
+    vi.useFakeTimers()
+    const store = useUiStore()
+
+    store.toast('Camera lock off.', 'dark', 1000)
+    const { id } = store.toasts[0]
+
+    vi.advanceTimersByTime(800)
+    store.toast('Camera lock off.', 'dark', 1000) // spammed button
+
+    expect(store.toasts).toHaveLength(1)
+    expect(store.toasts[0].id).toBe(id)
+
+    vi.advanceTimersByTime(800) // past the first countdown, inside the restarted one
+    expect(store.toasts).toHaveLength(1)
+
+    vi.advanceTimersByTime(200)
+    expect(store.toasts).toEqual([])
+  })
+
+  it('ignores a repeated toast raised just after the last one went', () => {
+    vi.useFakeTimers()
+    const store = useUiStore()
+
+    store.toast('Stop skipped. On to the next one.', 'dark', 1000)
+    vi.advanceTimersByTime(1000)
+    expect(store.toasts).toEqual([])
+
+    store.toast('Stop skipped. On to the next one.', 'dark', 1000)
+    expect(store.toasts).toEqual([])
+
+    vi.advanceTimersByTime(600) // cooldown over, so it can show again
+    store.toast('Stop skipped. On to the next one.', 'dark', 1000)
+    expect(store.toasts).toHaveLength(1)
+  })
+
+  it('caps the stack so differing messages cannot cover the page', () => {
+    vi.useFakeTimers()
+    const store = useUiStore()
+
+    for (const message of ['one', 'two', 'three', 'four', 'five']) store.toast(message, 'dark', 5000)
+
+    expect(store.toasts).toHaveLength(3)
+    expect(store.toasts.map((t) => t.message)).toEqual(['three', 'four', 'five'])
+  })
+
   it('stores celebration payloads for the celebration UI', () => {
     const store = useUiStore()
     const payload = { place: { id: 'gardens' }, xp: 25, area: 'Central' }
