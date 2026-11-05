@@ -77,6 +77,7 @@ import { useWeatherRefresh } from '../common/weather/useWeatherRefresh.js'
 
 import { useMissionStore } from '../../model/stores/mission.js'
 import { useUiStore } from '../../model/stores/ui.js'
+import { usePartyStore } from '../../model/stores/party.js'
 // Outfit + fur saved in Me → Character. The store is deliberately free of 3D
 // imports, so reading it here is cheap.
 import { useCharacterStore } from '../../model/stores/character.js'
@@ -265,6 +266,7 @@ const plannedSegments = ref([])         // [{ coords, mode, parts?, active }]
 const router = useRouter()
 const currentRoute = useRoute()
 const missionStore = useMissionStore()
+const party = usePartyStore()
 const ui = useUiStore()
 const character = useCharacterStore()
 useWeatherRefresh(1.2897, 103.8501) // weather is decorative; a failure never blocks the map
@@ -987,6 +989,25 @@ function flyTo(place, zoom = 17) {
   map?.flyTo({ center: [place.lng, place.lat], zoom, duration: 1200 })
   following.value = false
 }
+
+/** Show quest members (the person chips under the quest chip): one person, or everyone plus me. */
+function showMembers(userId) {
+  const people = party.liveOthers.filter((p) => !userId || p.user_id === userId)
+  if (!map || !people.length) return
+  otterView.value = false
+  otterCamera = null
+  following.value = false
+  // Aim at the open map above the next-stop card, not the middle of the screen behind it.
+  const card = document.querySelector('.mission-card')?.getBoundingClientRect()
+  const view = mapContainer.value.getBoundingClientRect()
+  const bottom = card?.height ? Math.max(60, view.bottom - card.top + 30) : 60
+  const padding = { top: 110, bottom, left: 60, right: 60 }
+  if (people.length === 1) return map.flyTo({ center: [people[0].lng, people[0].lat], zoom: 16, padding, duration: 1200 })
+  const bounds = new LngLatBounds()
+  for (const p of here.value ? [...people, here.value] : people) bounds.extend([p.lng, p.lat])
+  map.fitBounds(bounds, { padding, maxZoom: 16, duration: 1200 })
+}
+watch(() => party.liveFocus, (focus) => focus && showMembers(focus.userId))
 
 /** Recentre on the traveller (or explain why we cannot). */
 function centerOnMe(notifyOnFail = true) {
