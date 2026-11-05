@@ -17,10 +17,9 @@ Live app: **https://tryzoot.vercel.app**
 - [Main features](#main-features)
 - [Tech stack](#tech-stack)
 - [How the code is organised](#how-the-code-is-organised)
-- [Setting up your own Supabase](#setting-up-your-own-supabase)
 - [Testing](#testing)
-- [Deployment](#deployment)
 - [Team](#team)
+- [AI declaration](#ai-declaration)
 
 ---
 
@@ -165,7 +164,6 @@ zoot-/
 ```
 
 ### Where new code goes
-Notes for reference
 | You're adding… | Put it in | Notes |
 |---|---|---|
 | A new page | `src/view/views/` | Add its route in `src/controller/router/index.js`. |
