@@ -34,8 +34,9 @@ export const usePartyStore = defineStore('party', {
     hostedFor: null, // mission id `hosted` was loaded for
     demoIds: new Set(),
     dialog: null, // centred prompt (CenterDialog.vue): { title, body, icon, confirmText, cancelText, tone, resolve }
-    liveOthers: [], // other members' live positions on the map (QuestMapLive.vue keeps this up to date)
-    liveRefresh: 0, // bump to make QuestMapLive re-read locations now (e.g. after the demo moved people)
+    liveOthers: [], // other members' live positions (QuestLiveHost.vue keeps this up to date, on every page)
+    liveRefresh: 0, // bump to make QuestLiveHost re-read locations now (e.g. after the demo moved people)
+    liveFocus: null, // { userId, at }: the map should show this member (userId null = everyone)
     // Quest chat (QuestChatDrawer.vue). Started by whoever shows it or its unread badge.
     chat: { partyId: null, quest: null, messages: [], loading: false, error: null },
     chatUsers: 0, // how many screens are using the chat right now
@@ -201,6 +202,11 @@ export const usePartyStore = defineStore('party', {
     },
 
     /** Throws (guest mode / network) so the host sheet can show why. */
+    /** Ask the map to bring a member into view (or everyone, with no id). */
+    focusLive(userId = null) {
+      this.liveFocus = { userId, at: Date.now() }
+    },
+
     async loadHosted(mission) {
       this.hosted = mission ? await social.getHostedWindow(mission.id) : null
       this.hostedFor = mission?.id || null

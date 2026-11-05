@@ -9,6 +9,7 @@ import RainOverlay from './view/common/weather/RainOverlay.vue'
 import SkyEffects from './view/common/weather/SkyEffects.vue'
 import CenterDialog from './view/app/CenterDialog.vue'
 import QuestChatHost from './view/components/quests/QuestChatHost.vue'
+import QuestLiveHost from './view/components/quests/QuestLiveHost.vue'
 import { useUserStore } from './model/stores/user.js'
 import { usePassportStore } from './model/stores/passport.js'
 import { useUiStore } from './model/stores/ui.js'
@@ -33,4 +34,5 @@ watch(() => user.userId, (id) => passport.load(id), { immediate: true })
   <StampCelebration />
   <CenterDialog />
   <QuestChatHost v-if="user.isAuthed" />
+  <QuestLiveHost v-if="user.isAuthed" />
 </template>

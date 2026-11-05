@@ -1,20 +1,17 @@
 <!-- EDITOR: EUDALE -->
 <script setup>
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useMissionStore } from '../../../model/stores/mission.js'
 import { usePartyStore } from '../../../model/stores/party.js'
-import { useUserStore } from '../../../model/stores/user.js'
 import * as social from '../../../model/services/social.js'
 import { tick } from '../../../model/services/clock.js'
-import { geo, hasFix } from '../../../model/services/geo.js'
-import { distanceM } from '../../../model/services/travel.js'
 import { syncMemberMarkers, clearMemberMarkers, meetingMarker } from './memberMarkers.js'
 import { useActiveQuest } from './useActiveQuest.js'
 
 /**
  * The social-quest side of the map, with no UI of its own (the chip is QuestCoopChip):
- *  - shares my location with the other members while the quest is live, and draws theirs as pins;
+ *  - draws the other members as pins (the locations themselves are kept by QuestLiveHost, app-wide);
  *  - when my joined stops are over, puts me back on my own plan;
  *  - shows a "Meet here" pin when opened from a quest's meeting point (/map?lat=&lng=&meet=);
  *  - shows co-op stamps as they land ("Mei arrived after you: co-op stamp!").
@@ -26,12 +23,8 @@ const props = defineProps({ getMap: { type: Function, required: true } })
 
 const store = useMissionStore()
 const party = usePartyStore()
-const user = useUserStore()
-const { joined, active, live } = useActiveQuest()
+const { joined } = useActiveQuest()
 const route = useRoute()
-
-const SEND_EVERY_MS = 15000
-const STALE_MS = 2 * 60000
 
 // Hosts: find my open window so "Hosting Lina until …" and the pins work too.
 let unwatchCoop = null
@@ -44,80 +37,17 @@ onMounted(async () => {
 onUnmounted(() => unwatchCoop?.())
 
 
-// My joined stops are over → back to my own plan
+// My joined stops are over > back to my own plan
 // immediate: also when the map opens after they already ended.
 watch(() => joined.value && tick.value >= joined.value.endMs, (over) => { if (over) store.finishEndedQuests() }, { immediate: true })
 
-// Live locations
-const roster = ref([])
-const locations = ref([])
+// Other members as pins (QuestLiveHost keeps party.liveOthers up to date). Not a deep watch:
+// the map is a huge object, and walking it every second freezes the page.
 const markers = new Map()
-let unwatch = null
-let poll = null
-let lastSent = { ms: 0, lat: null, lng: null }
-let livePartyId = null
-
-async function refreshLocations() {
-  if (!livePartyId) return
-  try { locations.value = await social.listLocations(livePartyId) } catch { /* offline: keep the last ones */ }
-}
-async function startLive(id) {
-  livePartyId = id
-  try { roster.value = (await social.getQuest(id))?.roster || [] } catch { roster.value = [] }
-  await refreshLocations()
-  try { unwatch = await social.watchLocations(id, refreshLocations) } catch { unwatch = null }
-  poll = setInterval(refreshLocations, 20000) // in case Realtime drops
-  sendMine(true)
-}
-async function stopLive({ forget = false } = {}) {
-  const id = livePartyId
-  livePartyId = null
-  clearInterval(poll)
-  unwatch?.()
-  unwatch = null
-  locations.value = []
-  party.liveOthers = []
-  clearMemberMarkers(markers)
-  lastSent = { ms: 0, lat: null, lng: null }
-  // The window ended or I left: take my dot off the others' maps (leaving already does this server-side).
-  if (forget && id) social.stopSharing(id).catch(() => {})
-}
-watch(() => (live.value ? active.value.id : null), async (id, old) => {
-  if (old) await stopLive({ forget: true })
-  if (id) await startLive(id)
-}, { immediate: true })
-onUnmounted(() => stopLive())
-
-// The chip's demo button moved people: re-read now (and the roster, if it was empty).
-watch(() => party.liveRefresh, async () => {
-  if (livePartyId && !roster.value.length) {
-    try { roster.value = (await social.getQuest(livePartyId))?.roster || [] } catch {}
-  }
-  refreshLocations()
-})
-
-function sendMine(force = false) {
-  if (!livePartyId || !hasFix()) return
-  const moved = lastSent.lat == null ? Infinity : distanceM({ lat: lastSent.lat, lng: lastSent.lng }, geo)
-  if (!force && (Date.now() - lastSent.ms < SEND_EVERY_MS || moved < 10)) return
-  lastSent = { ms: Date.now(), lat: geo.lat, lng: geo.lng }
-  social.shareLocation(livePartyId, { lat: geo.lat, lng: geo.lng, accuracy: geo.accuracy }).catch(() => {})
-}
-watch(() => [geo.lat, geo.lng], () => sendMine())
-
-// Other members as pins. Not a deep watch: the map is a huge object, and walking it every
-// second (the clock ticks) freezes the page.
-watch([locations, roster, tick, () => props.getMap()], ([list, people, , map]) => {
-  const others = list
-    .filter((l) => l.user_id !== user.userId)
-    .map((l) => {
-      const p = people.find((r) => r.user_id === l.user_id)
-      // updated_at is server time, so compare with the real clock, not the dev clock.
-      return { ...l, display_name: p?.display_name, cover_color: p?.cover_color, stale: Date.now() - Date.parse(l.updated_at) > STALE_MS }
-    })
-  party.liveOthers = others
+watch([() => party.liveOthers, () => props.getMap()], ([others, map]) => {
   if (map) syncMemberMarkers(map, markers, others)
-})
+}, { immediate: true })
+onUnmounted(() => clearMemberMarkers(markers))
 
 // Meeting point pin (the map view flies there itself)
 let meetPin = null
