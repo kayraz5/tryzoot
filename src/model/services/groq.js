@@ -55,6 +55,7 @@ function buildPlanRequest(ctx, slice, budget, startMs) {
 			interests: ctx.interests,
 			indoor_pref: ctx.indoorPref,
 			max_walk_min_per_leg: ctx.maxWalk,
+			transport: ctx.transport || 'mixed', // transit (MRT & bus) | car (taxi / Grab)
 			party_size: ctx.partySize,
 			food_needs: ctx.foodNeeds || 'none'
 		},
