@@ -8,6 +8,7 @@ import { DEFAULT_COVER, onColor } from '../../../model/services/brand.js'
  *
  * `markers` is a caller-owned Map(user_id → Marker). Members not present in the new
  * list are removed, so this is a full sync: pass the current list every time.
+ * A pin that moves glides to its new spot instead of jumping; one that has not moved is left alone.
  *
  * @param {Map} markers
  * @param {{ user_id: string, lat: number, lng: number, display_name?: string, cover_color?: string, stale?: boolean }[]} members
@@ -26,12 +27,13 @@ export function syncMemberMarkers(map, markers, members) {
       markers.set(member.user_id, marker)
     }
 
-    marker.setLngLat([member.lng, member.lat])
+    glideTo(marker, [member.lng, member.lat])
     marker.getElement().classList.toggle('stale', !!member.stale)
   }
 
   for (const [userId, marker] of markers) {
     if (seen.has(userId)) continue
+    stopGlide(marker)
     marker.remove()
     markers.delete(userId)
   }
@@ -39,8 +41,49 @@ export function syncMemberMarkers(map, markers, members) {
 
 /** Remove every member pin (e.g. on leaving the quest or unmounting the HUD). */
 export function clearMemberMarkers(markers) {
-  markers.forEach((marker) => marker.remove())
+  markers.forEach((marker) => {
+    stopGlide(marker)
+    marker.remove()
+  })
   markers.clear()
+}
+
+// Positions arrive every few seconds; gliding between them reads as walking, not teleporting.
+const GLIDE_MS = 1200
+const JUMP_M = 2000 // further than this (a train ride, a fresh GPS fix) just jumps
+const glides = new WeakMap() // Marker > requestAnimationFrame id
+
+function stopGlide(marker) {
+  cancelAnimationFrame(glides.get(marker))
+  glides.delete(marker)
+}
+
+/** Rough metres between two [lng, lat] points: plenty for deciding glide or jump. */
+function metresBetween([lng1, lat1], [lng2, lat2]) {
+  const x = (lng2 - lng1) * Math.cos(((lat1 + lat2) / 2) * (Math.PI / 180))
+  return Math.hypot(x, lat2 - lat1) * 111320
+}
+
+function glideTo(marker, to) {
+  const { lng, lat } = marker.getLngLat()
+  const from = [lng, lat]
+  const metres = metresBetween(from, to)
+  if (metres < 0.5) return // same spot: don't restart a glide that is already heading here
+  stopGlide(marker)
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  if (reduceMotion || metres > JUMP_M) {
+    marker.setLngLat(to)
+    return
+  }
+  const start = performance.now()
+  const step = (now) => {
+    const t = Math.min(1, (now - start) / GLIDE_MS)
+    const eased = 1 - (1 - t) ** 3 // ease-out: quick to react, gentle to settle
+    marker.setLngLat([from[0] + (to[0] - from[0]) * eased, from[1] + (to[1] - from[1]) * eased])
+    if (t < 1) glides.set(marker, requestAnimationFrame(step))
+    else glides.delete(marker)
+  }
+  glides.set(marker, requestAnimationFrame(step))
 }
 
 /** Build the DOM element for one member: coloured initial + name label. */

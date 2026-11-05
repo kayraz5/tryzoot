@@ -387,7 +387,10 @@ export async function stopSharing(partyId) {
   must(await client.from('party_locations').delete().eq('party_id', partyId).eq('user_id', me))
 }
 
-/** Calls onChange() whenever someone's location in this quest changes. Returns an unsubscribe function. */
+/**
+ * Calls onChange(payload) whenever someone's location in this quest changes: payload.eventType,
+ * payload.new (the row) and, for DELETE, payload.old (party_id + user_id). Returns an unsubscribe function.
+ */
 export async function watchLocations(partyId, onChange) {
   const client = await sb()
   const channel = client
