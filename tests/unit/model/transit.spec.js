@@ -18,7 +18,7 @@ describe('MRT network', () => {
     expect(nearestHub({ lat: 1.3496, lng: 103.8735 }).name).toBe('Serangoon') // not in the old 35-station graph
   })
 
-  it('plans Changi → Orchard as Changi branch, Green line, Red line, with directions', () => {
+  it('plans Changi → Orchard as Changi branch, East West Line, North South Line, with directions', () => {
     const t = transit(CHANGI, ORCHARD)
     expect(t.lines).toEqual(['CG', 'EW', 'NS'])
     expect(t.runs.map((r) => [r.line, HUBS[r.to].name, HUBS[r.towards].name])).toEqual([
@@ -31,8 +31,8 @@ describe('MRT network', () => {
     expect(t.minutes).toBeLessThan(60)
   })
 
-  it('describes MRT legs by line colour, not code', () => {
-    expect(travel(CHANGI, ORCHARD).detail).toBe('MRT Changi Airport → Orchard · Green → Red line')
+  it('describes MRT legs by line name, not code', () => {
+    expect(travel(CHANGI, ORCHARD).detail).toBe('MRT Changi Airport → Orchard · East West Line → North South Line')
   })
 })
 
@@ -87,8 +87,8 @@ describe('transitSteps', () => {
     const steps = transitSteps(parts)
     expect(steps.map((s) => s.title)).toEqual([
       'Walk to Bugis MRT station · 4 min',
-      'Take the Green line towards Tuas Link',
-      'Change at City Hall to the Red line towards Jurong East',
+      'Take the East West Line towards Tuas Link',
+      'Change at City Hall to the North South Line towards Jurong East',
       'Walk to ION Sky · 3 min'
     ])
     expect(steps[0].detail).toContain('Exit C')

@@ -3,7 +3,7 @@
  * Turn a route's `parts` (mrt.js, bus.js, onemap.js) into plain-language steps
  * for someone who has never used Singapore transport:
  *   { icon, colour, badge, title, detail, minutes }
- * e.g. "Take the Green line (EW) towards Tuas Link" · "9 stops · get off at City Hall".
+ * e.g. "Take the East West Line towards Tuas Link" · "9 stops · get off at City Hall".
  * Also: which part the traveller is on now, from their position.
  */
 import { LINES, BUS_HEX, WALK_HEX } from '../../data/transitLines.js'

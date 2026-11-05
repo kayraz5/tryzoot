@@ -1,6 +1,6 @@
 // EDITOR: KAYRA
 import { distanceM } from './distance.js'
-import { HUBS, rideMinutes, rideRuns, lineColours } from './transit/network.js'
+import { HUBS, rideMinutes, rideRuns, lineNames } from './transit/network.js'
 
 // Re-exported: most of the app reaches for these through travel.js.
 export { distanceM, HUBS, rideMinutes }

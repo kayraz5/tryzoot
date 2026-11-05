@@ -176,8 +176,7 @@ export function rideRuns(ride) {
   return runs
 }
 
-/** ['CG', 'EW', 'NS'] -> "Green → Red line": what travellers see on signs, not line codes. */
-export function lineColours(lines) {
-  const colours = lines.map((l) => LINES[l]?.colour || l).filter((c, i, all) => c !== all[i - 1])
-  return `${colours.join(' → ')} line`
+/** ['CG', 'EW', 'NS'] -> "East West Line → North South Line": what travellers see on signs, not line codes. */
+export function lineNames(lines) {
+  return lines.map((l) => LINES[l]?.name || l).filter((n, i, all) => n !== all[i - 1]).join(' → ')
 }
