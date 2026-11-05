@@ -13,7 +13,7 @@ export const CHOICE_SCHEMA = 'zoot.choice.v1'
 export const MISSION_SCHEMA = 'zoot.mission.v1'
 
 const STYLES = ['budget', 'adventurous', 'party', 'conservative']
-const MODES = ['walk', 'mrt', 'taxi']
+const MODES = ['walk', 'mrt', 'bus', 'taxi']
 const isStr = (v, max = 400) => typeof v === 'string' && v.trim().length > 0 && v.length <= max
 const isIso = (v) => typeof v === 'string' && !Number.isNaN(Date.parse(v))
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v)

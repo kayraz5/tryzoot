@@ -22,13 +22,13 @@ export function useMissionNav() {
 
   /** "Back at the airport/hotel" counts within this radius. */
   const HOME_RADIUS_M = 300
-  const modeIcon = { walk: 'bi-person-walking', mrt: 'bi-train-front-fill', taxi: 'bi-taxi-front-fill' }
+  const modeIcon = { walk: 'bi-person-walking', mrt: 'bi-train-front-fill', bus: 'bi-bus-front-fill', taxi: 'bi-taxi-front-fill' }
 
   const demo = computed(() => geo.fake) // Demo-Walk = fake GPS moved with WASD / taps
   const mission = computed(() => store.mission)
   const next = computed(() => store.nextLeg)
   const here = computed(() => (hasFix() ? { lat: geo.lat, lng: geo.lng } : null))
-  const travelOptions = computed(() => ({ maxWalk: mission.value?.prefs?.maxWalk, style: mission.value?.style }))
+  const travelOptions = computed(() => ({ maxWalk: mission.value?.prefs?.maxWalk, transport: mission.value?.prefs?.transport, style: mission.value?.style }))
 
   const liveTravel = computed(() =>
     next.value && here.value ? travel(here.value, next.value, travelOptions.value) : null
