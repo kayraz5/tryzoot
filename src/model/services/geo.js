@@ -1,3 +1,4 @@
+// EDITOR: MATTHEW
 import { reactive } from 'vue'
 
 /**
@@ -31,6 +32,27 @@ export function hasFix() {
 /** True when a compass reading is available (and not overridden by demo mode). */
 export function hasHeading() {
   return geo.heading != null
+}
+
+/**
+ * How far the rendered page is rotated clockwise from the device's natural
+ * orientation (0 / 90 / 180 / 270).
+ *
+ * The compass reports where the device's *natural top edge* points, but what we
+ * want is where the top of the screen points — the direction the user is holding
+ * the phone towards. In portrait those are the same; turn the phone to landscape
+ * and they differ by exactly this angle, which is why an uncorrected cone points
+ * 90° off as soon as the screen rotates.
+ */
+function screenAngle() {
+  if (typeof window === 'undefined') return 0
+
+  const angle = window.screen?.orientation?.angle
+  if (Number.isFinite(angle)) return angle
+
+  // Legacy iOS: window.orientation reports −90 where the modern API says 270.
+  const legacy = window.orientation
+  return Number.isFinite(legacy) ? ((legacy % 360) + 360) % 360 : 0
 }
 
 export function startGps() {
@@ -110,7 +132,7 @@ export async function startHeading() {
     }
 
     if (degrees == null) return
-    geo.heading = ((degrees % 360) + 360) % 360
+    geo.heading = ((degrees + screenAngle()) % 360 + 360) % 360
   }
 
   // Android exposes a reliably north-referenced event; iOS uses the regular one.

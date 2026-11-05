@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 import { defineStore } from 'pinia'
 import { getDb } from '../services/db/index.js'
 import { buildMission } from '../services/groq.js'
@@ -111,6 +112,12 @@ export const useMissionStore = defineStore('mission', {
       usePartyStore().syncHostedWindow(mission)
     },
 
+    /** Another account signed in (or this one signed out): forget everything about the last one's plan. */
+    forgetAccount() {
+      this.$reset()
+      try { localStorage.removeItem(ACTIVE_KEY) } catch {}
+    },
+
     async load(id) {
       if (this.mission?.id === id) return this.mission
       const db = await getDb()
@@ -127,11 +134,28 @@ export const useMissionStore = defineStore('mission', {
       if (this.mission) return this.mission
       let id = null
       try { id = localStorage.getItem(ACTIVE_KEY) } catch {}
-      if (id) return this.load(id)
+      // The remembered id can belong to another account on this device: fall back to my latest.
+      const remembered = id && await this.load(id)
+      if (remembered) return remembered
       const db = await getDb()
       const [latest] = await db.listMissions()
       if (latest) return this.load(latest.id)
       return null
+    },
+
+    /** Load the newest mission that has not been completed for the current account. */
+    async loadUnfinished() {
+      const db = await getDb()
+      const missions = await db.listMissions()
+      const unfinished = missions.find((mission) => mission && !mission.completed)
+      if (!unfinished) return null
+
+      // Use the payload returned by the account-scoped query. This avoids reusing
+      // a mission left in the Pinia store after a different account signed in.
+      this.mission = unfinished
+      this.status = 'ready'
+      try { localStorage.setItem(ACTIVE_KEY, unfinished.id) } catch {}
+      return unfinished
     },
 
     here() {

@@ -1,3 +1,4 @@
+<!-- EDITOR: KAYRA -->
 <script setup>
 import { computed } from 'vue'
 import { tick } from '../../../model/services/clock.js'

@@ -1,3 +1,4 @@
+<!-- EDITOR: KAYRA -->
 <script setup>
 import { useTripStore } from '../../../model/stores/trip.js'
 import { TILES } from './planUi.js'

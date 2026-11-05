@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 /**
  * Social journey (Tier 2, two accounts): joining a host's quest turns the joined stops into fixed
  * blocks in the guest's plan, and going solo brings back the guest stops the join removed.

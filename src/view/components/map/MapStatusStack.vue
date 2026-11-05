@@ -1,10 +1,23 @@
+<!-- EDITOR: HULBERT -->
 <script setup>
+import { computed } from 'vue'
+
 import WeatherChip from '../../common/weather/WeatherChip.vue'
 
 // Top-left column of the map HUD: Singapore badge, weather chip, GPS/demo button and
 // (via the slot) the Demo-Walk panel, all in one flex column so every gap is the same.
-defineProps({ demo: { type: Boolean, default: false } })
+const props = defineProps({
+  demo: { type: Boolean, default: false },
+  panelOpen: { type: Boolean, default: false } // Demo-Walk running with its panel still up
+})
 defineEmits(['toggle-demo'])
+
+// The label always names what the next press does, because that press means three
+// different things depending on where we are in the cycle.
+const demoLabel = computed(() => {
+  if (!props.demo) return 'Enable Demo-Walk'
+  return props.panelOpen ? 'Hide Demo Panel' : 'Use Real GPS'
+})
 
 const LOGO_SRC = '/brand/zoot-badge-192.png' // served from public/ at runtime (kept out of the template so unit tests don't try to import it)
 </script>
@@ -21,7 +34,7 @@ const LOGO_SRC = '/brand/zoot-badge-192.png' // served from public/ at runtime (
       <div class="status-weather"><WeatherChip /></div>
       <button type="button" class="status-demo zt-hud-chip btn btn-warning rounded-pill"
               :class="{ 'demo-on': demo }" @click="$emit('toggle-demo')">
-        {{ demo ? 'Use Real GPS' : 'Enable Demo-Walk' }}
+        {{ demoLabel }}
       </button>
     </div>
 

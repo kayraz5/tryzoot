@@ -1,3 +1,4 @@
+<!-- EDITOR: MATTHEW -->
 <script setup>
 import {onBeforeUnmount, ref, watchEffect} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
@@ -66,10 +67,9 @@ function proceed() {
     if (leaving) return;
     leaving = true;
 
-    router.replace(user.needsOnboarding ? {
-        name: 'onboard',
-        query: {next: next()},
-    } : next());
+    // Let the router apply the same resume and onboarding rules used for a
+    // directly opened /plan route.
+    router.replace(next());
 }
 
 watchEffect(() => {

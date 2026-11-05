@@ -1,3 +1,4 @@
+-- EDITOR: EUDALE
 -- Zoot · Social demo seed: 3 fake travellers + open windows to join.
 -- Run in Supabase → SQL Editor AFTER social.sql.
 -- Times are relative to now(), so RE-RUN THIS whenever the demo windows have ended.

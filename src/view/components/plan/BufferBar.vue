@@ -1,3 +1,4 @@
+<!-- EDITOR: KAYRA -->
 <script setup>
 import { computed } from 'vue'
 import { formatDuration, formatTime } from '../../../model/services/hours.js'

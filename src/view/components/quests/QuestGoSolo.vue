@@ -1,3 +1,4 @@
+<!-- EDITOR: EUDALE -->
 <script setup>
 import { ref } from 'vue'
 import { useMissionStore } from '../../../model/stores/mission.js'

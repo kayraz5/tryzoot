@@ -1,3 +1,4 @@
+<!-- EDITOR: MATTHEW -->
 <script setup>
 import { computed } from 'vue'
 import { placeStampUrl } from '../../../model/services/stampArt.js'
@@ -77,7 +78,7 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
     </div>
 
     <div v-else class="row align-items-center">
-      <div class="col-7 col-sm-8">
+      <div class="col-8">
         <div class="stop-meta">
           <template v-if="next.kind !== 'visit'">Head home &middot; </template>
           <span class="bi" :class="modeIcon[liveTravel?.mode || next.travel_mode]"></span> {{ liveTravel?.minutes ?? next.travel_min }} min
@@ -94,7 +95,7 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
         <!-- "868 m away. Get within 80 m" repeats the distance above; GPS / in-range messages still show. -->
         <div v-if="check?.code !== 'far'" class="stop-near">{{ check?.message }}</div>
       </div>
-      <div class="col-5 col-sm-4 d-flex justify-content-end">
+      <div class="col-4 d-flex justify-content-end">
         <button class="stamp-btn" :class="{ ready: check?.ok }" :disabled="stamping" @click="$emit('stamp')"
           :aria-label="next.kind === 'return' ? 'Check in back home' : `Stamp ${next.name}`">
           <span class="stamp-circle" :class="{ 'has-art': stampArt }">
@@ -293,17 +294,23 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
 .card-link--map { color: var(--zt-yellow-pale); opacity: 0.7; }
 .card-link--help { color: #ff6b6b; }
 
-/* Phones: a smaller card so it covers less of the map. */
+/* Phones: a smaller, denser card so it covers less of the map.
+   Type steps through three levels only — title 0.95, body 0.72, supporting 0.66.
+   The card previously ran six sizes between 0.6 and 1.05rem, which is what made
+   it read as cluttered: no two rows agreed on how important they were. */
 @media (max-width: 575.98px) {
-  .mission-card { padding: 10px 12px; }
-  .stop-title { font-size: 1.05rem; margin: 0; line-height: 1.2; }
-  .stop-meta { font-size: 0.65rem; }
-  .stop-dist, .stop-guide { font-size: 0.78rem; }
+  .mission-card { padding: 9px 11px; }
+  .stop-title { font-size: 0.95rem; margin: 0; line-height: 1.15; }
+  .stop-meta { font-size: 0.58rem; }
+  .stop-dist, .stop-guide { font-size: 0.72rem; }
   .stop-guide, .stop-near { margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .stop-near { font-size: 0.72rem; }
+  .stop-near { font-size: 0.66rem; }
+  /* The stamp is the card's one call to action, so it keeps its size while
+     everything around it gives way. */
   .stamp-btn { width: 64px; height: 64px; gap: 2px; }
   .stamp-circle { width: 28px; height: 28px; font-size: 15px; }
-  .stamp-label { font-size: 0.6rem; }
-  .card-links { margin-top: 8px; }
+  .stamp-label { font-size: 0.58rem; }
+  .card-links { margin-top: 6px; }
+  .card-link { font-size: 0.72rem; }
 }
 </style>

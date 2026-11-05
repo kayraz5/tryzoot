@@ -1,3 +1,4 @@
+<!-- EDITOR: EUDALE -->
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'

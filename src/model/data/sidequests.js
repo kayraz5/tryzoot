@@ -1,3 +1,4 @@
+// EDITOR: HULBERT
 /**
  * Sidequests: short optional detours that spawn as floating tokens when the
  * traveller walks within 400 m and the clock has slack (Hulbert's lane).

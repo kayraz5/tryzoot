@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { HUBS, nearestHub, transit, travel } from '../../../src/model/services/travel.js'
 import { hubByCode, rideDirection } from '../../../src/model/services/transit/network.js'

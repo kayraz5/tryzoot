@@ -1,3 +1,4 @@
+// EDITOR: KAYRA + MATTHEW
 /**
  * Real-geometry MRT routing. An MRT leg is three real pieces stitched together — walk to
  * the nearest station, ride the actual track (sliced out of mrtLines.sg.json, one slice

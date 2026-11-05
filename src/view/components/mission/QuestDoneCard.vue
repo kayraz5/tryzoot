@@ -1,3 +1,4 @@
+<!-- EDITOR: KAYRA -->
 <script setup>
 import { useRouter } from 'vue-router'
 import { useMissionStore } from '../../../model/stores/mission.js'
@@ -10,7 +11,7 @@ const router = useRouter()
 
 function newLayover() {
   trip.startNewLayover()
-  router.push('/plan')
+  router.push({ name: 'plan', query: { fresh: '1' } })
 }
 </script>
 

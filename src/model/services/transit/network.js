@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 import network from '../../data/mrtNetwork.sg.json'
 import { LINES } from '../../data/transitLines.js'
 import { distanceM } from '../distance.js'

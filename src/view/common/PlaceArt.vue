@@ -1,3 +1,4 @@
+<!-- EDITOR: HULBERT -->
 <script setup>
 import { computed } from 'vue'
 

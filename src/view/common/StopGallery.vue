@@ -1,3 +1,4 @@
+<!-- EDITOR: EUDALE -->
 <script setup>
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { getPlaceImages } from '../../model/services/placeImages.js'

@@ -1,3 +1,4 @@
+// EDITOR: MATTHEW
 // Tiny PostgREST client; the service role key bypasses RLS, so it only ever runs on the server.
 // Shared by every /api/* route that needs service-role Supabase access (places sync, route cache, …).
 

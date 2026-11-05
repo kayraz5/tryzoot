@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 /**
  * Interest groups, each covering one or more catalog tags the planner scores on.
  * Shared by the plan page (interest tiles) and Explore (filter chips).
