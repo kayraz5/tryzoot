@@ -42,7 +42,7 @@ watch(() => user.userId, (id, old) => {
   </RouterView>
   <AppNav v-if="showNav" />
   <SkyEffects />
-  <RainOverlay />  
+  <RainOverlay />
   <ToastHost />
   <StampCelebration />
   <CenterDialog />

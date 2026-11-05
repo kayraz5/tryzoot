@@ -31,9 +31,22 @@ test.describe('live map', () => {
     await expect(page.getByRole('timer')).toContainText(/\d+:\d{2}:\d{2}/)
 
     await page.getByRole('button', { name: 'Show next-stop card' }).click()
-    // The card has no "Next stop n/m" line; it shows the travel time and "Stay <n> min" for a visit.
+    await expect(page.getByRole('button', { name: 'Hide next-stop card' })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Stamp .+/ })).toBeVisible()
+
+    // Travel / Distance / Stay are folded away by default to leave the map room;
+    // the header toggle opens them and the choice is remembered.
+    const numbers = page.getByRole('button', { name: /trip numbers/ })
+    await expect(numbers).toHaveAttribute('aria-expanded', 'false')
+    await expect(page.getByText(/Stay \d+ min/)).toBeHidden()
+
+    await numbers.click()
+    await expect(numbers).toHaveAttribute('aria-expanded', 'true')
+    await expect(page.getByText(/Stay \d+ min/)).toBeVisible()
+
+    // Both the card and the numbers remember being open, so a reload shows them.
+    await page.reload({ waitUntil: 'domcontentloaded' })
     await expect(page.getByRole('button', { name: 'Hide next-stop card' })).toBeVisible()
     await expect(page.getByText(/Stay \d+ min/)).toBeVisible()
-    await expect(page.getByRole('button', { name: /Stamp .+/ })).toBeVisible()
   })
 })

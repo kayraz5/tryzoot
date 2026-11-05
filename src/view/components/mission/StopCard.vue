@@ -7,6 +7,7 @@ import { usePartyStore } from '../../../model/stores/party.js'
 import { placeById } from '../../../model/services/catalog.js'
 import { formatTime } from '../../../model/services/hours.js'
 import StopGallery from '../../common/StopGallery.vue'
+import { useCooldown } from '../../common/useCooldown.js'
 import PlacePicker from './PlacePicker.vue'
 
 /**
@@ -39,6 +40,10 @@ function openAdd() {
   picker.value = { mode: 'add', near, title: visit ? `Add a stop after ${props.leg.name}` : 'Add a stop before heading back' }
   if (!visit) emit('toggle')
 }
+// A fast double-tap used to skip this stop and the next one, so hold the button briefly.
+const { cooling: skipping, run: runSkip } = useCooldown()
+const skip = () => runSkip(() => store.skip(props.leg))
+
 function closePicker() {
   picker.value = null
   if (props.leg.kind === 'return') emit('close')
@@ -99,7 +104,7 @@ function onPick(p) {
         <button class="btn btn-sm btn-soft" :class="{ active: open }" :aria-expanded="open" @click="emit('toggle')">
           <i class="bi bi-pencil"></i> Change stop
         </button>
-        <button class="btn btn-sm btn-link text-muted" @click="store.skip(leg)">Skip</button>
+        <button class="btn btn-sm btn-link text-muted" :disabled="skipping" @click="skip">Skip</button>
       </div>
       <div v-if="open" class="edit-panel mt-3">
         <div class="tiny fw-800 mb-2">Change this stop</div>

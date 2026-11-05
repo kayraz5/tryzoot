@@ -1,8 +1,11 @@
 // EDITOR: SHREY
-// Stamp artwork in src/assets/stamps/, named <place id>.png or area-<area>.png (e.g. area-civic-district.png).
-// Add a file with the right name and it shows up; anything without one keeps the drawn chop.
-const files = import.meta.glob('../../assets/stamps/*.png', { eager: true, query: '?url', import: 'default' })
-const urls = Object.fromEntries(Object.entries(files).map(([path, url]) => [path.split('/').pop().slice(0, -4), url]))
+// Stamp artwork in public/stamps/, named <place id>.png or area-<area>.png (e.g. area-civic-district.png).
+// Add a file, run `pnpm gen:stamps` to re-index it, and it shows up; anything without one keeps the
+// drawn chop. The index is what lets these return null synchronously, which is the signal callers
+// use to fall back — a bare /stamps/<id>.png URL would only fail later, as a broken image.
+import { STAMP_NAMES } from './stampIndex.js'
 
-export const placeStamp = (placeId) => urls[placeId] || null
-export const areaStamp = (areaId) => urls[`area-${areaId.toLowerCase().replace(/\s+/g, '-')}`] || null
+const url = (name) => (STAMP_NAMES.has(name) ? `/stamps/${name}.png` : null)
+
+export const placeStamp = (placeId) => url(placeId)
+export const areaStamp = (areaId) => url(`area-${areaId.toLowerCase().replace(/\s+/g, '-')}`)

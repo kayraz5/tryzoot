@@ -2,6 +2,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import PlaceArt from '../common/PlaceArt.vue'
+import { useCooldown } from '../common/useCooldown.js'
 import { useMissionStore } from '../../model/stores/mission.js'
 import { useUiStore } from '../../model/stores/ui.js'
 import { loadCatalog, placeById } from '../../model/services/catalog.js'
@@ -54,14 +55,18 @@ async function up() {
 function pass() {
   passed.value = new Set([...passed.value, top.value.id])
 }
-async function take() {
-  const sq = top.value
-  if (!sq.eligible) {
-    ui.toast('Not enough time for this one. It would break your buffer.', 'warning')
-    return pass()
-  }
-  await store.acceptSidequest({ ...sq })
-  passed.value = new Set([...passed.value, sq.id])
+// Guarded so a quick double-tap (or a flick plus a tap) can't accept the same card twice.
+const { cooling: taking, run: runTake } = useCooldown()
+function take() {
+  return runTake(async () => {
+    const sq = top.value
+    if (!sq.eligible) {
+      ui.toast('Not enough time for this one. It would break your buffer.', 'warning')
+      return pass()
+    }
+    await store.acceptSidequest({ ...sq })
+    passed.value = new Set([...passed.value, sq.id])
+  })
 }
 </script>
 
@@ -96,7 +101,7 @@ async function take() {
       </div>
       <div class="d-flex justify-content-center gap-4 mt-4">
         <button class="round-btn" @click="pass" aria-label="Pass"><i class="bi bi-x-lg"></i></button>
-        <button class="round-btn yes" @click="take" :disabled="!top.eligible" aria-label="Add to route"><i class="bi bi-plus-lg"></i></button>
+        <button class="round-btn yes" @click="take" :disabled="taking || !top.eligible" aria-label="Add to route"><i class="bi bi-plus-lg"></i></button>
       </div>
     </div>
   </main>
