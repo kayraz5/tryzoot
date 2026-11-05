@@ -100,7 +100,7 @@ Copy the example env file, with the following details:
 | **Passport & stamps** | A flip-book passport that fills with stamps and badges, plus the City Codex of everything you've found | Shrey, Hulbert |
 | **Weather** | Live rain, haze and temperature; rain effects on screen, and indoor swaps when rain is likely | Hulbert |
 | **Sidequest deck** | Swipe right on small nearby detours that still fit your time | Hulbert |
-| **Multiplayer quests** | Open some of your stops to other travellers, join someone else's, chat, see each other live on the map, and earn co-op stamps together | Eudale (Kayra: live map chips) |
+| **Multiplayer quests** | Open some of your stops to other travellers, join someone else's, chat, see each other live on the map, and earn co-op stamps together | Eudale |
 | **Testing & CI** | Unit, browser and Supabase-gated test suites, run on every push | Steven |
 
 ---
