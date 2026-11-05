@@ -9,7 +9,12 @@ export { distanceM, HUBS, rideMinutes }
  * Travel-time model. Groq never produces minutes; this file does.
  *   walk  = Turf great-circle distance × 1.3 detour ÷ 80 m/min
  *   mrt   = walk to nearest hub + 4 min wait + graph ride (+4 min per line change) + walk from hub
- *   taxi  = distance × 1.35 ÷ 28 km/h + 6 min pickup (only when no MRT hub is walkable)
+ *   bus   = distance × 1.35 ÷ 18 km/h + 8 min to reach the stop and wait (public transport, no MRT)
+ *   taxi  = road distance (× 1.35): first 3 km at 24 km/h (city streets), the rest at 50 km/h
+ *           (expressways), + 5 min pickup
+ * The traveller's `transport` choice (Plan page / map card) narrows this down:
+ *   'transit' = walk, MRT or bus (whichever is quicker)   'car' = walk, else taxi / Grab
+ *   unset     = the automatic mix below (plans made before the choice existed)
  * The MRT graph itself (stations, lines, which way to ride) lives in transit/network.js.
  */
 
@@ -67,15 +72,31 @@ export function transit(a, b) {
   }
 }
 
-/** Door-to-door taxi/Grab estimate: detoured road distance at 28 km/h plus pickup. */
+/**
+ * Door-to-door taxi/Grab estimate. Short rides crawl through city streets; longer ones spend most
+ * of the way on expressways (Changi → City Hall ≈ 35 min, not the 50+ a flat city speed gives).
+ */
 export function taxiMinutes(a, b) {
-  return Math.round(((distanceM(a, b) * 1.35) / 1000 / 28) * 60 + 6)
+  const roadKm = (distanceM(a, b) * 1.35) / 1000
+  const cityKm = Math.min(roadKm, 3)
+  return Math.round((cityKm / 24 + (roadKm - cityKm) / 50) * 60 + 5)
+}
+
+/** Bus estimate: detoured road distance at 18 km/h (stops, traffic) plus walking to the stop and waiting. */
+export function busMinutes(a, b) {
+  return Math.round(((distanceM(a, b) * 1.35) / 1000 / 18) * 60 + 8)
+}
+
+/** How the traveller gets around between stops (beyond walking distance). */
+export const TRANSPORT = {
+  transit: { label: 'Public transport', short: 'Public', icon: 'bi-train-front-fill', sub: 'MRT & bus' },
+  car: { label: 'Car / Grab', short: 'Car', icon: 'bi-taxi-front-fill', sub: 'Quicker, costs more' }
 }
 
 /**
  * Pick a travel mode between two {lat,lng} points.
- * @param {{maxWalk?: number, style?: string, atMs?: number}} opts  atMs = departure time (MRT closes at night)
- * @returns {{mode:'walk'|'mrt'|'taxi', minutes:number, walk_min:number, distance_m:number, detail:string}}
+ * @param {{maxWalk?: number, style?: string, transport?: 'transit'|'car', atMs?: number}} opts  atMs = departure time (MRT closes at night)
+ * @returns {{mode:'walk'|'mrt'|'bus'|'taxi', minutes:number, walk_min:number, distance_m:number, detail:string}}
  */
 export function travel(a, b, opts = {}) {
   const maxWalk = Math.min(opts.maxWalk ?? MRT_THRESHOLD_MIN, MRT_THRESHOLD_MIN)
@@ -90,6 +111,17 @@ export function travel(a, b, opts = {}) {
   const byTaxi = (why) => ({ mode: 'taxi', minutes: taxi, walk_min: walk, distance_m, detail: `Taxi / Grab · ${why}` })
   // Budget travellers ride the MRT; others take a cab when it saves 20+ min.
   const mrtOrTaxi = () => (opts.style !== 'budget' && taxi + 20 < t.minutes ? byTaxi(`saves ${t.minutes - taxi} min vs MRT`) : byMrt)
+
+  // The traveller said how they get around.
+  if (opts.transport === 'car') return byTaxi(`${(distance_m / 1000).toFixed(1)} km by road`)
+  if (opts.transport === 'transit') {
+    if (!mrtRunning(opts.atMs)) return byTaxi('no trains or buses at this hour')
+    const bus = busMinutes(a, b)
+    const byBus = { mode: 'bus', minutes: bus, walk_min: walk, distance_m, detail: `Bus · ${(distance_m / 1000).toFixed(1)} km by road` }
+    const quickest = byMrt && byMrt.minutes <= bus ? byMrt : byBus
+    // Still walkable and no slower than riding: walk it.
+    return walk <= 25 && walk <= quickest.minutes ? onFoot : quickest
+  }
 
   // Over the walking limit: take the train if it is roughly as quick as walking.
   if (t && t.minutes <= walk + 8) return mrtOrTaxi()
