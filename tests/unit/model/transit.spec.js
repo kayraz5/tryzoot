@@ -14,7 +14,7 @@ describe('MRT network', () => {
     expect(nearestHub({ lat: 1.3496, lng: 103.8735 }).name).toBe('Serangoon') // not in the old 35-station graph
   })
 
-  it('plans Changi → Orchard as Changi branch, Green line, Red line, with directions', () => {
+  it('plans Changi → Orchard as Changi branch, East West Line, North South Line, with directions', () => {
     const t = transit(CHANGI, ORCHARD)
     expect(t.lines).toEqual(['CG', 'EW', 'NS'])
     expect(t.runs.map((r) => [r.line, HUBS[r.to].name, HUBS[r.towards].name])).toEqual([
@@ -27,8 +27,8 @@ describe('MRT network', () => {
     expect(t.minutes).toBeLessThan(60)
   })
 
-  it('describes MRT legs by line colour, not code', () => {
-    expect(travel(CHANGI, ORCHARD).detail).toBe('MRT Changi Airport → Orchard · Green → Red line')
+  it('describes MRT legs by line name, not code', () => {
+    expect(travel(CHANGI, ORCHARD).detail).toBe('MRT Changi Airport → Orchard · East West Line → North South Line')
   })
 })
 
@@ -44,8 +44,8 @@ describe('transitSteps', () => {
     const steps = transitSteps(parts)
     expect(steps.map((s) => s.title)).toEqual([
       'Walk to Bugis MRT station · 4 min',
-      'Take the Green line towards Tuas Link',
-      'Change at City Hall to the Red line towards Jurong East',
+      'Take the East West Line towards Tuas Link',
+      'Change at City Hall to the North South Line towards Jurong East',
       'Walk to ION Sky · 3 min'
     ])
     expect(steps[0].detail).toContain('Exit C')
@@ -54,7 +54,7 @@ describe('transitSteps', () => {
   })
 
   it('pins where to board, change and get off', () => {
-    expect(transferPoints(parts).map((p) => p.label)).toEqual(['Board · Green line', 'Change · Red line', 'Get off · Orchard'])
+    expect(transferPoints(parts).map((p) => p.label)).toEqual(['Board · East West Line', 'Change · North South Line', 'Get off · Orchard'])
   })
 
   it('knows which step you are on from your position', () => {
@@ -124,7 +124,7 @@ describe('which way to ride', () => {
 
   it('reads the direction into the step', () => {
     const [step] = transitSteps([{ mode: 'mrt', line: 'CC', loop: 'clockwise', nextStop: 'Caldecott', stops: 9, from: { name: 'Botanic Gardens' }, to: { name: 'Paya Lebar' } }])
-    expect(step.title).toBe('Take the Orange line clockwise')
+    expect(step.title).toBe('Take the Circle Line clockwise')
     expect(step.detail).toBe('Next stop Caldecott · 9 stops · get off at Paya Lebar')
   })
 })

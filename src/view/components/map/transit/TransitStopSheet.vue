@@ -47,7 +47,7 @@ const when = (m) => (m <= 0 ? 'Arr' : `${m} min`)
       <div class="eyebrow"><i class="bi bi-train-front-fill"></i> MRT station · {{ stop.codes }}</div>
       <div class="title">{{ stop.name }}</div>
       <div class="chips">
-        <span v-for="l in lines" :key="l.code" class="line-chip" :style="{ background: l.hex }">{{ l.code }} · {{ l.colour }} line</span>
+        <span v-for="l in lines" :key="l.code" class="line-chip" :style="{ background: l.hex }">{{ l.code }} · {{ l.name }}</span>
       </div>
       <p class="note">Tap a contactless bank card or phone at the gate to enter, and again to leave.</p>
     </template>
