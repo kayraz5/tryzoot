@@ -75,6 +75,13 @@ const LOGO_SRC = '/brand/zoot-badge-192.png' // served from public/ at runtime (
   letter-spacing: normal;
 }
 .status-weather :deep(.wx) { box-shadow: none; }
+/* Narrow phones: the right-hand "Time to Travel" card sits beside this chip, so keep it compact */
+.status-weather :deep(.wx) {
+  gap: clamp(6px, 1.8vw, 12px);
+  padding-left: clamp(8px, 2.6vw, 11px);
+  padding-right: clamp(8px, 2.6vw, 11px);
+  font-size: clamp(11px, 3.3vw, 15px);
+}
 .status-weather :deep(.item) { font-size: inherit; }
 .status-weather :deep(.item .bi) { font-size: 1.1em; }
 .status-weather :deep(.item .face) { width: 1.2em; height: 1.2em; font-size: 1.2em; }
