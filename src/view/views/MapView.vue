@@ -1355,34 +1355,18 @@ function toggleDemoWalk() {
 // the panel flag set behind it, or the next press would hide an already-closed panel.
 watch(demo, (on) => { if (!on) demoPanelOpen.value = false })
 
+const cameraLockLabel = computed(() =>
+  cameraFollowing.value ? 'Stop following me' : 'Follow me, facing where I face'
+)
+
 /**
- * Is the camera locked onto the traveller, in whichever view is showing?
+ * Camera lock: keep the camera on the traveller. Deliberately independent of
+ * otter view — that one needs the 3D character, so folding the two together
+ * would make the lock unavailable in top-down view or with the avatar hidden.
  *
- * The two views lock differently — 3D rides behind the character (otter view),
- * flat follows the dot and turns the map — so one button reads and drives
- * whichever of the two applies.
- */
-const cameraLocked = computed(() => (flatMode.value ? cameraFollowing.value : otterView.value))
-
-const cameraLockLabel = computed(() => {
-  if (flatMode.value) return cameraLocked.value ? 'Stop following me' : 'Follow me, facing where I face'
-  return cameraLocked.value ? 'Unlock the camera' : 'Lock the camera behind me'
-})
-
-/** The one camera-lock button: hand off to whichever lock this view uses. */
-function toggleCameraLock() {
-  if (flatMode.value) {
-    toggleCameraFollow()
-    return
-  }
-  toggleOtterView()
-}
-
-/**
- * Flat view's half of the camera lock: follow the dot and turn the map to the
- * facing. Turning it on recentres straight away; turning it off leaves the map
- * where it is and stops it chasing — the view cone still shows your facing, it
- * just no longer drags the camera with it.
+ * On turning it on, recentre straight away. On turning it off, leave the map
+ * exactly where it is and stop it chasing; in flat view the cone still shows
+ * your facing, it just no longer drags the camera with it.
  */
 function toggleCameraFollow() {
   if (cameraFollowing.value) {
@@ -1393,7 +1377,7 @@ function toggleCameraFollow() {
   }
 
   centerOnMe() // sets both flags, starts GPS/compass, and flies back to you
-  ui.toast('Following you, facing where you face.', 'dark')
+  ui.toast(flatMode.value ? 'Following you, facing where you face.' : 'Following you.', 'dark')
 }
 
 /** Teleport a short distance before the next stop (demo shortcut). */
@@ -1603,22 +1587,6 @@ function writeMissionCardFlag(open) {
     <MapMenuButton :open="mapToolsOpen" @toggle="mapToolsOpen = !mapToolsOpen" />
 
     <div class="map-tools" :class="{ open: mapToolsOpen }">
-      <!-- Camera lock. One control, whichever view you are in: in 3D it rides
-           behind the traveller looking along his heading, in flat view it follows
-           you and turns the map to face the way you face. -->
-      <button
-        id="CameraLock"
-        type="button"
-        class="map-btn"
-        :class="{ active: cameraLocked }"
-        :aria-pressed="cameraLocked"
-        :aria-label="cameraLockLabel"
-        :title="cameraLockLabel"
-        @click="toggleCameraLock()"
-      >
-        <i class="bi bi-cursor-fill" aria-hidden="true"></i>
-      </button>
-
       <div id="zoom" class="map-btn" @click="zoomIn">
         <i class="bi bi-zoom-in"></i>
       </div>
@@ -1631,6 +1599,44 @@ function writeMissionCardFlag(open) {
       <div id="RealGps" class="map-btn" title="Centre on me" @click="centerOnMe()">
         <i class="bi bi-crosshair"></i>
       </div>
+
+      <!-- Camera-view slot. Exactly one control lives here in either view, so the
+           buttons around it never move when you switch: flat view gets the camera
+           lock, the guided 3D view gets otter view. Sits directly above the 2D
+           button, so the control you want next is where you just tapped. -->
+      <button
+        v-if="flatMode"
+        id="CameraLock"
+        type="button"
+        class="map-btn"
+        :class="{ active: cameraFollowing }"
+        :aria-pressed="cameraFollowing"
+        :aria-label="cameraLockLabel"
+        :title="cameraLockLabel"
+        @click="toggleCameraFollow()"
+      >
+        <i class="bi bi-cursor-fill" aria-hidden="true"></i>
+      </button>
+
+      <!-- Otter view needs the 3D character to ride behind, so with him switched
+           off it is shown disabled rather than removed — the slot has to stay
+           filled or every button below would shift up. -->
+      <button
+        v-else
+        id="OtterView"
+        type="button"
+        class="map-btn"
+        :class="{ active: otterView }"
+        :aria-pressed="otterView"
+        :disabled="!showTraveller3D"
+        :aria-label="showTraveller3D
+          ? 'Otter view: third-person camera behind the traveller'
+          : 'Otter view needs the 3D traveller switched on'"
+        :title="showTraveller3D ? 'Otter view' : 'Turn the 3D traveller on to use otter view'"
+        @click="toggleOtterView()"
+      >
+        <i class="bi bi-binoculars-fill" aria-hidden="true"></i>
+      </button>
 
       <!-- Toggles between the guided 3D view and flat free-roam. -->
       <div id="TopView" class="map-btn" @click="toggleFlatMode()">
