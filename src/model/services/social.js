@@ -97,14 +97,14 @@ export async function getHostedWindow(missionId) {
   return { ...quest, roster: must(await client.rpc('quest_roster', { p_party: quest.id })) }
 }
 
-/** Stops a host can open: their own upcoming visits (not ones joined from someone else), starting 15+ min from now. */
+/**
+ * Stops a host can open: their own visits (not ones joined from someone else) that have not finished yet,
+ * so a quest can start straight away, even at the stop they are on now.
+ */
 export function openableStops(mission, nowMs = Date.now()) {
   return (mission?.legs || []).filter(
     (l) =>
-      l.kind === 'visit' &&
-      l.status === 'pending' &&
-      !l.fixed &&
-      Date.parse(l.arrive_iso) > nowMs + 15 * 60000
+      l.kind === 'visit' && l.status === 'pending' && !l.fixed && Date.parse(l.depart_iso) > nowMs
   )
 }
 

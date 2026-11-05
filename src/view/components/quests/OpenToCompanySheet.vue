@@ -231,7 +231,7 @@ const rangeOf = (m) =>
         <!-- Open some stops -->
         <form v-else @submit.prevent="publish">
           <div v-if="!stops.length" class="alert alert-warning small mb-0">
-            No upcoming stops to open (they need to start at least 15 min from now). Add a stop to
+            No stops left to open: every stop on your mission is done or already over. Add a stop to
             your mission first.
           </div>
           <template v-else>
