@@ -11,6 +11,8 @@ import CenterDialog from './view/app/CenterDialog.vue'
 import QuestChatHost from './view/components/quests/QuestChatHost.vue'
 import QuestLiveHost from './view/components/quests/QuestLiveHost.vue'
 import { useUserStore } from './model/stores/user.js'
+import { useMissionStore } from './model/stores/mission.js'
+import { usePartyStore } from './model/stores/party.js'
 import { usePassportStore } from './model/stores/passport.js'
 import { useUiStore } from './model/stores/ui.js'
 
@@ -20,7 +22,18 @@ const passport = usePassportStore()
 const ui = useUiStore()
 const showNav = computed(() => route.meta.nav && user.isAuthed && !ui.navHidden)
 
-watch(() => user.userId, (id) => passport.load(id), { immediate: true })
+const mission = useMissionStore()
+const party = usePartyStore()
+
+watch(() => user.userId, (id, old) => {
+  // Signed out, or someone else signed in on this device: drop the last account's mission and
+  // quest, or the next save would write to a mission this account doesn't own (RLS refuses it).
+  if (old && id !== old) {
+    mission.forgetAccount()
+    party.$reset()
+  }
+  passport.load(id)
+}, { immediate: true })
 </script>
 
 <template>
