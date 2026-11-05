@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 // Supabase-gated (Tier 0, anon read). Runs only in the Vitest `supabase` project, when
 // VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set, SKIP_SUPABASE is not 1 and the
 // read-only preflight succeeded. Otherwise it is skipped with a name-only reason.

@@ -1,3 +1,4 @@
+-- EDITOR: EUDALE
 -- Zoot · Social quests (Eudale)
 -- Run in Supabase → SQL Editor AFTER schema.sql. Safe to re-run, and safe to run over the
 -- earlier version of this file (it removes the old request/approve design first).

@@ -1,3 +1,4 @@
+<!-- EDITOR: MATTHEW -->
 <script setup>
 //  WardrobeView.vue — the 3D traveller on his own, at /wardrobe
 //  A scratch playground for working on the character: full-page, no saving, no

@@ -1,3 +1,4 @@
+<!-- EDITOR: HULBERT -->
 <script setup>
 import { useUiStore } from '../../model/stores/ui.js'
 const ui = useUiStore()

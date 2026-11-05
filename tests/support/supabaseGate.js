@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 /**
  * Supabase gate for the optional, Supabase-backed test tiers (unit `supabase` project and the
  * Playwright `supabase` project). Plain ESM with no Vitest import, so Vitest, Playwright and

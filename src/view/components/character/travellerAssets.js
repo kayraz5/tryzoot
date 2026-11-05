@@ -1,3 +1,4 @@
+// EDITOR: MATTHEW
 //  travellerAssets.js — THE WARDROBE (data + props only, no character here)
 //  This file holds the *resources* for the traveller character:
 //    1. tiny helpers that build rounded shapes and materials

@@ -1,3 +1,4 @@
+<!-- EDITOR: EUDALE -->
 <script setup>
 import { computed } from 'vue'
 import UserAvatar from './UserAvatar.vue'

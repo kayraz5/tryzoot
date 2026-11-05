@@ -1,3 +1,4 @@
+<!-- EDITOR: MATTHEW -->
 <script setup>
 import { computed } from 'vue'
 import { placeStampUrl } from '../../../model/services/stampArt.js'

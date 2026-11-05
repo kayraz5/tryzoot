@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 /**
  * Remove env values and secret-shaped strings from text produced by test helpers.
  *

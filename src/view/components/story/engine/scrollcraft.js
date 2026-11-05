@@ -1,3 +1,4 @@
+// EDITOR: MATTHEW
 /*
    scrollcraft: a scroll-driven interaction runtime
    Vanilla JS. Zero dependencies. Zero DOM generation.

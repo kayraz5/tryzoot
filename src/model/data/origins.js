@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 // placeholder origins
 export const ORIGINS = [
   { id: 'changi-t3', label: 'Changi Airport T3', short: 'Changi T3', kind: 'airport', lat: 1.3563, lng: 103.9866 },

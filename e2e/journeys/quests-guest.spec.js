@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 /**
  * Journey — Feature: guest account access notice on the quests pages.
  * Runs in the guest harness (zoot.guest='1', external hosts aborted); social features are off in

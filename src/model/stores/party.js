@@ -1,3 +1,4 @@
+// EDITOR: EUDALE
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { watch } from 'vue'
 import * as social from '../services/social.js'

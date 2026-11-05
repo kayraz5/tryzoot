@@ -1,3 +1,4 @@
+// EDITOR: MATTHEW
 import { createRouter, createWebHistory } from 'vue-router'
 import { DEV_PANEL } from '../../model/services/config.js'
 import { useUserStore } from '../../model/stores/user.js'

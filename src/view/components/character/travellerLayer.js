@@ -1,3 +1,4 @@
+// EDITOR: MATTHEW
 //  travellerLayer.js — PUTTING THE CHARACTER ON THE MAP
 //  traveller.js builds a character that knows nothing about maps. This file is
 //  the adapter: it wraps him in MapLibre's "custom layer" contract so he can

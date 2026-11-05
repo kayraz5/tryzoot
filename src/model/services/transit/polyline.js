@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 /**
  * Decode a Google-style encoded polyline (precision 5) into [[lng, lat], …].
  * Used for bus route lines (busrouter data) and OneMap transit legs.

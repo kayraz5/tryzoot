@@ -1,3 +1,4 @@
+// EDITOR: HULBERT
 /**
  * Minimal Groq chat client for Vercel functions (Kayra/Hulbert lanes).
  * GROQ_API_KEY stays on the server; the browser only ever calls /api/*.

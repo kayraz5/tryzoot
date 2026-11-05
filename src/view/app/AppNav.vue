@@ -1,3 +1,4 @@
+<!-- EDITOR: MATTHEW -->
 <script setup>
 const items = [
   { to: '/map', icon: 'bi-geo-alt-fill', label: 'Map' },

@@ -1,3 +1,4 @@
+// EDITOR: MATTHEW
 //  traveller.js — THE CHARACTER
 //  Builds the Zoot traveller: a chunky, round-faced otter mascot, assembled
 //  entirely out of spheres, capsules and rounded boxes — no modelling software,

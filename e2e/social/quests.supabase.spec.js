@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 /**
  * Social journey (Tier 1, signed-in read): the open quests feed and one quest's detail page,
  * against the configured Supabase project as the test account. Reads only; the app may create a
