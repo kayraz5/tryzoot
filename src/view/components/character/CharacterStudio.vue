@@ -12,7 +12,7 @@
 //  This file is the only place the 3D preview exists. It's imported lazily by
 //  ProfileView so Three.js is never downloaded by someone who doesn't open the
 //  tab — see defineAsyncComponent there.
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import * as THREE from 'three'
 import { createTraveller } from './traveller.js'
 import { EYEWEAR, FURS, HATS, OUTFITS } from './travellerAssets.js'
@@ -42,6 +42,15 @@ function chooseOutfit(key) {
   if (kit?.hat) emit('update:hat', kit.hat)
   if (kit?.eyewear) emit('update:eyewear', kit.eyewear)
 }
+
+// One description per wardrobe slot, so the chip rack and the mobile dropdowns
+// render from the same source instead of drifting apart as options are added.
+const slots = computed(() => [
+  { key: 'outfit', label: 'Outfit', options: outfits, value: props.outfit, choose: chooseOutfit },
+  { key: 'hat', label: 'Hat', options: hats, value: props.hat, choose: (k) => emit('update:hat', k) },
+  { key: 'eyewear', label: 'Eyewear', options: eyewears, value: props.eyewear, choose: (k) => emit('update:eyewear', k) },
+  { key: 'fur', label: 'Fur', options: furs, value: props.fur, choose: (k) => emit('update:fur', k) }
+])
 
 const walking = ref(false)
 const canvas = ref(null)
@@ -138,59 +147,32 @@ onMounted(() => {
     <canvas ref="canvas" class="stage" :style="{ height }"></canvas>
 
     <div class="rack">
-      <div class="rack-row">
-        <span class="rack-label">Outfit</span>
+      <div v-for="slot in slots" :key="slot.key" class="rack-row rack-row--slot">
+        <span class="rack-label">{{ slot.label }}</span>
+
+        <!-- Phones get a native select: the OS picker is one tap and one scroll,
+             against a wall of chips that pushed the Save button off-screen. The
+             chips below are the same options, kept for screens with room. -->
+        <span class="rack-select-wrap">
+          <select
+            class="rack-select"
+            :value="slot.value"
+            :aria-label="slot.label"
+            @change="slot.choose($event.target.value)"
+          >
+            <option v-for="o in slot.options" :key="o.key" :value="o.key">{{ o.label }}</option>
+          </select>
+        </span>
+
         <div class="rack-opts">
           <button
-            v-for="o in outfits"
+            v-for="o in slot.options"
             :key="o.key"
             class="zt-chip"
-            :class="{ active: outfit === o.key }"
-            :aria-pressed="outfit === o.key"
-            @click="chooseOutfit(o.key)"
+            :class="{ active: slot.value === o.key }"
+            :aria-pressed="slot.value === o.key"
+            @click="slot.choose(o.key)"
           >{{ o.label }}</button>
-        </div>
-      </div>
-
-      <div class="rack-row">
-        <span class="rack-label">Hat</span>
-        <div class="rack-opts">
-          <button
-            v-for="h in hats"
-            :key="h.key"
-            class="zt-chip"
-            :class="{ active: hat === h.key }"
-            :aria-pressed="hat === h.key"
-            @click="emit('update:hat', h.key)"
-          >{{ h.label }}</button>
-        </div>
-      </div>
-
-      <div class="rack-row">
-        <span class="rack-label">Eyewear</span>
-        <div class="rack-opts">
-          <button
-            v-for="e in eyewears"
-            :key="e.key"
-            class="zt-chip"
-            :class="{ active: eyewear === e.key }"
-            :aria-pressed="eyewear === e.key"
-            @click="emit('update:eyewear', e.key)"
-          >{{ e.label }}</button>
-        </div>
-      </div>
-
-      <div class="rack-row">
-        <span class="rack-label">Fur</span>
-        <div class="rack-opts">
-          <button
-            v-for="f in furs"
-            :key="f.key"
-            class="zt-chip"
-            :class="{ active: fur === f.key }"
-            :aria-pressed="fur === f.key"
-            @click="emit('update:fur', f.key)"
-          >{{ f.label }}</button>
         </div>
       </div>
 
@@ -235,4 +217,63 @@ onMounted(() => {
   padding-top: 0.35rem;
 }
 .rack-opts { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+
+/* Hidden until the viewport is narrow enough for the chips to become a wall. */
+.rack-select-wrap { display: none; }
+
+@media (max-width: 767px) {
+  /* Swap chips for dropdowns, but only in the wardrobe slots — Pose is a single
+     toggle, so it stays a chip and must not be caught by this. */
+  .rack-row--slot .rack-opts { display: none; }
+
+  .rack-select-wrap {
+    display: block;
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0; /* a flex child must be allowed to shrink, or long labels overflow */
+  }
+
+  /* Chevron drawn in CSS and inheriting currentColor, because --zt-line flips
+     from near-black to pale yellow between themes — a fixed-colour arrow would
+     disappear in one of them. */
+  .rack-select-wrap::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0.9rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    transform: translateY(-70%) rotate(45deg);
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    color: var(--zt-ink);
+    pointer-events: none; /* the arrow must not swallow the tap */
+  }
+
+  /* Matches .zt-chip's border, radius and surface so the row still reads as the
+     same control family, just collapsed. */
+  .rack-select {
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0.6rem 2.2rem 0.6rem 0.9rem;
+    border: var(--zt-bw) solid var(--zt-line);
+    border-radius: 999px;
+    background: var(--zt-card);
+    color: var(--zt-ink);
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .rack-select:focus-visible { outline: 3px solid var(--zt-pink); outline-offset: 2px; }
+
+  /* The open menu is drawn by the OS, which otherwise ignores the theme. */
+  .rack-select option { background: var(--zt-card); color: var(--zt-ink); text-transform: none; }
+
+  .rack-row { align-items: center; }
+  .rack-label { padding-top: 0; }
+}
 </style>
