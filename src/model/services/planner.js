@@ -163,7 +163,7 @@ export const homeOf = (x) => x.returnTo || x.return_to || x.origin
 
 /** Can we visit p from `cur` at time t and still make it home? Returns the timed visit or null. */
 function tryVisit(ctx, budget, cur, t, p) {
-	const opts = { maxWalk: ctx.maxWalk, style: ctx.style }
+	const opts = { maxWalk: ctx.maxWalk, transport: ctx.transport, style: ctx.style }
 	const tr = travel(cur, p, { ...opts, atMs: t })
 	const arrive = t + tr.minutes * MIN
 	const stay = stayMinutes(p, ctx)
@@ -219,7 +219,7 @@ export function greedy(ctx, budget, cands, { seed = null, limit = maxStops(ctx, 
  * closed, rained out or too risky, or the traveller would be back later than `latestHomeMs`.
  */
 function timeChain(ctx, budget, start, visits, stays, latestHomeMs = budget.arriveByMs) {
-	const opts = { maxWalk: ctx.maxWalk, style: ctx.style }
+	const opts = { maxWalk: ctx.maxWalk, transport: ctx.transport, style: ctx.style }
 	let cur = start.point
 	let t = start.ms
 	const out = []
@@ -323,7 +323,7 @@ export function assembleMission(ctx, budget, visits, meta = {}) {
 	const lastIsNew = last && last.status !== 'stamped'
 	const leaveMs = lastIsNew ? last.depart : ctx.start?.ms ?? budget.departMs
 	const home = homeOf(ctx)
-	const back = lastIsNew ? last.back : travel(ctx.start?.point || ctx.origin, home, { maxWalk: ctx.maxWalk, style: ctx.style, atMs: leaveMs })
+	const back = lastIsNew ? last.back : travel(ctx.start?.point || ctx.origin, home, { maxWalk: ctx.maxWalk, transport: ctx.transport, style: ctx.style, atMs: leaveMs })
 	const homeMs = leaveMs + back.minutes * MIN
 	legs.push({
 		seq: legs.length + 1,
@@ -368,8 +368,8 @@ export function assembleMission(ctx, budget, visits, meta = {}) {
 }
 
 function pickPrefs(ctx) {
-	const { style, interests, energy, indoorPref, maxWalk, partySize, cleared, foodNeeds } = ctx
-	return { style, interests, energy, indoorPref, maxWalk, partySize, cleared, foodNeeds }
+	const { style, interests, energy, indoorPref, maxWalk, transport, partySize, cleared, foodNeeds } = ctx
+	return { style, interests, energy, indoorPref, maxWalk, transport, partySize, cleared, foodNeeds }
 }
 
 function startOf(ctx, budget) {
@@ -486,7 +486,7 @@ const FIXED_LATE_MIN = 10
  */
 export function retimeMission(mission, { start, catalogById }) {
 	const m = JSON.parse(JSON.stringify(mission))
-	const opts = { maxWalk: m.prefs?.maxWalk, style: m.style }
+	const opts = { maxWalk: m.prefs?.maxWalk, transport: m.prefs?.transport, style: m.style }
 	const iso = (ms) => new Date(ms).toISOString()
 	const problems = []
 
@@ -538,7 +538,7 @@ export function slackMinutes(mission, here, nowMs, catalogById) {
 	const arriveBy = Date.parse(mission.legs.at(-1).arrive_by)
 	let t = nowMs
 	let cur = here
-	const opts = { maxWalk: mission.prefs?.maxWalk, style: mission.style }
+	const opts = { maxWalk: mission.prefs?.maxWalk, transport: mission.prefs?.transport, style: mission.style }
 	for (const l of mission.legs) {
 		if (l.kind !== 'visit' || l.status === 'stamped' || l.status === 'skipped') continue
 		const p = catalogById.get(l.place_id) || l
@@ -552,7 +552,7 @@ export function slackMinutes(mission, here, nowMs, catalogById) {
 /** Latest moment to start heading back from `here` and still make arrive_by. */
 export function leaveByMs(mission, here, nowMs) {
 	const arriveBy = Date.parse(mission.legs.at(-1).arrive_by)
-	const back = travel(here, homeOf(mission), { maxWalk: mission.prefs?.maxWalk, style: mission.style, atMs: nowMs })
+	const back = travel(here, homeOf(mission), { maxWalk: mission.prefs?.maxWalk, transport: mission.prefs?.transport, style: mission.style, atMs: nowMs })
 	return { ms: arriveBy - back.minutes * MIN, back }
 }
 

@@ -154,7 +154,10 @@ const HEADING_SMOOTH_MS = 160
 const FLAT_BEARING_SMOOTH_MS = 420
 
 /** Pick the right route resolver for a leg's travel mode. */
-const ROUTE_BY_MODE = { walk: getWalkRoute, taxi: getDriveRoute, mrt: getTransitRoute }
+// Bus legs (public transport where the MRT doesn't help): the real bus itinerary with steps,
+// or at least the road the bus drives along.
+const getBusRoute = async (from, to) => (await getTransitRoute(from, to)) || getDriveRoute(from, to)
+const ROUTE_BY_MODE = { walk: getWalkRoute, taxi: getDriveRoute, bus: getBusRoute, mrt: getTransitRoute }
 
 /**
  * Live-route refresh policy. The drawn line is re-trimmed to the traveller every
@@ -318,6 +321,7 @@ let noFixTimer = 0
 let retryTimer = 0
 let lastRouteAt = 0
 let routeInFlight = false               // one live-route request at a time
+let refreshAfterFlight = false          // a forced refresh arrived while a request was out
 let liveDeviationM = Infinity           // how far the traveller is from the resolved live route
 const keys = new Set()                  // pressed Demo-Walk keys (w/a/s/d + arrows)
 let orbit = null                        // active drag-to-orbit gesture, or null
@@ -766,7 +770,7 @@ function previousPoint(leg) {
 
 /** Stable identity for an adjacent leg pair, independent of array position. */
 function legKey(a, b) {
-  return `${a.seq}:${a.place_id || 'home'}>${b.seq}:${b.place_id || 'home'}`
+  return `${a.seq}:${a.place_id || 'home'}>${b.seq}:${b.place_id || 'home'}:${b.travel_mode}` // mode: a transport switch reroutes
 }
 
 /** The planned leg into the next stop: [from, to], or null when nothing is pending. */
@@ -834,7 +838,7 @@ async function refreshLiveRoute(force = false) {
   const ageMs = Date.now() - lastRouteAt
 
   // A planned transit leg is followed, not re-planned on every step.
-  if (!force && sameTarget && current.parts && travelMode === 'mrt') {
+  if (!force && sameTarget && current.parts && (travelMode === 'mrt' || travelMode === 'bus')) {
     if (ageMs < TRANSIT_REFRESH_MS && liveDeviationM < TRANSIT_DEVIATION_M) return drawRoute()
   } else if (!force && sameTarget) {
     // Just fetched or checked: the trimmed line is already current.
@@ -852,8 +856,12 @@ async function refreshLiveRoute(force = false) {
     }
   }
 
-  // Never run two router requests for the same leg at once.
-  if (routeInFlight) return drawRoute()
+  // Never run two router requests for the same leg at once. A forced refresh (new stop, or a
+  // switch between public transport and car) runs as soon as the current one comes back.
+  if (routeInFlight) {
+    if (force) refreshAfterFlight = true
+    return drawRoute()
+  }
 
   routeInFlight = true
   lastRouteAt = Date.now()
@@ -869,9 +877,13 @@ async function refreshLiveRoute(force = false) {
   } finally {
     routeInFlight = false
   }
-  // The next stop changed while this request was out (a stamp, a replan): the refresh for
-  // the new stop was skipped as "in flight", so run it now rather than wait for a GPS move.
-  if (next.value && next.value !== target) return refreshLiveRoute(true)
+  // The next stop or travel mode changed while this request was out (a stamp, a replan, a
+  // transport switch): that refresh was skipped as "in flight", so run it now rather than wait
+  // for a GPS move.
+  if (refreshAfterFlight || (next.value && next.value !== target)) {
+    refreshAfterFlight = false
+    return refreshLiveRoute(true)
+  }
   drawRoute()
 }
 
@@ -1467,15 +1479,23 @@ watch(mapReady, (ready) => {
 // A new GPS fix: move the avatar and keep the camera on it unless the user is looking around.
 watch(() => [here.value?.lat, here.value?.lng], onHereChanged)
 
-// Stamps, skips, replans and reorders change the legs: redraw everything.
+// Stamps, skips, replans, reorders and a transport switch (public ↔ car) change the legs: redraw everything.
 watch(
   () => [
     mapReady.value,
     mission.value?.id,
-    missionStore.legs.map((leg) => `${leg.seq}${leg.status}${leg.place_id}`).join()
+    mission.value?.prefs?.transport,
+    missionStore.legs.map((leg) => `${leg.seq}${leg.status}${leg.place_id}${leg.travel_mode}`).join()
   ],
   onMissionLegsChanged
 )
+
+// The leg being travelled now: a new next stop (any plan change saves new leg objects) or a new
+// way of getting there (public ↔ car) must fetch its route straight away. Otherwise the old line is
+// dropped and nothing redraws it until the traveller moves.
+watch(() => [next.value, liveTravel.value?.mode], ([leg, mode], [prevLeg, prevMode] = []) => {
+  if (mapReady.value && (leg !== prevLeg || mode !== prevMode)) refreshLiveRoute(true)
+})
 
 watch(check, drawFence)
 watch(showTraveller3D, (visible) => {
