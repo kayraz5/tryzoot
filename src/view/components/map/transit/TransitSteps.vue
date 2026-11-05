@@ -103,4 +103,21 @@ const usesTransit = computed(() => props.steps.some((s) => s.mode !== 'walk'))
   margin: 8px 0 0; padding: 10px 12px 10px 26px; border-radius: 12px;
   background: rgba(255, 244, 194, 0.08); font-size: 0.78rem; line-height: 1.4; display: grid; gap: 4px;
 }
+/* Phones: the step block is the tallest thing in the card, so it tightens most.
+   The full step list is capped shorter too, so opening "All N steps" scrolls
+   inside the card instead of pushing it over half the map. */
+@media (max-width: 575.98px) {
+  .transit { margin-top: 6px; }
+  .step { gap: 8px; }
+  .badge-mode { min-width: 28px; height: 28px; border-radius: 8px; font-size: 0.72rem; }
+  .badge-mode.sm { min-width: 22px; height: 22px; font-size: 0.64rem; }
+  .step-title { font-size: 0.8rem; }
+  .step-detail, .up-next { font-size: 0.68rem; }
+  .up-next { margin-top: 4px; }
+  .all { gap: 6px; margin-top: 8px; max-height: 26vh; }
+  .all .step-title { font-size: 0.76rem; }
+  .links { gap: 10px; margin-top: 5px; }
+  .link { font-size: 0.7rem; }
+  .tips { margin-top: 6px; padding: 8px 10px 8px 22px; font-size: 0.7rem; }
+}
 </style>
