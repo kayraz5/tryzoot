@@ -88,7 +88,7 @@ create table if not exists public.mission_legs (
   seq int not null,
   kind text not null check (kind in ('visit', 'return')),
   place_id text references public.places (id),
-  travel_mode text not null check (travel_mode in ('walk', 'mrt', 'taxi')),
+  travel_mode text not null check (travel_mode in ('walk', 'mrt', 'bus', 'taxi')),
   travel_min int not null,
   stay_min int not null,
   xp int not null default 0,

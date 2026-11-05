@@ -145,6 +145,7 @@ export const useTripStore = defineStore('trip', {
 				energy: d.energy,
 				indoorPref: d.indoorPref,
 				maxWalk: d.maxWalk,
+				transport: d.transport,
 				partySize: d.partySize,
 				foodNeeds: d.foodNeeds,
 				cleared: this.cleared
@@ -175,6 +176,7 @@ function defaultDraft() {
 		energy: 'med',
 		indoorPref: 'any',
 		maxWalk: 15,
+		transport: 'transit', // transit (MRT & bus) | car (taxi / Grab)
 		partySize: 1,
 		foodNeeds: 'none', // none | halal | vegetarian | vegan
 		entryDismissed: false // entry-check banner closed for this plan

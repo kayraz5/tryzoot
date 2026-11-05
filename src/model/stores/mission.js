@@ -4,7 +4,7 @@ import { getDb } from '../services/db/index.js'
 import { buildMission } from '../services/groq.js'
 import { catalog, placeById, loadCatalog } from '../services/catalog.js'
 import { keptVisits, slackMinutes, leaveByMs, retimeMission, stayMinutes, xpFor } from '../services/planner.js'
-import { travel, distanceM } from '../services/travel.js'
+import { travel, distanceM, TRANSPORT } from '../services/travel.js'
 import { rainLookup } from '../services/weather.js'
 import { now } from '../services/clock.js'
 import { geo, hasFix } from '../services/geo.js'
@@ -87,6 +87,7 @@ export const useMissionStore = defineStore('mission', {
         energy: trip.energy,
         indoorPref: trip.indoorPref,
         maxWalk: trip.maxWalk,
+        transport: trip.transport,
         partySize: trip.partySize,
         foodNeeds: trip.foodNeeds
       })
@@ -141,6 +142,21 @@ export const useMissionStore = defineStore('mission', {
       const [latest] = await db.listMissions()
       if (latest) return this.load(latest.id)
       return null
+    },
+
+    /** Load the newest mission that has not been completed for the current account. */
+    async loadUnfinished() {
+      const db = await getDb()
+      const missions = await db.listMissions()
+      const unfinished = missions.find((mission) => mission && !mission.completed)
+      if (!unfinished) return null
+
+      // Use the payload returned by the account-scoped query. This avoids reusing
+      // a mission left in the Pinia store after a different account signed in.
+      this.mission = unfinished
+      this.status = 'ready'
+      try { localStorage.setItem(ACTIVE_KEY, unfinished.id) } catch {}
+      return unfinished
     },
 
     here() {
@@ -257,6 +273,28 @@ export const useMissionStore = defineStore('mission', {
       mission.edits = (m.edits || 0) + 1
       await this.persist(mission)
       if (message) useUiStore().toast(message, 'success')
+      return true
+    },
+
+    /**
+     * Change how I get around ('transit' = MRT & bus, 'car' = taxi / Grab) for the rest of the plan:
+     * every stop still ahead is re-timed with the new travel times, and the map reroutes.
+     * Unlike other edits this is saved even if it makes me late (it's how I'm actually travelling),
+     * with a warning saying what no longer fits.
+     */
+    async setTransport(mode) {
+      const m = this.mission
+      if (!m || !TRANSPORT[mode] || m.prefs?.transport === mode) return false
+      await loadCatalog()
+      const draft = JSON.parse(JSON.stringify(m))
+      draft.prefs = { ...draft.prefs, transport: mode }
+      const departMs = departOf(m)
+      const start = now() >= departMs ? { point: this.here(), ms: now() } : { point: m.origin, ms: departMs }
+      const { mission, problems } = retimeMission(draft, { start, catalogById: placeById.value })
+      await this.persist(mission)
+      const ui = useUiStore()
+      if (problems.length) ui.toast(`${TRANSPORT[mode].label}: heads-up, ${problems[0]}.`, 'warning', 6000)
+      else ui.toast(`Going by ${TRANSPORT[mode].label.toLowerCase()}: route and times updated.`, 'success')
       return true
     },
 
@@ -567,7 +605,7 @@ export const useMissionStore = defineStore('mission', {
       const slack = this.slack()
       const next = this.nextLeg
       const nextPoint = next ? { lat: next.lat, lng: next.lng } : this.mission.origin
-      const opts = { maxWalk: this.mission.prefs?.maxWalk, style: this.mission.style }
+      const opts = { maxWalk: this.mission.prefs?.maxWalk, transport: this.mission.prefs?.transport, style: this.mission.style }
       const direct = travel(position, nextPoint, opts).minutes
       return SIDEQUESTS
         .map((sq) => ({ ...sq, place: placeById.value.get(sq.place_id) }))
@@ -592,7 +630,7 @@ export const useMissionStore = defineStore('mission', {
       }
       const next = this.nextLeg
       const place = placeById.value.get(sq.place_id)
-      const opts = { maxWalk: m.prefs?.maxWalk, style: m.style }
+      const opts = { maxWalk: m.prefs?.maxWalk, transport: m.prefs?.transport, style: m.style }
       const here = this.here()
       const tr = travel(here, place, { ...opts, atMs: now() })
       const arrive = now() + tr.minutes * 60000

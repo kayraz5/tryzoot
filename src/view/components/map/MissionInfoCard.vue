@@ -5,6 +5,7 @@ import { placeStampUrl } from '../../../model/services/stampArt.js'
 import QuestCoopChip from '../quests/QuestCoopChip.vue'
 import QuestChatButton from '../quests/QuestChatButton.vue' // "Chat with Mei" (only while in a social quest)
 import QuestGoSolo from '../quests/QuestGoSolo.vue'         // "Go solo" link (only after joining someone's quest)
+import TransportToggle from './TransportToggle.vue'                 // Public transport | Car (re-times + reroutes)
 import TransitSteps from './transit/TransitSteps.vue'               // MRT/bus step-by-step for the current leg
 
 /*
@@ -98,6 +99,7 @@ const stampArt = computed(() => placeStampUrl(props.next?.name))
       </div>
 
       <div class="col-12">
+        <TransportToggle class="mt-2" />
         <QuestChatButton class="mt-2" />
         <div class="card-links">
           <QuestGoSolo />

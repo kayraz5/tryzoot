@@ -5,6 +5,7 @@ import {useRouter} from 'vue-router';
 import {useUserStore} from '../../model/stores/user.js';
 import {usePassportStore} from '../../model/stores/passport.js';
 import {useUiStore} from '../../model/stores/ui.js';
+import {useTripStore} from '../../model/stores/trip.js';
 import {STYLES} from '../../model/data/origins.js';
 import {DEV_PANEL} from '../../model/services/config.js';
 import {COVERS, DEFAULT_COVER, onColor} from '../../model/services/brand.js';
@@ -21,7 +22,13 @@ const CharacterStudio = defineAsyncComponent(() => import('../components/charact
 const user = useUserStore();
 const passport = usePassportStore();
 const ui = useUiStore();
+const trip = useTripStore();
 const router = useRouter();
+
+function planNewLayover() {
+    trip.startNewLayover();
+    router.push({name: 'plan', query: {fresh: '1'}});
+}
 
 const editing = ref(false);
 const name = ref(user.profile?.display_name || '');
@@ -174,9 +181,9 @@ async function signOut() {
             <RouterLink to="/swipe" class="list-group-item list-group-item-action">
                 <i class="bi bi-gem"></i> Sidequest deck
             </RouterLink>
-            <RouterLink to="/plan" class="list-group-item list-group-item-action">
+            <button type="button" class="list-group-item list-group-item-action" @click="planNewLayover">
                 <i class="bi bi-plus-circle"></i> Plan a new layover
-            </RouterLink>
+            </button>
             <RouterLink to="/onboard" class="list-group-item list-group-item-action">
                 <i class="bi bi-shuffle"></i> Retake the style quiz
             </RouterLink>
