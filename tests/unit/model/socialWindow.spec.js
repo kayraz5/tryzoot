@@ -37,14 +37,23 @@ describe('toWindowStop: what a guest may see', () => {
 })
 
 describe('openableStops', () => {
-  it('only my own upcoming visits starting 15+ min from now (not stamped, not joined blocks)', () => {
+  it('only my own visits that have not finished (not stamped, not joined blocks)', () => {
     const m = mission([
       leg('a', '13:00', '13:30', { status: 'stamped' }),
       leg('b', '14:05', '14:30'),
       leg('c', '14:20', '15:00'),
       leg('d', '15:10', '16:00', { fixed: true, party_id: 'p' })
     ])
-    expect(openableStops(m, Date.parse(at('13:55'))).map((l) => l.place_id)).toEqual(['c'])
+    expect(openableStops(m, Date.parse(at('13:55'))).map((l) => l.place_id)).toEqual(['b', 'c'])
+  })
+
+  it('lets a quest start immediately, including the stop I am at now', () => {
+    const m = mission([
+      leg('now', '13:50', '14:20'),
+      leg('soon', '14:00', '14:30'),
+      leg('over', '13:00', '13:40')
+    ])
+    expect(openableStops(m, Date.parse(at('14:00'))).map((l) => l.place_id)).toEqual(['now', 'soon'])
   })
 })
 
