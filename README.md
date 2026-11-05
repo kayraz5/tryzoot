@@ -31,7 +31,7 @@ Live app: **https://tryzoot.vercel.app**
 | Email | `test@gmail.com` |
 | Password | `adminuser` |
 
-Sign in at **/auth** on the live site or on your local dev server. You can also tap **Continue as guest**, which needs no account. Guest progress is saved in your browser only (via localStorage) but multiplayer quests feature is off.
+You can also tap **Continue as guest**, which needs no account. Guest progress is saved in your browser only (via localStorage) but multiplayer quests feature is off.
 
 ---
 
@@ -51,10 +51,7 @@ pnpm install
 pnpm dev
 ```
 
-Open **http://localhost:5173**.
-
-
-### 3. Add keys for the full app (optional)
+### 3. Add keys for the full app (Localhost, optional)
 
 Copy the example env file, with the following details:
 
@@ -65,16 +62,8 @@ Copy the example env file, with the following details:
 | `ONEMAP_EMAIL`, `ONEMAP_PASSWORD` | Full bus + MRT routes with changes ([free account](https://www.onemap.gov.sg/apidocs/register)) | MRT and direct buses from bundled data |
 | `LTA_ACCOUNT_KEY` | Live bus arrival times from LTA DataMall | Public arrivals mirror |
 | `ORS_API_KEY` | Backup street routing if the free routers are down | Free routers only |
-| `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `CRON_SECRET` | Daily places sync and the shared route cache (server only) | Bundled place list |
+| `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `CRON_SECRET` | Daily places sync and the shared route cache (server only) | Place list |
 | `VITE_DEV_PANEL` | The `/dev` panel on a production build (always on in `pnpm dev`) | Hidden in production |
-
-### How the dev server works
-
-`pnpm dev` starts Vite at http://localhost:5173 with hot reload. It also serves the serverless functions in `api/` at `/api/*` (see `vite.config.js`), so the AI planner, routing and bus arrivals work locally exactly as they do on Vercel, with no separate backend to start.
-
-### The dev panel
-
-While the dev server is running, open **http://localhost:5173/dev** (or **Me → Dev**). It lets you skip the app clock forward (to test a quest that starts later), fake your GPS position, and force rain. On the map, **Enable Demo-Walk** lets you walk around with WASD or taps instead of real GPS.
 
 ### Useful commands
 
@@ -120,7 +109,7 @@ While the dev server is running, open **http://localhost:5173/dev** (or **Me →
 
 | Layer | Tools |
 |---|---|
-| Frontend | Vue 3 (`<script setup>`), Vite, Vue Router, Pinia |
+| Frontend | Vue 3, Vite, Vue Router, Pinia |
 | UI | Bootstrap 5, Bootstrap Icons, custom CSS (`src/view/styles/`) |
 | Maps & 3D | MapLibre GL (OpenFreeMap tiles), Three.js, Turf |
 | Backend | Supabase (Postgres, Auth, Realtime, row-level security) and Vercel serverless functions (`api/`) |
@@ -129,7 +118,7 @@ While the dev server is running, open **http://localhost:5173/dev** (or **Me →
 | Testing | Vitest + Vue Test Utils (unit), Playwright (browser), GitHub Actions (CI) |
 | Hosting | Vercel, with a daily cron job for the places sync |
 
-There is no separate server to run. The browser talks to Supabase directly, and row-level security decides what each user can read or write. Anything that needs a secret key (Groq, OneMap, LTA, the places sync) runs as a Vercel function in `api/`.
+There is no separate server to run. The browser talks to Supabase directly. Row-level security decides what each user can read or write. Anything that needs a secret key is run as a Vercel function in  `api/`.
 
 ---
 
@@ -166,7 +155,8 @@ zoot-/
 │   │   ├── common/         Pieces used by more than one feature (weather, place art, galleries)
 │   │   ├── app/            App shell: bottom nav, toasts, dialogs
 │   │   └── styles/         Global CSS and design tokens
-├── public/                 All images and static files: brand, story frames, stamps/
+│   └── assets/             Images, stamp art, videos
+├── public/                 Static files served as-is (brand images, story frames)
 ├── supabase/               SQL to set up the database (tables, security rules, seed data)
 ├── scripts/                Data sync and generation scripts (places, transit, seed)
 ├── tests/                  Unit and integration tests (Vitest)
@@ -216,12 +206,13 @@ Then run `pnpm test:supabase`. Use `pnpm test:env` to see which test variables a
 | **Steven** | Supabase integration, onboarding, test suites and CI |
 | **Kayra** | Layover planner, itinerary engine, mission page, public transport, Supabase integration |
 
-In the README.txt file, state clearly the parts you solely rely on AI/LLM
+--- 
 
-AI declaration: 
-1. We used Claude to help create the 3D assets, stop designs, and otter design and costume, as this was outside the scope of our study. 3D buildings are pre-loaded using MapLibre API.
-2. The Dev Panel add-on and Demo walk plan feature were built with agentic coding in Claude. Both are demo-only and not core deliverables. 
-3. We used AI to quickly understand how to route the MapLibre layout and feature API for the 3D map and manipulate it for different features
-4. Claude was used to mock up the initial landing page design. The current landing page used a Claude Skill to help design the page flow and layout.
-5. We used AI to diagnose the weather chip’s positioning on the 3D map and make its sizing responsive across mobile and laptop screens.
-6. We used AI to generate more test cases covering different functions and methods in the app, and to separate test folders for repo clarity.
+## AI declaration:
+
+We used Claude to help create the 3D assets, stop designs, and otter design and costume, as this was outside the scope of our study. 3D buildings are pre-loaded using MapLibre API.
+The Dev Panel add-on and Demo walk plan feature were built with agentic coding in Claude. Both are demo-only and not core deliverables.
+We used AI to quickly understand how to route the MapLibre layout and feature API for the 3D map and manipulate it for different features
+Claude was used to mock up the initial landing page design. The current landing page used a Claude Skill to help design the page flow and layout.
+We used AI to diagnose the weather chip’s positioning on the 3D map and make its sizing responsive across mobile and laptop screens.
+We used AI to generate more test cases covering different functions and methods in the app, and to separate test folders for repo clarity.
