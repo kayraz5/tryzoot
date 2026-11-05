@@ -105,7 +105,7 @@ const info = computed(() => {
                     <path d="M4.5 7.2q1.1-1.5 2.2 0M9.3 7.2q1.1-1.5 2.2 0" /> <!-- happy, arched eyes -->
                     <path d="M4.3 9.6q3.7 4 7.4 0" /> <!-- wide smile -->
                 </template>
-            </svg>{{ haze.psi }}
+            </svg>PSI {{ haze.psi }}
         </span>
     </div>
 </template>
