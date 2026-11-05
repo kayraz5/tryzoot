@@ -166,8 +166,7 @@ zoot-/
 │   │   ├── common/         Pieces used by more than one feature (weather, place art, galleries)
 │   │   ├── app/            App shell: bottom nav, toasts, dialogs
 │   │   └── styles/         Global CSS and design tokens
-│   └── assets/             Images, stamp art, videos
-├── public/                 Static files served as-is (brand images, story frames)
+├── public/                 All images and static files: brand, story frames, stamps/
 ├── supabase/               SQL to set up the database (tables, security rules, seed data)
 ├── scripts/                Data sync and generation scripts (places, transit, seed)
 ├── tests/                  Unit and integration tests (Vitest)

@@ -15,59 +15,58 @@ export const tick = ref(Date.now()); // Changes every second, so components that
 
 // Reads the saved offset (in ms) when the app starts, or 0 if there isn't a valid one
 function loadOffset() {
-    try {
-        const saved = Number(localStorage.getItem(STORAGE_KEY) || 0);
-        return Number.isFinite(saved) ? saved : 0; // Ignore corrupted values
-    } 
-    catch(error) {
-        return 0; // localStorage unavailable
-    }
+  try {
+    const saved = Number(localStorage.getItem(STORAGE_KEY) || 0);
+    return Number.isFinite(saved) ? saved : 0; // Ignore corrupted values
+  } catch (error) {
+    return 0; // localStorage unavailable
+  }
 }
 
 // Saves the offset so it survives a page refresh
 function saveOffset(ms) {
-    try {
-        localStorage.setItem(STORAGE_KEY, String(ms));
-    } 
-    catch(error) {
-        // Ignore: the offset just won't survive a page refresh
-    }
+  try {
+    localStorage.setItem(STORAGE_KEY, String(ms));
+  } catch (error) {
+    // Ignore: the offset just won't survive a page refresh
+  }
 }
 
 // Deletes the saved offset
 function clearSavedOffset() {
-    try {
-        localStorage.removeItem(STORAGE_KEY);
-    } 
-    catch(error) {
-        // Ignore: nothing to clear
-    }
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (error) {
+    // Ignore: nothing to clear
+  }
 }
 
 // The app's current time (ms): real time + skipped time
 // Using this instead of Date.now()
 export function now() {
-    return Date.now() + offsetMs.value;
+  return Date.now() + offsetMs.value;
 }
 
 // How many minutes the app clock is ahead of real time
 export function clockOffsetMin() {
-    return Math.round(offsetMs.value / MS_PER_MINUTE);
+  return Math.round(offsetMs.value / MS_PER_MINUTE);
 }
 
 // Moves the app clock forward by the given number of minutes
 export function skipMinutes(min) {
-    offsetMs.value += min * MS_PER_MINUTE;
-    saveOffset(offsetMs.value);
-    tick.value = now();
+  offsetMs.value += min * MS_PER_MINUTE;
+  saveOffset(offsetMs.value);
+  tick.value = now();
 }
 
 // Puts the app clock back in sync with real time
 export function resetClock() {
-    offsetMs.value = 0;
-    clearSavedOffset();
-    tick.value = now();
+  offsetMs.value = 0;
+  clearSavedOffset();
+  tick.value = now();
 }
 
 // Updates tick every second so components can show live countdowns
-setInterval(() => { tick.value = now() }, 1000);
+setInterval(() => {
+  tick.value = now()
+}, 1000);

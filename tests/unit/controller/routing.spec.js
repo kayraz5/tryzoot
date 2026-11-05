@@ -7,12 +7,21 @@ useCleanSlate()
 const from = { lat: 1.3001, lng: 103.8001 }
 const to = { lat: 1.3102, lng: 103.8102 }
 
-const osrmResponse = ({ distance = 123, coords = [[103.8001, 1.3001], [103.8102, 1.3102]], steps } = {}) => ({
-  routes: [{
-    geometry: { coordinates: coords },
-    distance,
-    ...(steps ? { legs: [{ steps }] } : {}),
-  }],
+const osrmResponse = ({
+  distance = 123,
+  coords = [
+    [103.8001, 1.3001],
+    [103.8102, 1.3102]
+  ],
+  steps
+} = {}) => ({
+  routes: [
+    {
+      geometry: { coordinates: coords },
+      distance,
+      ...(steps ? { legs: [{ steps }] } : {}),
+    }
+  ],
 })
 
 let routing
@@ -25,38 +34,57 @@ beforeEach(async () => {
 describe('routing service', () => {
   it('returns an OSRM walking route with described step text', async () => {
     const fetchMock = stubFetch([
-      ['routed-foot', () => jsonResponse(osrmResponse({
-        steps: [
-          {
-            maneuver: { type: 'depart', location: [103.8001, 1.3001] },
-            name: 'River Valley Road',
-            distance: 42,
-          },
-          {
-            maneuver: { type: 'turn', modifier: 'left', location: [103.805, 1.305] },
-            name: 'Orchard Road',
-            distance: 81,
-          },
-        ],
-      }))],
+      [
+        'routed-foot',
+        () =>
+          jsonResponse(
+            osrmResponse({
+              steps: [
+                {
+                  maneuver: { type: 'depart', location: [103.8001, 1.3001] },
+                  name: 'River Valley Road',
+                  distance: 42,
+                },
+                {
+                  maneuver: { type: 'turn', modifier: 'left', location: [103.805, 1.305] },
+                  name: 'Orchard Road',
+                  distance: 81,
+                },
+              ],
+            })
+          )
+      ],
     ])
 
     const route = await routing.getWalkRoute(from, to)
 
-    expect(route).toEqual(expect.objectContaining({
-      coords: [[103.8001, 1.3001], [103.8102, 1.3102]],
-      distance_m: 123,
-    }))
-    expect(route.steps).toEqual(expect.arrayContaining([
-      expect.objectContaining({ text: 'Head off along River Valley Road' }),
-      expect.objectContaining({ text: 'Turn left onto Orchard Road' }),
-    ]))
+    expect(route).toEqual(
+      expect.objectContaining({
+        coords: [
+          [103.8001, 1.3001],
+          [103.8102, 1.3102]
+        ],
+        distance_m: 123,
+      })
+    )
+    expect(route.steps).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ text: 'Head off along River Valley Road' }),
+        expect.objectContaining({ text: 'Turn left onto Orchard Road' }),
+      ])
+    )
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock.mock.calls[0][0]).toContain('steps=true')
   })
 
   it('falls back to the walking API route when OSRM fails', async () => {
-    const fallback = { coords: [[103.8, 1.3], [103.81, 1.31]], distance_m: 456 }
+    const fallback = {
+      coords: [
+        [103.8, 1.3],
+        [103.81, 1.31]
+      ],
+      distance_m: 456
+    }
     const fetchMock = stubFetch([
       ['routed-foot', () => jsonResponse({}, 500)],
       ['/api/route', (url, init) => jsonResponse(fallback)],
@@ -96,10 +124,22 @@ describe('routing service', () => {
 
   it('reuses a successful route for the same coordinate pair', async () => {
     const fetchMock = stubFetch([
-      ['routed-foot', () => jsonResponse(osrmResponse({
-        distance: 88,
-        steps: [{ maneuver: { type: 'depart', location: [103.8001, 1.3001] }, name: 'River Valley Road', distance: 88 }],
-      }))],
+      [
+        'routed-foot',
+        () =>
+          jsonResponse(
+            osrmResponse({
+              distance: 88,
+              steps: [
+                {
+                  maneuver: { type: 'depart', location: [103.8001, 1.3001] },
+                  name: 'River Valley Road',
+                  distance: 88
+                }
+              ],
+            })
+          )
+      ],
     ])
 
     const first = routing.getWalkRoute(from, to)
@@ -116,7 +156,17 @@ describe('routing service', () => {
     const fetchMock = stubFetch([
       ['routing.openstreetmap.de/routed-car', () => jsonResponse({}, 500)],
       ['router.project-osrm.org', () => jsonResponse({}, 500)],
-      ['/api/route', () => jsonResponse({ coords: [[103.8, 1.3], [103.81, 1.31]], distance_m: 999 })],
+      [
+        '/api/route',
+        () =>
+          jsonResponse({
+            coords: [
+              [103.8, 1.3],
+              [103.81, 1.31]
+            ],
+            distance_m: 999
+          })
+      ],
     ])
 
     const route = await routing.getDriveRoute(from, to)
@@ -134,16 +184,27 @@ describe('routing service', () => {
     vi.useFakeTimers()
     let aborted = false
     const fetchMock = stubFetch([
-      ['routed-foot', (url, init) => new Promise((resolve, reject) => {
-        init.signal.addEventListener('abort', () => {
-          aborted = true
-          reject(new DOMException('The operation was aborted', 'AbortError'))
-        })
-      })],
-      ['/api/route', () => jsonResponse({
-        coords: [[103.8, 1.3], [103.81, 1.31]],
-        distance_m: 321,
-      })],
+      [
+        'routed-foot',
+        (url, init) =>
+          new Promise((resolve, reject) => {
+            init.signal.addEventListener('abort', () => {
+              aborted = true
+              reject(new DOMException('The operation was aborted', 'AbortError'))
+            })
+          })
+      ],
+      [
+        '/api/route',
+        () =>
+          jsonResponse({
+            coords: [
+              [103.8, 1.3],
+              [103.81, 1.31]
+            ],
+            distance_m: 321,
+          })
+      ],
     ])
 
     const request = routing.getWalkRoute(from, to)

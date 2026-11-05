@@ -9,7 +9,11 @@ export const canNotify = () => typeof window !== 'undefined' && 'Notification' i
 /** Ask once, at a moment that makes sense (joining a quest). Never throws. */
 export async function askNotifyPermission() {
   if (!canNotify() || Notification.permission !== 'default') return
-  try { await Notification.requestPermission() } catch { /* old Safari: callback API, ignore */ }
+  try {
+    await Notification.requestPermission()
+  } catch {
+    /* old Safari: callback API, ignore */
+  }
 }
 
 /** Show a notification if allowed; `onClick` runs when it's tapped. */
@@ -22,5 +26,7 @@ export function notify(title, body, { tag, onClick } = {}) {
       onClick?.()
       n.close()
     }
-  } catch { /* Android Chrome needs a service worker for this; the in-app banner still shows */ }
+  } catch {
+    /* Android Chrome needs a service worker for this; the in-app banner still shows */
+  }
 }

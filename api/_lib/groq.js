@@ -36,7 +36,9 @@ export async function groqJson({ system, user, temperature = 0.4, maxTokens = 90
     })
     if (!res.ok) {
       const text = await res.text()
-      throw Object.assign(new Error(`Groq ${res.status}: ${text.slice(0, 200)}`), { status: res.status })
+      throw Object.assign(new Error(`Groq ${res.status}: ${text.slice(0, 200)}`), {
+        status: res.status
+      })
     }
     const json = await res.json()
     const content = json.choices?.[0]?.message?.content || '{}'

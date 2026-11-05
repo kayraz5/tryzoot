@@ -15,7 +15,13 @@ const FONT = ['Noto Sans Bold', 'Noto Sans Regular']
 const SHOWN_LINES = ['NS', 'EW', 'NE', 'CC', 'DT', 'TE'] // CG/CE are the same track as EW/CC in mrtLines
 const BUS_STOP_RADIUS_M = 1500 // bus stops are loaded around the traveller, not all 5,000 at once
 
-export const TRANSIT_LAYERS = ['transit-lines-casing', 'transit-lines', 'transit-stations', 'transit-station-labels', 'transit-bus-stops']
+export const TRANSIT_LAYERS = [
+  'transit-lines-casing',
+  'transit-lines',
+  'transit-stations',
+  'transit-station-labels',
+  'transit-bus-stops'
+]
 export const TAPPABLE_LAYERS = ['transit-stations', 'transit-bus-stops']
 const POINT_SOURCE = 'mission-transit-points'
 
@@ -63,31 +69,70 @@ export function addTransitLayers(map, isDark) {
   const firstLabel = map.getStyle().layers.find((l) => l.type === 'symbol')?.id
 
   map.addSource('transit-lines', { type: 'geojson', data: linesGeojson() })
-  map.addLayer({
-    id: 'transit-lines-casing', type: 'line', source: 'transit-lines',
-    layout: { 'line-join': 'round', 'line-cap': 'round' },
-    paint: { 'line-color': theme.casing, 'line-width': ['interpolate', ['linear'], ['zoom'], 11, 4.5, 16, 12], 'line-opacity': 0.8 }
-  }, firstLabel)
-  map.addLayer({
-    id: 'transit-lines', type: 'line', source: 'transit-lines',
-    layout: { 'line-join': 'round', 'line-cap': 'round' },
-    paint: { 'line-color': ['get', 'color'], 'line-width': ['interpolate', ['linear'], ['zoom'], 11, 2.5, 16, 7.5], 'line-opacity': 0.95 }
-  }, firstLabel)
+  map.addLayer(
+    {
+      id: 'transit-lines-casing',
+      type: 'line',
+      source: 'transit-lines',
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: {
+        'line-color': theme.casing,
+        'line-width': ['interpolate', ['linear'], ['zoom'], 11, 4.5, 16, 12],
+        'line-opacity': 0.8
+      }
+    },
+    firstLabel
+  )
+  map.addLayer(
+    {
+      id: 'transit-lines',
+      type: 'line',
+      source: 'transit-lines',
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: {
+        'line-color': ['get', 'color'],
+        'line-width': ['interpolate', ['linear'], ['zoom'], 11, 2.5, 16, 7.5],
+        'line-opacity': 0.95
+      }
+    },
+    firstLabel
+  )
 
   map.addSource('transit-stations', { type: 'geojson', data: stationsGeojson() })
   map.addLayer({
-    id: 'transit-stations', type: 'circle', source: 'transit-stations',
+    id: 'transit-stations',
+    type: 'circle',
+    source: 'transit-stations',
     paint: {
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, ['case', ['get', 'interchange'], 3.5, 2.5], 16, ['case', ['get', 'interchange'], 9, 7]],
+      'circle-radius': [
+        'interpolate',
+        ['linear'],
+        ['zoom'],
+        11,
+        ['case', ['get', 'interchange'], 3.5, 2.5],
+        16,
+        ['case', ['get', 'interchange'], 9, 7]
+      ],
       'circle-color': theme.stationFill,
       'circle-stroke-color': ['case', ['get', 'interchange'], '#111111', ['get', 'color']],
       'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 11, 1.5, 16, 3]
     }
   })
   map.addLayer({
-    id: 'transit-station-labels', type: 'symbol', source: 'transit-stations', minzoom: 13,
+    id: 'transit-station-labels',
+    type: 'symbol',
+    source: 'transit-stations',
+    minzoom: 13,
     layout: {
-      'text-field': ['format', ['get', 'name'], {}, '\n', {}, ['get', 'codes'], { 'font-scale': 0.75 }],
+      'text-field': [
+        'format',
+        ['get', 'name'],
+        {},
+        '\n',
+        {},
+        ['get', 'codes'],
+        { 'font-scale': 0.75 }
+      ],
       'text-font': FONT,
       'text-size': ['interpolate', ['linear'], ['zoom'], 13, 11, 17, 14],
       'text-offset': [0, 1.1],
@@ -97,9 +142,15 @@ export function addTransitLayers(map, isDark) {
     paint: { 'text-color': theme.ink, 'text-halo-color': theme.halo, 'text-halo-width': 2 }
   })
 
-  map.addSource('transit-bus-stops', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
+  map.addSource('transit-bus-stops', {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features: [] }
+  })
   map.addLayer({
-    id: 'transit-bus-stops', type: 'circle', source: 'transit-bus-stops', minzoom: 15,
+    id: 'transit-bus-stops',
+    type: 'circle',
+    source: 'transit-bus-stops',
+    minzoom: 15,
     paint: {
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 3.5, 18, 8],
       'circle-color': BUS_HEX,
@@ -108,16 +159,32 @@ export function addTransitLayers(map, isDark) {
     }
   })
 
-  map.addSource(POINT_SOURCE, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
-  map.addLayer({
-    id: 'mission-transit-points', type: 'circle', source: POINT_SOURCE,
-    paint: { 'circle-radius': 9, 'circle-color': '#ffffff', 'circle-stroke-color': ['get', 'color'], 'circle-stroke-width': 4 }
+  map.addSource(POINT_SOURCE, {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features: [] }
   })
   map.addLayer({
-    id: 'mission-transit-point-labels', type: 'symbol', source: POINT_SOURCE,
+    id: 'mission-transit-points',
+    type: 'circle',
+    source: POINT_SOURCE,
+    paint: {
+      'circle-radius': 9,
+      'circle-color': '#ffffff',
+      'circle-stroke-color': ['get', 'color'],
+      'circle-stroke-width': 4
+    }
+  })
+  map.addLayer({
+    id: 'mission-transit-point-labels',
+    type: 'symbol',
+    source: POINT_SOURCE,
     layout: {
-      'text-field': ['get', 'label'], 'text-font': FONT, 'text-size': 13,
-      'text-offset': [0, -1.4], 'text-anchor': 'bottom', 'text-allow-overlap': true
+      'text-field': ['get', 'label'],
+      'text-font': FONT,
+      'text-size': 13,
+      'text-offset': [0, -1.4],
+      'text-anchor': 'bottom',
+      'text-allow-overlap': true
     },
     paint: { 'text-color': '#ffffff', 'text-halo-color': ['get', 'color'], 'text-halo-width': 3 }
   })
@@ -130,7 +197,13 @@ export async function syncBusStops(map, p) {
     type: 'FeatureCollection',
     features: nearbyStops(p, BUS_STOP_RADIUS_M).map((s) => ({
       type: 'Feature',
-      properties: { kind: 'bus', code: s.code, name: s.name, road: s.road, services: s.services.join(',') },
+      properties: {
+        kind: 'bus',
+        code: s.code,
+        name: s.name,
+        road: s.road,
+        services: s.services.join(',')
+      },
       geometry: { type: 'Point', coordinates: [s.lng, s.lat] }
     }))
   })

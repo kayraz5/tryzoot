@@ -26,14 +26,31 @@ import { useMissionStore } from '../../../src/model/stores/mission.js'
 import { usePartyStore } from '../../../src/model/stores/party.js'
 
 const min = (n) => new Date(Date.now() + n * 60000).toISOString()
-const leg = (place_id, a, d, extra = {}) => ({ kind: 'visit', status: 'pending', place_id, name: place_id, lat: 1.28, lng: 103.84, arrive_iso: min(a), depart_iso: min(d), ...extra })
-const block = (place_id, a, d) => leg(place_id, a, d, { fixed: true, party_id: 'q1', with_host: 'Mei' })
+const leg = (place_id, a, d, extra = {}) => ({
+  kind: 'visit',
+  status: 'pending',
+  place_id,
+  name: place_id,
+  lat: 1.28,
+  lng: 103.84,
+  arrive_iso: min(a),
+  depart_iso: min(d),
+  ...extra
+})
+const block = (place_id, a, d) =>
+  leg(place_id, a, d, { fixed: true, party_id: 'q1', with_host: 'Mei' })
 
 function setup(legs) {
   setActivePinia(createPinia())
   const store = useMissionStore()
   store.mission = {
-    id: 'm1', origin: { label: 'Changi Airport', lat: 1.3644, lng: 103.9915 }, start_iso: min(-120), must_return_iso: min(700), buffers: { exit_min: 30 }, prefs: {}, legs: [...legs, { kind: 'return', status: 'pending', arrive_by: min(600) }],
+    id: 'm1',
+    origin: { label: 'Changi Airport', lat: 1.3644, lng: 103.9915 },
+    start_iso: min(-120),
+    must_return_iso: min(700),
+    buffers: { exit_min: 30 },
+    prefs: {},
+    legs: [...legs, { kind: 'return', status: 'pending', arrive_by: min(600) }],
     joined: { q1: { title: 'Chinatown', host_name: 'Mei', from: 1, to: 2, removed: [] } }
   }
   const w = mount(QuestCoopChip, { global: { stubs: { RouterLink: true } } })
@@ -44,7 +61,11 @@ describe('QuestCoopChip: the map HUD while I am with someone', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('during the joined stops: one line, "With Mei until …"', async () => {
-    const { w } = setup([block('maxwell', -10, 30), block('temple', 35, 60), leg('gardens', 90, 150)])
+    const { w } = setup([
+      block('maxwell', -10, 30),
+      block('temple', 35, 60),
+      leg('gardens', 90, 150)
+    ])
     await flushPromises()
     expect(w.text()).toMatch(/^With Mei until \d\d:\d\d$/)
   })
@@ -83,7 +104,10 @@ describe('QuestCoopChip: the map HUD while I am with someone', () => {
     party.answer(true)
     await done
     expect(store.mission.joined).toEqual({})
-    expect(store.legs.filter((l) => l.kind === 'visit').map((l) => l.place_id)).toEqual(['museum', 'gardens'])
+    expect(store.legs.filter((l) => l.kind === 'visit').map((l) => l.place_id)).toEqual([
+      'museum',
+      'gardens'
+    ])
   })
 
   it('the always-on map layer returns me to my own plan by itself when my stops end', async () => {

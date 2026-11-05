@@ -47,7 +47,14 @@ describe('geo: shared location state', () => {
     vi.stubGlobal('navigator', {})
     setFake(false)
 
-    expect(geo).toEqual({ lat: null, lng: null, accuracy: null, source: null, fake: false, heading: null })
+    expect(geo).toEqual({
+      lat: null,
+      lng: null,
+      accuracy: null,
+      source: null,
+      fake: false,
+      heading: null
+    })
   })
 
   it('does nothing when geolocation is unavailable', async () => {
@@ -68,11 +75,10 @@ describe('geo: shared location state', () => {
     startGps()
 
     expect(watchPosition).toHaveBeenCalledTimes(1)
-    expect(watchPosition).toHaveBeenCalledWith(
-      expect.any(Function),
-      expect.any(Function),
-      { enableHighAccuracy: true, maximumAge: 5000 },
-    )
+    expect(watchPosition).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), {
+      enableHighAccuracy: true,
+      maximumAge: 5000
+    },)
   })
 
   it('writes GPS coordinates when the watch callback receives a real fix', async () => {

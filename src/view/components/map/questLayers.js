@@ -44,11 +44,13 @@ export function setFence(map, target, radiusMeters, isInside) {
     return
   }
 
-// 49 points: the last repeats the first to close the polygon.
-  const ring = Array.from({ length: 49 }, (_, index) =>
-    destination(point([target.lng, target.lat]), radiusMeters / 1000, (index * 360) / 48, {
-      units: 'kilometers'
-    }).geometry.coordinates
+  // 49 points: the last repeats the first to close the polygon.
+  const ring = Array.from(
+    { length: 49 },
+    (_, index) =>
+      destination(point([target.lng, target.lat]), radiusMeters / 1000, (index * 360) / 48, {
+        units: 'kilometers'
+      }).geometry.coordinates
   )
 
   source.setData({

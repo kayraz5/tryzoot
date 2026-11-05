@@ -14,11 +14,11 @@ import { walkMinutes } from '../travel.js'
 import { walkLeg } from './walk.js'
 import { decodePolyline } from './polyline.js'
 
-const STOP_RADIUS_M = 450      // how far we'll ask someone to walk to or from a stop
+const STOP_RADIUS_M = 450 // how far we'll ask someone to walk to or from a stop
 const MAX_STOPS_EACH_END = 8
-const BUS_WAIT_MIN = 6          // typical headway is 8–15 min, so wait about half
-const BUS_KMH = 17              // average including stops and lights
-const BUS_DETOUR = 1.25         // stop-to-stop straight lines undercount the road
+const BUS_WAIT_MIN = 6 // typical headway is 8–15 min, so wait about half
+const BUS_KMH = 17 // average including stops and lights
+const BUS_DETOUR = 1.25 // stop-to-stop straight lines undercount the road
 // Peak-hour-only services a visitor can't count on: City Direct (6xx), expresses (…e),
 // NightRider/late-night (NR…), and other lettered specials.
 const EVERYDAY = (no) => !/^6\d\d$|e$|^[A-Z]/.test(no)
@@ -48,7 +48,8 @@ export function nearbyStops(p, radiusM = STOP_RADIUS_M) {
   for (const code of Object.keys(data.stops)) {
     const s = data.stops[code]
     // Cheap box check first: ~0.005° ≈ 550 m.
-    if (Math.abs(s[1] - p.lat) > radiusM / 111000 || Math.abs(s[0] - p.lng) > radiusM / 108000) continue
+    if (Math.abs(s[1] - p.lat) > radiusM / 111000 || Math.abs(s[0] - p.lng) > radiusM / 108000)
+      continue
     const d = distanceM(p, { lat: s[1], lng: s[0] })
     if (d <= radiusM) out.push({ ...stopInfo(code), d })
   }
@@ -67,7 +68,10 @@ function rideLine(no, dir, codes) {
     let bestD = Infinity
     line.forEach(([lng, lat], i) => {
       const d = (lng - s.lng) ** 2 + (lat - s.lat) ** 2
-      if (d < bestD) { bestD = d; best = i }
+      if (d < bestD) {
+        bestD = d;
+        best = i
+      }
     })
     return best
   }
@@ -79,7 +83,11 @@ function rideLine(no, dir, codes) {
 /** Cheapest single-bus ride between the stops near `from` and `to`, scored like travel.js scores the MRT. */
 function bestDirect(from, to) {
   const starts = nearbyStops(from).slice(0, MAX_STOPS_EACH_END)
-  const ends = new Map(nearbyStops(to).slice(0, MAX_STOPS_EACH_END).map((s) => [s.code, s]))
+  const ends = new Map(
+    nearbyStops(to)
+      .slice(0, MAX_STOPS_EACH_END)
+      .map((s) => [s.code, s])
+  )
   if (!starts.length || !ends.size) return null
 
   let best = null
@@ -93,12 +101,14 @@ function bestDirect(from, to) {
           if (!end) continue
           const codes = route.slice(i, j + 1)
           let rideM = 0
-          for (let k = 1; k < codes.length; k++) rideM += distanceM(stopInfo(codes[k - 1]), stopInfo(codes[k]))
+          for (let k = 1; k < codes.length; k++)
+            rideM += distanceM(stopInfo(codes[k - 1]), stopInfo(codes[k]))
           const rideMin = Math.round(((rideM * BUS_DETOUR) / 1000 / BUS_KMH) * 60)
           const walkA = walkMinutes(from, start)
           const walkB = walkMinutes(end, to)
           const minutes = walkA + BUS_WAIT_MIN + rideMin + walkB
-          if (!best || minutes < best.minutes) best = { no, dir, codes, start, end, walkA, walkB, rideMin, minutes }
+          if (!best || minutes < best.minutes)
+            best = { no, dir, codes, start, end, walkA, walkB, rideMin, minutes }
           break // the first matching stop on this route is the earliest place to get off
         }
       })
@@ -119,7 +129,12 @@ export async function findDirectBus(from, to) {
   const route = data.services[no].routes[best.dir]
   const stop = (s) => ({ name: s.name, code: s.code, road: s.road, lat: s.lat, lng: s.lng })
   const parts = [
-    { mode: 'walk', coords: walkA.coords, minutes: best.walkA, to: { ...stop(start), kind: 'bus-stop' } },
+    {
+      mode: 'walk',
+      coords: walkA.coords,
+      minutes: best.walkA,
+      to: { ...stop(start), kind: 'bus-stop' }
+    },
     {
       mode: 'bus',
       coords: rideLine(no, best.dir, best.codes),
@@ -130,7 +145,13 @@ export async function findDirectBus(from, to) {
       stops: best.codes.length - 1,
       towards: stopInfo(route.at(-1))?.name ?? null
     },
-    { mode: 'walk', coords: walkB.coords, minutes: best.walkB, from: stop(end), to: { name: to.name, kind: 'place', lat: to.lat, lng: to.lng } }
+    {
+      mode: 'walk',
+      coords: walkB.coords,
+      minutes: best.walkB,
+      from: stop(end),
+      to: { name: to.name, kind: 'place', lat: to.lat, lng: to.lng }
+    }
   ]
   const coords = parts.flatMap((p) => p.coords)
   return { coords, parts, minutes: best.minutes, distance_m: null }

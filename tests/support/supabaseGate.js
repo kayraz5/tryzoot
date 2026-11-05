@@ -36,7 +36,8 @@ export const ALL_VARS = Object.freeze([
 
 export const PREFLIGHT_PATH = '/rest/v1/places?select=id&limit=1'
 export const DEFAULT_TIMEOUT_MS = 5000
-export const SEED_MISSING_REASON = 'Supabase-gated: demo seed missing (demo_users / app_config.dev_social)'
+export const SEED_MISSING_REASON =
+  'Supabase-gated: demo seed missing (demo_users / app_config.dev_social)'
 
 const PREFIX = 'Supabase-gated: '
 
@@ -63,7 +64,9 @@ export function presence(env, names = ALL_VARS) {
 function normalizeNeeds(needs) {
   const list = Array.isArray(needs)
     ? needs
-    : Object.entries(needs || {}).filter(([, on]) => on).map(([name]) => name)
+    : Object.entries(needs || {})
+        .filter(([, on]) => on)
+        .map(([name]) => name)
   const set = new Set(list)
   // Higher tiers imply the lower ones: writes and host scenarios run as a signed-in account.
   if (set.has('writes') || set.has('host') || set.has('seed')) set.add('account')
@@ -83,13 +86,17 @@ function beforeRequestReason(env) {
 
 const safeStatus = (status) =>
   Number.isInteger(status) && status >= 100 && status <= 599 ? String(status) : 'unknown'
-const safeErrorName = (name) => (typeof name === 'string' && /^[A-Za-z]{1,40}$/.test(name) ? name : 'Error')
+const safeErrorName = (name) =>
+  (typeof name === 'string' && /^[A-Za-z]{1,40}$/.test(name) ? name : 'Error')
 
 function preflightReason(result) {
   if (!result) return `${PREFIX}preflight not run`
   if (result.ok) return null
   if (result.timedOut) {
-    const ms = Number.isInteger(result.timeoutMs) && result.timeoutMs > 0 ? result.timeoutMs : DEFAULT_TIMEOUT_MS
+    const ms =
+      Number.isInteger(result.timeoutMs) && result.timeoutMs > 0
+        ? result.timeoutMs
+        : DEFAULT_TIMEOUT_MS
     return `${PREFIX}preflight timed out after ${ms} ms`
   }
   if (result.errorName) return `${PREFIX}preflight failed (${safeErrorName(result.errorName)})`
@@ -111,12 +118,14 @@ function preflightReason(result) {
 export function gateFor(env, preflightResult, needs = []) {
   const want = normalizeNeeds(needs)
   const reason =
-    beforeRequestReason(env)
-    ?? preflightReason(preflightResult)
-    ?? (want.has('account') ? missingReason(env, VARS.account) : null)
-    ?? (want.has('host') ? missingReason(env, VARS.host) : null)
-    ?? (want.has('writes') && env?.[VARS.writes] !== '1' ? `${PREFIX}${VARS.writes} is not 1` : null)
-    ?? (want.has('seed') && preflightResult?.seed !== true ? SEED_MISSING_REASON : null)
+    beforeRequestReason(env) ??
+    preflightReason(preflightResult) ??
+    (want.has('account') ? missingReason(env, VARS.account) : null) ??
+    (want.has('host') ? missingReason(env, VARS.host) : null) ??
+    (want.has('writes') && env?.[VARS.writes] !== '1'
+      ? `${PREFIX}${VARS.writes} is not 1`
+      : null) ??
+    (want.has('seed') && preflightResult?.seed !== true ? SEED_MISSING_REASON : null)
   return { enabled: reason === null, reason }
 }
 
@@ -134,7 +143,10 @@ function missingReason(env, names) {
  * @param {{ fetchImpl?: typeof fetch, timeoutMs?: number }} [options]
  * @returns {Promise<{ ok: boolean, status?: number, errorName?: string, timedOut?: boolean, timeoutMs?: number }>}
  */
-export async function preflight(env, { fetchImpl = globalThis.fetch, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
+export async function preflight(
+  env,
+  { fetchImpl = globalThis.fetch, timeoutMs = DEFAULT_TIMEOUT_MS } = {}
+) {
   const base = String(env?.VITE_SUPABASE_URL || '').replace(/\/+$/, '')
   const key = String(env?.VITE_SUPABASE_ANON_KEY || '')
   try {

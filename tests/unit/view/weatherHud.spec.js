@@ -59,7 +59,13 @@ describe('ui store: haze + lightning', () => {
 
 describe('WeatherChip', () => {
   // The weather icon is the <i> in the second-to-last item when a face is shown, otherwise the last item.
-  const icon = (w) => w.findAll('.item').at(-(w.find('svg.face').exists() ? 2 : 1)).find('i').classes().find((c) => c !== 'bi')
+  const icon = (w) =>
+    w
+      .findAll('.item')
+      .at(-(w.find('svg.face').exists() ? 2 : 1))
+      .find('i')
+      .classes()
+      .find((c) => c !== 'bi')
 
   it('renders nothing until data exists', () => {
     expect(mount(WeatherChip).find('.wx').exists()).toBe(false)
@@ -72,7 +78,10 @@ describe('WeatherChip', () => {
     tick.value = SGT_NIGHT
     expect(icon(mount(WeatherChip))).toBe('bi-cloud-moon')
     ui.weather = forecast(0)
-    const at = (iso) => { tick.value = Date.parse(iso); return icon(mount(WeatherChip)) }
+    const at = (iso) => {
+      tick.value = Date.parse(iso);
+      return icon(mount(WeatherChip))
+    }
     expect(at('2026-10-22T22:59:00Z')).toBe('bi-moon-stars') // 06:59
     expect(at('2026-10-22T23:00:00Z')).toBe('bi-sun') // 07:00
     expect(at('2026-10-23T10:59:00Z')).toBe('bi-sun') // 18:59
@@ -128,7 +137,12 @@ describe('useWeatherRefresh', () => {
   it('loads on mount, refreshes every 2 minutes, and stops on unmount', () => {
     vi.useFakeTimers()
     const load = vi.spyOn(ui, 'loadWeather').mockResolvedValue(null)
-    const Host = defineComponent({ setup() { useWeatherRefresh(1.29, 103.85); return () => null } })
+    const Host = defineComponent({
+      setup() {
+        useWeatherRefresh(1.29, 103.85);
+        return () => null
+      }
+    })
     const w = mount(Host)
     expect(load).toHaveBeenCalledTimes(1)
     expect(load).toHaveBeenCalledWith(1.29, 103.85)
@@ -143,7 +157,10 @@ describe('useWeatherRefresh', () => {
 describe('MapStatusStack / MapMenuButton', () => {
   it('shows the weather chip, and the GPS button reflects and emits the demo toggle', async () => {
     ui.weather = forecast(0)
-    const w = mount(MapStatusStack, { props: { demo: false }, slots: { default: '<div id="slot-probe"></div>' } })
+    const w = mount(MapStatusStack, {
+      props: { demo: false },
+      slots: { default: '<div id="slot-probe"></div>' }
+    })
     expect(w.find('.wx').exists()).toBe(true)
     expect(w.find('#slot-probe').exists()).toBe(true)
     const btn = w.find('button.status-demo')

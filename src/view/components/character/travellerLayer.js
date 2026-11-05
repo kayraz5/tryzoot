@@ -10,7 +10,17 @@ import { createTraveller } from './traveller.js'
 const DEFAULT_SCALE = 10
 
 export class TravellerLayer {
-  constructor({ id = 'zt-traveller', lng, lat, outfit = 'zoot', fur = 'zoot', hat, eyewear, scale = DEFAULT_SCALE, bearing = 0 } = {}) {
+  constructor({
+    id = 'zt-traveller',
+    lng,
+    lat,
+    outfit = 'zoot',
+    fur = 'zoot',
+    hat,
+    eyewear,
+    scale = DEFAULT_SCALE,
+    bearing = 0
+  } = {}) {
     this.id = id
     this.lng = lng
     this.lat = lat
@@ -33,7 +43,7 @@ export class TravellerLayer {
     this.camera = new THREE.Camera()
     this.scene = new THREE.Scene()
 
-// MeshStandardMaterial is pitch black without lights.
+    // MeshStandardMaterial is pitch black without lights.
     this.scene.add(new THREE.HemisphereLight(0xffffff, 0xbfd2a8, 2.0))
     const sun = new THREE.DirectionalLight(0xfff3dd, 2.4)
     sun.position.set(3, 6, 4) // direction only — a directional light has no position on the map, just an angle
@@ -42,14 +52,23 @@ export class TravellerLayer {
     rim.position.set(-3, 2, -4)
     this.scene.add(rim)
 
-    this.traveller = createTraveller({ outfit: this.outfitName, fur: this.furName, hat: this.hatName, eyewear: this.eyewearName })
+    this.traveller = createTraveller({
+      outfit: this.outfitName,
+      fur: this.furName,
+      hat: this.hatName,
+      eyewear: this.eyewearName
+    })
     this.traveller.setBearing(this.bearing)
     this.scene.add(this.traveller.group)
 
     this.updateMatrix()
 
-// Draw into MapLibre's own canvas and GL context, not a separate layer on top.
-    this.renderer = new THREE.WebGLRenderer({ canvas: map.getCanvas(), context: gl, antialias: true })
+    // Draw into MapLibre's own canvas and GL context, not a separate layer on top.
+    this.renderer = new THREE.WebGLRenderer({
+      canvas: map.getCanvas(),
+      context: gl,
+      antialias: true
+    })
     this.renderer.autoClear = false // MapLibre already drew the map — don't wipe it
   }
 
@@ -63,7 +82,7 @@ export class TravellerLayer {
   }
 
   render(gl, args) {
-// onRemove() nulls this; a stray frame after removal would otherwise throw.
+    // onRemove() nulls this; a stray frame after removal would otherwise throw.
     if (!this.traveller) return
     const t = (performance.now() - this.start) / 1000
     this.traveller.update(t, this.moving)
@@ -73,20 +92,20 @@ export class TravellerLayer {
 
     this.renderer.resetState() // MapLibre just used this context — re-sync Three's idea of its state
 
-// Depth handover. MapLibre carves the depth buffer into a thin slice per style
-// layer via gl.depthRange, and Three's resetState() deliberately does not restore
-// it - so the character lands in whatever slice was left set, behind the ground,
-// and is thrown away by the depth test. Take the full range back and clear the
-// depth the map wrote. He then draws over buildings rather than inside them, which
-// is what you want for a "you are here" avatar. Clearing depth only keeps the map
-// image intact, and his own parts still occlude each other.
+    // Depth handover. MapLibre carves the depth buffer into a thin slice per style
+    // layer via gl.depthRange, and Three's resetState() deliberately does not restore
+    // it - so the character lands in whatever slice was left set, behind the ground,
+    // and is thrown away by the depth test. Take the full range back and clear the
+    // depth the map wrote. He then draws over buildings rather than inside them, which
+    // is what you want for a "you are here" avatar. Clearing depth only keeps the map
+    // image intact, and his own parts still occlude each other.
     gl.depthRange(0, 1)
     this.renderer.clearDepth()
 
     this.renderer.render(this.scene, this.camera)
 
-// MapLibre only redraws on change; he animates on his own, so ask for the next
-// frame explicitly or he freezes the moment you stop touching the map.
+    // MapLibre only redraws on change; he animates on his own, so ask for the next
+    // frame explicitly or he freezes the moment you stop touching the map.
     this.map.triggerRepaint()
   }
 
@@ -101,7 +120,9 @@ export class TravellerLayer {
     this.traveller?.setBearing(deg)
   }
 
-  setMoving(moving) { this.moving = !!moving }
+  setMoving(moving) {
+    this.moving = !!moving
+  }
 
   setOutfit(name) {
     this.outfitName = name
@@ -128,7 +149,7 @@ export class TravellerLayer {
     if (this.map) this.updateMatrix()
   }
 
-// Freeing geometry and materials here is what stops repeated visits filling GPU memory.
+  // Freeing geometry and materials here is what stops repeated visits filling GPU memory.
   onRemove() {
     this.traveller?.dispose()
     this.traveller = null

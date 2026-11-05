@@ -6,7 +6,10 @@
 import { afterEach, describe, expect, inject, it, vi } from 'vitest'
 import { catalog, loadCatalog, placeById } from '../../../src/model/services/catalog.js'
 
-const gate = inject('supabaseGate') ?? { enabled: false, reason: 'Supabase-gated: gate not provided' }
+const gate = inject('supabaseGate') ?? {
+  enabled: false,
+  reason: 'Supabase-gated: gate not provided'
+}
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -25,14 +28,17 @@ describe('catalog service against the configured Supabase project', () => {
     expect(catalog.value !== bundled, 'catalog was replaced by the table rows').toBe(true)
     expect(catalog.value.length).toBeGreaterThan(0)
 
-    const malformed = catalog.value.filter((place) => !(
-      typeof place.id === 'string'
-      && typeof place.name === 'string'
-      && Number.isFinite(place.lat)
-      && Number.isFinite(place.lng)
-      && Array.isArray(place.tags)
-      && typeof place.mrt === 'string'
-    )).length
+    const malformed = catalog.value.filter(
+      (place) =>
+        !(
+          typeof place.id === 'string' &&
+          typeof place.name === 'string' &&
+          Number.isFinite(place.lat) &&
+          Number.isFinite(place.lng) &&
+          Array.isArray(place.tags) &&
+          typeof place.mrt === 'string'
+        )
+    ).length
     expect(malformed, 'places missing id, name, lat, lng, tags or mrt').toBe(0)
 
     const unindexed = catalog.value.filter((place) => !placeById.value.has(place.id)).length

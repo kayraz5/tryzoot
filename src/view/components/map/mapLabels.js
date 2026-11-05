@@ -55,11 +55,15 @@ export function applyMapLabelStyle(map, isDark) {
     const kind = labelKind(layer.id)
     if (!kind) continue
 
-// "place" and "heading" have no own colour and fall back to the base ink.
+    // "place" and "heading" have no own colour and fall back to the base ink.
     const color = theme[kind] ?? theme.ink
     const size = LABEL_SIZES[kind]
 
-    map.setLayoutProperty(layer.id, 'text-font', kind === 'water' ? LABEL_FONTS.italic : LABEL_FONTS.bold)
+    map.setLayoutProperty(
+      layer.id,
+      'text-font',
+      kind === 'water' ? LABEL_FONTS.italic : LABEL_FONTS.bold
+    )
     if (size) map.setLayoutProperty(layer.id, 'text-size', size)
     map.setPaintProperty(layer.id, 'text-color', color)
     map.setPaintProperty(layer.id, 'text-halo-color', theme.halo)

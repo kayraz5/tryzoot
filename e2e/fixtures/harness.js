@@ -15,28 +15,37 @@ export const EXTERNAL_FIXTURES = [
  * auth is one of signed-out, needs-onboarding, or onboarded.
  */
 export async function installHarness(page, { auth = 'signed-out', profile = {} } = {}) {
-  await page.addInitScript(({ auth, profile }) => {
-    localStorage.setItem('zoot.guest', '1')
-    if (auth === 'signed-out') return
+  await page.addInitScript(
+    ({ auth, profile }) => {
+      localStorage.setItem('zoot.guest', '1')
+      if (auth === 'signed-out') return
 
-    const id = 'guest-e2e'
-    localStorage.setItem('zoot.profile', JSON.stringify({
-      id,
-      display_name: 'E2E Traveller',
-      style: auth === 'onboarded' ? 'budget' : null,
-      xp: 0,
-      home_city: null,
-      is_verified: false,
-      avatar_seed: 1,
-      cover_color: '#ffcc00',
-      created_at: '2030-01-01T00:00:00Z',
-      ...profile
-    }))
-    localStorage.setItem('zoot.session', JSON.stringify({
-      user: { id, email: null },
-      guest: true
-    }))
-  }, { auth, profile })
+      const id = 'guest-e2e'
+      localStorage.setItem(
+        'zoot.profile',
+        JSON.stringify({
+          id,
+          display_name: 'E2E Traveller',
+          style: auth === 'onboarded' ? 'budget' : null,
+          xp: 0,
+          home_city: null,
+          is_verified: false,
+          avatar_seed: 1,
+          cover_color: '#ffcc00',
+          created_at: '2030-01-01T00:00:00Z',
+          ...profile
+        })
+      )
+      localStorage.setItem(
+        'zoot.session',
+        JSON.stringify({
+          user: { id, email: null },
+          guest: true
+        })
+      )
+    },
+    { auth, profile }
+  )
 
   await routeExternalHosts(page)
   await installApiStubs(page)
@@ -48,12 +57,13 @@ export async function installHarness(page, { auth = 'signed-out', profile = {} }
  * for the configured project's origin); the guest harness passes nothing, so it aborts them all.
  */
 export async function routeExternalHosts(page, { passThrough = () => false } = {}) {
-  await page.route((url) => !APP_HOSTS.has(url.hostname) && !passThrough(url), (route) => {
-    const hit = EXTERNAL_FIXTURES.find(([pattern]) => pattern.test(route.request().url()))
-    return hit
-      ? route.fulfill({ json: fixture(hit[1]) })
-      : route.abort()
-  })
+  await page.route(
+    (url) => !APP_HOSTS.has(url.hostname) && !passThrough(url),
+    (route) => {
+      const hit = EXTERNAL_FIXTURES.find(([pattern]) => pattern.test(route.request().url()))
+      return hit ? route.fulfill({ json: fixture(hit[1]) }) : route.abort()
+    }
+  )
 }
 
 /** Stub the Vercel functions under /api/* from e2e/fixtures/api (/api/plan built from the posted catalog). */

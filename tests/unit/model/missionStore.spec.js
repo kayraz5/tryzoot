@@ -56,7 +56,9 @@ function visitLeg(placeId = 'jewel-rain-vortex', extra = {}) {
 
 function missionWithVisits(legs, arriveBy = '20:00') {
   const mission = missionFixture(legs, arriveBy)
-  mission.legs.forEach((leg, index) => { leg.seq = index + 1 })
+  mission.legs.forEach((leg, index) => {
+    leg.seq = index + 1
+  })
   mission.created_at = at('11:00')
   return mission
 }
@@ -107,9 +109,7 @@ describe('mission store initial state and getters', () => {
 
 describe('mission planning and persistence', () => {
   it('falls back from an unavailable plan API and saves the active mission', async () => {
-    stubFetch([
-      ['/api/plan', () => jsonResponse({ error: 'Groq unavailable' }, 503)],
-    ])
+    stubFetch([['/api/plan', () => jsonResponse({ error: 'Groq unavailable' }, 503)],])
     const store = useMissionStore()
     const trip = {
       id: 'trip-fallback',
@@ -225,8 +225,9 @@ describe('mission stamping and completion', () => {
   it('rejects a stamp for an unknown place', async () => {
     const store = useMissionStore()
 
-    await expect(store.stamp({ place_id: 'not-in-the-catalog', seq: 1, xp: 10 }, { dev: true }))
-      .rejects.toThrow('Unknown place')
+    await expect(
+      store.stamp({ place_id: 'not-in-the-catalog', seq: 1, xp: 10 }, { dev: true })
+    ).rejects.toThrow('Unknown place')
   })
 
   it('refuses to remove the only stop and shows a warning toast', async () => {

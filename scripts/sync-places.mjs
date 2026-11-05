@@ -14,14 +14,18 @@ Object.assign(process.env, { ...loadEnv('development', process.cwd(), ''), ...pr
 // Check Supabase before the slow OpenStreetMap pull, so a missing key or column fails straight away
 const db = placesDbFromEnv()
 if (!db) {
-  console.error('[sync-places] needs SUPABASE_URL and SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY) in .env')
+  console.error(
+    '[sync-places] needs SUPABASE_URL and SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY) in .env'
+  )
   process.exit(1)
 }
 let previous
 try {
   previous = await db.select('places', 'select=*')
 } catch (err) {
-  console.error(`[sync-places] Supabase check failed (run supabase/places_sync.sql first?): ${err.message}`)
+  console.error(
+    `[sync-places] Supabase check failed (run supabase/places_sync.sql first?): ${err.message}`
+  )
   process.exit(1)
 }
 const seed = previous.filter((place) => place.source === 'seed')

@@ -76,7 +76,13 @@ function speckle(ctx, cx, cy, radius, seed) {
     const distance = Math.sqrt(random()) * radius
     ctx.globalAlpha = 0.2 + random() * 0.5
     ctx.beginPath()
-    ctx.arc(cx + Math.cos(angle) * distance, cy + Math.sin(angle) * distance, 0.6 + random() * 2.2, 0, Math.PI * 2)
+    ctx.arc(
+      cx + Math.cos(angle) * distance,
+      cy + Math.sin(angle) * distance,
+      0.6 + random() * 2.2,
+      0,
+      Math.PI * 2
+    )
     ctx.fill()
   }
   ctx.restore()
@@ -88,7 +94,10 @@ function speckle(ctx, cx, cy, radius, seed) {
  * then keeps whole words up to 14 characters ("Maxwell Food Centre" → "MAXWELL FOOD").
  */
 export function chopLabel(name, areaId = '') {
-  let words = name.replace(/\(.*?\)/g, '').split(/[\s,&/–-]+/).filter(Boolean)
+  let words = name
+    .replace(/\(.*?\)/g, '')
+    .split(/[\s,&/–-]+/)
+    .filter(Boolean)
   const areaWords = areaId.toLowerCase().split(/\s+/)
   const startsWithArea = areaWords.every((word, i) => words[i]?.toLowerCase() === word)
   if (startsWithArea && words.length > areaWords.length) words = words.slice(areaWords.length)
@@ -171,7 +180,8 @@ export function drawCover(ctx, { color = DEFAULT_COVER, name = 'Field Traveller'
   // Logo: otter over "zoot"
   if (otter) {
     const width = 150
-    const height = (width * (otter.naturalHeight || otter.height)) / (otter.naturalWidth || otter.width)
+    const height =
+      (width * (otter.naturalHeight || otter.height)) / (otter.naturalWidth || otter.width)
     ctx.drawImage(tinted(otter, foil), PAGE_W / 2 - width / 2 - 6, 62, width, height)
   }
   ctx.font = '700 104px Fredoka, sans-serif'
@@ -184,16 +194,29 @@ export function drawCover(ctx, { color = DEFAULT_COVER, name = 'Field Traveller'
   const cy = 408
   const r = 96
   ctx.lineWidth = 7
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke()
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.stroke()
   ctx.lineWidth = 5
-  ctx.beginPath(); ctx.moveTo(cx - r, cy); ctx.lineTo(cx + r, cy); ctx.stroke()
-  ctx.beginPath(); ctx.moveTo(cx, cy - r); ctx.lineTo(cx, cy + r); ctx.stroke()
+  ctx.beginPath();
+  ctx.moveTo(cx - r, cy);
+  ctx.lineTo(cx + r, cy);
+  ctx.stroke()
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r);
+  ctx.lineTo(cx, cy + r);
+  ctx.stroke()
   for (const widthRatio of [0.45, 0.82]) {
-    ctx.beginPath(); ctx.ellipse(cx, cy, r * widthRatio, r, 0, 0, Math.PI * 2); ctx.stroke()
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, r * widthRatio, r, 0, 0, Math.PI * 2);
+    ctx.stroke()
   }
   for (const offset of [-0.5, 0.5]) {
     const halfWidth = Math.sqrt(1 - offset * offset) * r
-    ctx.beginPath(); ctx.moveTo(cx - halfWidth, cy + offset * r); ctx.lineTo(cx + halfWidth, cy + offset * r); ctx.stroke()
+    ctx.beginPath();
+    ctx.moveTo(cx - halfWidth, cy + offset * r);
+    ctx.lineTo(cx + halfWidth, cy + offset * r);
+    ctx.stroke()
   }
 
   ctx.font = '800 20px Poppins, sans-serif'
@@ -204,7 +227,9 @@ export function drawCover(ctx, { color = DEFAULT_COVER, name = 'Field Traveller'
   // Chip symbol
   ctx.lineWidth = 4
   ctx.strokeRect(PAGE_W / 2 - 22, 636, 44, 30)
-  ctx.beginPath(); ctx.arc(PAGE_W / 2, 651, 8, 0, Math.PI * 2); ctx.stroke()
+  ctx.beginPath();
+  ctx.arc(PAGE_W / 2, 651, 8, 0, Math.PI * 2);
+  ctx.stroke()
 
   // Outline so light covers still have an edge
   ctx.lineWidth = 10
@@ -214,7 +239,10 @@ export function drawCover(ctx, { color = DEFAULT_COVER, name = 'Field Traveller'
 
 // Identity page. For the machine-readable line: `nationality` is the passport country (3-letter code, e.g. DNK)
 // and `entry` ({ yymmdd, code }) the latest trip; either can be null
-export function drawIdentity(ctx, { name, style, level, title, xp, stamps, chops, color, nationality = null, entry = null }) {
+export function drawIdentity(
+  ctx,
+  { name, style, level, title, xp, stamps, chops, color, nationality = null, entry = null }
+) {
   paper(ctx, '#fff8dc', true)
   ctx.fillStyle = INK
   ctx.textAlign = 'left'
@@ -275,7 +303,10 @@ export function drawIdentity(ctx, { name, style, level, title, xp, stamps, chops
   // 40 characters a line (a real passport's are 44)
   const MRZ_WIDTH = 40
   ctx.font = '600 19px "Courier New", monospace'
-  const mrzName = (name || 'TRAVELLER').toUpperCase().replace(/[^A-Z]/g, '<').slice(0, MRZ_WIDTH - 5)
+  const mrzName = (name || 'TRAVELLER')
+    .toUpperCase()
+    .replace(/[^A-Z]/g, '<')
+    .slice(0, MRZ_WIDTH - 5)
   ctx.fillText(`P<ZOT${mrzName}`.padEnd(MRZ_WIDTH, '<'), 30, PAGE_H - 110)
   // Nationality (like a real passport's second line), level, XP, then the latest entry: SIN + YYMMDD and where you came in
   const mrzEntry = entry ? `SIN${entry.yymmdd}<<${entry.code.slice(0, 8)}` : 'SIN'
@@ -298,7 +329,19 @@ function drawStampArt(ctx, img, { x, y, r, seed }) {
 // One page per area: title, area chop (earned at `target` places, hidden until the slam reveals it)
 // and `target` place slots. `places` is every place in the area, already in display order.
 // `art` has loaded stamp images ({ places: { [placeId]: img }, area: img }); without one, the chop is drawn.
-export function drawAreaPage(ctx, { area, places, stampsByPlace, target, pageNo, left, revealed = true, art = { places: {}, area: null } }) {
+export function drawAreaPage(
+  ctx,
+  {
+    area,
+    places,
+    stampsByPlace,
+    target,
+    pageNo,
+    left,
+    revealed = true,
+    art = { places: {}, area: null }
+  }
+) {
   paper(ctx, '#fffbea', left)
   ctx.fillStyle = MUTED
   ctx.textAlign = 'left'
@@ -312,15 +355,28 @@ export function drawAreaPage(ctx, { area, places, stampsByPlace, target, pageNo,
   const earned = stampedCount >= target
   ctx.fillStyle = MUTED
   ctx.font = '700 15px Poppins, sans-serif'
-  ctx.fillText(earned ? `${stampedCount} / ${places.length} places stamped` : `${stampedCount} / ${target} toward the area chop`, 44, 132)
+  ctx.fillText(
+    earned
+      ? `${stampedCount} / ${places.length} places stamped`
+      : `${stampedCount} / ${target} toward the area chop`,
+    44,
+    132
+  )
 
   // Area chop in the top right (real artwork if there is one), or a dashed placeholder with a faint glyph
   if (earned && revealed && art.area) {
     drawStampArt(ctx, art.area, { x: 392, y: 104, r: 66, seed: area.id })
   } else if (earned && revealed) {
     drawChop(ctx, {
-      x: 392, y: 104, r: 64,
-      ink: area.ink, glyph: area.glyph, label: area.id, sub: 'SINGAPORE', seed: area.id, alpha: 0.88
+      x: 392,
+      y: 104,
+      r: 64,
+      ink: area.ink,
+      glyph: area.glyph,
+      label: area.id,
+      sub: 'SINGAPORE',
+      seed: area.id,
+      alpha: 0.88
     })
   } else {
     ctx.save()
@@ -358,8 +414,16 @@ export function drawAreaPage(ctx, { area, places, stampsByPlace, target, pageNo,
     }
     if (stamp) {
       drawChop(ctx, {
-        x, y, r: 52, ink: area.ink, glyph: area.glyph, label: chopLabel(place.name, area.id),
-        sub: stamp.date, seed: place.id, alpha: 0.85, square: i % 3 === 1
+        x,
+        y,
+        r: 52,
+        ink: area.ink,
+        glyph: area.glyph,
+        label: chopLabel(place.name, area.id),
+        sub: stamp.date,
+        seed: place.id,
+        alpha: 0.85,
+        square: i % 3 === 1
       })
       return
     }
@@ -380,7 +444,10 @@ export function drawAreaPage(ctx, { area, places, stampsByPlace, target, pageNo,
 
   const moreStamped = Math.max(0, stampedCount - target)
   const moreToFind = places.length - Math.max(stampedCount, target)
-  const more = [moreStamped && `+${moreStamped} more stamped`, moreToFind > 0 && `${moreToFind} more to find`].filter(Boolean)
+  const more = [
+    moreStamped && `+${moreStamped} more stamped`,
+    moreToFind > 0 && `${moreToFind} more to find`
+  ].filter(Boolean)
   if (more.length) {
     ctx.fillStyle = MUTED
     ctx.textAlign = 'right'

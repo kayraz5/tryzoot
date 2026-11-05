@@ -32,7 +32,9 @@ function gapMinutes(leg, start, end) {
 
 /** Visits in time order, return leg last, seq renumbered 1..n. Times are left exactly as they are. */
 function ordered(legs) {
-  const visits = legs.filter((l) => l.kind !== 'return').sort((a, b) => ms(a.arrive_iso) - ms(b.arrive_iso))
+  const visits = legs
+    .filter((l) => l.kind !== 'return')
+    .sort((a, b) => ms(a.arrive_iso) - ms(b.arrive_iso))
   const ret = legs.filter((l) => l.kind === 'return')
   return [...visits, ...ret].map((l, i) => ({ ...l, seq: i + 1 }))
 }
@@ -84,8 +86,12 @@ export function resolveJoin({ legs, joinStops, hostName, partyId, airportByMs, b
   // Rule 3: the nearest remaining own stop on each side, if it's too tight.
   const gone = new Set(removed.map((r) => r.leg))
   const left = own.filter((l) => !gone.has(l))
-  const before = left.filter((l) => ms(l.depart_iso) <= start).sort((a, b) => ms(b.depart_iso) - ms(a.depart_iso))[0]
-  const after = left.filter((l) => ms(l.arrive_iso) >= end).sort((a, b) => ms(a.arrive_iso) - ms(b.arrive_iso))[0]
+  const before = left
+    .filter((l) => ms(l.depart_iso) <= start)
+    .sort((a, b) => ms(b.depart_iso) - ms(a.depart_iso))[0]
+  const after = left
+    .filter((l) => ms(l.arrive_iso) >= end)
+    .sort((a, b) => ms(a.arrive_iso) - ms(b.arrive_iso))[0]
   if (before) {
     const gap = minutesBetween(ms(before.depart_iso), start)
     if (gap < GAP_MIN) removed.push({ leg: before, why: 'gap', gapMin: gap })
@@ -103,11 +109,29 @@ export function resolveJoin({ legs, joinStops, hostName, partyId, airportByMs, b
   // Rule 5.
   const bigChange = removed.length >= 2 || removed.some((r) => stayOf(r.leg) >= BIG_STOP_MIN)
 
-  return { ok: true, reason: null, legs: nextLegs, removed, kept, blocks: nextLegs.filter((l) => l.fixed && l.party_id === partyId), bigChange, backAtMs: backAt }
+  return {
+    ok: true,
+    reason: null,
+    legs: nextLegs,
+    removed,
+    kept,
+    blocks: nextLegs.filter((l) => l.fixed && l.party_id === partyId),
+    bigChange,
+    backAtMs: backAt
+  }
 }
 
 function refuse(reason, extra = {}) {
-  return { ok: false, reason, legs: null, removed: [], kept: [], blocks: [], bigChange: false, ...extra }
+  return {
+    ok: false,
+    reason,
+    legs: null,
+    removed: [],
+    kept: [],
+    blocks: [],
+    bigChange: false,
+    ...extra
+  }
 }
 
 /**
@@ -124,18 +148,29 @@ export function restoreOnLeave({ legs, removed, partyId, nowMs }) {
   let plan = legs.filter((l) => !(l.fixed && l.party_id === partyId && l.status !== 'stamped'))
   const restored = []
   const dropped = []
-  const candidates = [...(removed || [])].map((r) => r.leg || r).sort((a, b) => ms(a.arrive_iso) - ms(b.arrive_iso))
+  const candidates = [...(removed || [])]
+    .map((r) => r.leg || r)
+    .sort((a, b) => ms(a.arrive_iso) - ms(b.arrive_iso))
 
   for (const leg of candidates) {
     const a = ms(leg.arrive_iso)
     const d = ms(leg.depart_iso)
-    if (a < nowMs + GAP_MIN * 60000) { dropped.push({ leg, why: a < nowMs ? 'past' : 'too_soon' }); continue }
-    if (plan.some((l) => l.kind === 'visit' && overlaps(l, a, d))) { dropped.push({ leg, why: 'overlap' }); continue }
+    if (a < nowMs + GAP_MIN * 60000) {
+      dropped.push({ leg, why: a < nowMs ? 'past' : 'too_soon' });
+      continue
+    }
+    if (plan.some((l) => l.kind === 'visit' && overlaps(l, a, d))) {
+      dropped.push({ leg, why: 'overlap' });
+      continue
+    }
     if (plan.some((l) => l.fixed && gapMinutes(l, a, d) < GAP_MIN)) {
       dropped.push({ leg, why: 'gap' })
       continue
     }
-    if (plan.some((l) => l.place_id === leg.place_id && l.kind === 'visit')) { dropped.push({ leg, why: 'same_place' }); continue }
+    if (plan.some((l) => l.place_id === leg.place_id && l.kind === 'visit')) {
+      dropped.push({ leg, why: 'same_place' });
+      continue
+    }
     plan.push({ ...leg, status: 'pending' })
     restored.push(leg)
   }

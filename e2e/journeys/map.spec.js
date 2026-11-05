@@ -20,7 +20,9 @@ async function openGeneratedMission(page) {
 test.describe('live map', () => {
   test.use({ auth: 'onboarded' })
 
-  test('shows the fixed countdown and next-stop card while map tiles are aborted', async ({ page }) => {
+  test('shows the fixed countdown and next-stop card while map tiles are aborted', async ({
+    page
+  }) => {
     test.slow() // the map page loads MapLibre and WebGL; Firefox under parallel load can take a while
     await openGeneratedMission(page)
     await page.route('https://tiles.openfreemap.org/**', (route) => route.abort())

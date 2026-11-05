@@ -9,23 +9,55 @@ const T = (hhmm) => Date.parse(at(hhmm))
 // Chinatown-ish coordinates so travel() gives short walks.
 const pt = { lat: 1.2805, lng: 103.8448 }
 const visit = (place_id, from, to, extra = {}) => ({
-  kind: 'visit', status: 'pending', place_id, name: place_id, ...pt,
-  arrive_iso: at(from), depart_iso: at(to), stay_min: Math.round((T(to) - T(from)) / 60000),
-  travel_mode: 'walk', travel_min: 5, travel_detail: 'old note', xp: 50, ...extra
+  kind: 'visit',
+  status: 'pending',
+  place_id,
+  name: place_id,
+  ...pt,
+  arrive_iso: at(from),
+  depart_iso: at(to),
+  stay_min: Math.round((T(to) - T(from)) / 60000),
+  travel_mode: 'walk',
+  travel_min: 5,
+  travel_detail: 'old note',
+  xp: 50,
+  ...extra
 })
 const changi = { label: 'Changi Airport', kind: 'airport', lat: 1.3644, lng: 103.9915 }
 const mission = (legs, arriveBy = '23:15') => ({
-  id: 'm1', origin: changi, start_iso: at('12:00'), must_return_iso: at('23:59'), style: 'budget',
-  buffers: { exit_min: 30, reentry_min: 30, safety_min: 15 }, prefs: {},
-  legs: [...legs, { kind: 'return', status: 'pending', name: 'Back to Changi', arrive_by: at(arriveBy), arrive_iso: at('22:00'), depart_iso: at('22:00') }]
+  id: 'm1',
+  origin: changi,
+  start_iso: at('12:00'),
+  must_return_iso: at('23:59'),
+  style: 'budget',
+  buffers: { exit_min: 30, reentry_min: 30, safety_min: 15 },
+  prefs: {},
+  legs: [
+    ...legs,
+    {
+      kind: 'return',
+      status: 'pending',
+      name: 'Back to Changi',
+      arrive_by: at(arriveBy),
+      arrive_iso: at('22:00'),
+      depart_iso: at('22:00')
+    }
+  ]
 })
 const quest = (stops) => ({
-  id: 'q1', title: 'Chinatown', roster: [{ role: 'host', display_name: 'Mei' }],
+  id: 'q1',
+  title: 'Chinatown',
+  roster: [{ role: 'host', display_name: 'Mei' }],
   stops: stops.map((s, i) => ({ ...s, seq: i + 1 }))
 })
 
 describe('joinableRange: which window stops I can pick', () => {
-  const q = quest([visit('a', '13:00', '13:40'), visit('b', '14:00', '14:40'), visit('c', '20:00', '21:00'), visit('d', '22:30', '23:00')])
+  const q = quest([
+    visit('a', '13:00', '13:40'),
+    visit('b', '14:00', '14:40'),
+    visit('c', '20:00', '21:00'),
+    visit('d', '22:30', '23:00')
+  ])
   it('stops before I am out of the airport are too early; ones ending too late for my flight are too late', () => {
     // Out at 12:30 (12:00 + 30 min immigration); back-by 22:00 means stop d (ends 23:00) can't be the last.
     const m = mission([], '22:00')
@@ -39,7 +71,11 @@ describe('joinableRange: which window stops I can pick', () => {
 })
 
 describe('previewJoin + withTravel: the plan after joining', () => {
-  const own = [visit('gbtb', '13:30', '16:30'), visit('superpark', '17:00', '19:00'), visit('dinner', '19:20', '20:00')]
+  const own = [
+    visit('gbtb', '13:30', '16:30'),
+    visit('superpark', '17:00', '19:00'),
+    visit('dinner', '19:20', '20:00')
+  ]
   const q = quest([visit('maxwell', '18:20', '19:10'), visit('temple', '19:30', '20:10')])
 
   it('uses the resolver (overlap + gap removals) and names the host', () => {
@@ -73,16 +109,31 @@ describe('previewJoin + withTravel: the plan after joining', () => {
 describe('edits after joining', () => {
   const catalogById = new Map()
   it('retimeMission keeps joined stops at their fixed time', () => {
-    const legs = [visit('a', '13:00', '13:30'), visit('maxwell', '15:00', '15:45', { fixed: true, party_id: 'q1', with_host: 'Mei' })]
-    const { mission: out, problems } = retimeMission(mission(legs), { start: { point: pt, ms: T('12:50') }, catalogById })
+    const legs = [
+      visit('a', '13:00', '13:30'),
+      visit('maxwell', '15:00', '15:45', { fixed: true, party_id: 'q1', with_host: 'Mei' })
+    ]
+    const { mission: out, problems } = retimeMission(mission(legs), {
+      start: { point: pt, ms: T('12:50') },
+      catalogById
+    })
     expect(problems).toEqual([])
     const block = out.legs.find((l) => l.fixed)
-    expect([Date.parse(block.arrive_iso), Date.parse(block.depart_iso)]).toEqual([T('15:00'), T('15:45')])
+    expect([Date.parse(block.arrive_iso), Date.parse(block.depart_iso)]).toEqual([
+      T('15:00'),
+      T('15:45')
+    ])
   })
   it('refuses an edit that would make me late to meet the group', () => {
-    const legs = [visit('a', '13:00', '14:50'), visit('maxwell', '14:55', '15:45', { fixed: true, party_id: 'q1', with_host: 'Mei' })]
+    const legs = [
+      visit('a', '13:00', '14:50'),
+      visit('maxwell', '14:55', '15:45', { fixed: true, party_id: 'q1', with_host: 'Mei' })
+    ]
     legs[0].stay_min = 150 // stretched past the meet-up
-    const { problems } = retimeMission(mission(legs), { start: { point: pt, ms: T('12:50') }, catalogById })
+    const { problems } = retimeMission(mission(legs), {
+      start: { point: pt, ms: T('12:50') },
+      catalogById
+    })
     expect(problems[0]).toMatch(/late to meet Mei at maxwell/)
   })
   it('leaving keeps joined stops I already stamped', () => {

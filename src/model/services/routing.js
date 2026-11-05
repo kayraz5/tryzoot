@@ -21,7 +21,9 @@ async function fetchJson(url, opts) {
 
 function osrm(baseUrl, { steps = false } = {}) {
   return async (from, to) => {
-    const json = await fetchJson(`${baseUrl}/${from.lng},${from.lat};${to.lng},${to.lat}?overview=full&geometries=geojson&steps=${steps}`)
+    const json = await fetchJson(
+      `${baseUrl}/${from.lng},${from.lat};${to.lng},${to.lat}?overview=full&geometries=geojson&steps=${steps}`
+    )
     const route = json.routes?.[0]
     if (!route) throw new Error('no route')
     return {
@@ -68,8 +70,7 @@ async function tryProviders(providers, from, to) {
   for (const p of providers) {
     try {
       return await p(from, to)
-    } catch {
-    }
+    } catch {}
   }
   return null // every provider in the list failed
 }
@@ -81,7 +82,9 @@ function router(mode) {
     if (!cache.has(key)) {
       const job = tryProviders(PROVIDERS[mode], from, to)
       cache.set(key, job)
-      job.then((r) => { if (!r) cache.delete(key) }) // don't remember an all-failed result — retry next time
+      job.then((r) => {
+        if (!r) cache.delete(key)
+      }) // don't remember an all-failed result — retry next time
     }
     return cache.get(key)
   }
@@ -91,16 +94,23 @@ export const getWalkRoute = router('walk')
 export const getDriveRoute = router('drive')
 
 const ICONS = {
-  left: 'bi-arrow-left', 'sharp left': 'bi-arrow-left', 'slight left': 'bi-arrow-up-left',
-  right: 'bi-arrow-right', 'sharp right': 'bi-arrow-right', 'slight right': 'bi-arrow-up-right',
-  straight: 'bi-arrow-up', uturn: 'bi-arrow-return-left'
+  left: 'bi-arrow-left',
+  'sharp left': 'bi-arrow-left',
+  'slight left': 'bi-arrow-up-left',
+  right: 'bi-arrow-right',
+  'sharp right': 'bi-arrow-right',
+  'slight right': 'bi-arrow-up-right',
+  straight: 'bi-arrow-up',
+  uturn: 'bi-arrow-return-left'
 }
 
 function describe({ type, modifier }, name) {
   const onto = name ? ` onto ${name}` : ''
-  if (type === 'depart') return { text: `Head off${name ? ' along ' + name : ''}`, icon: 'bi-person-walking' }
+  if (type === 'depart')
+    return { text: `Head off${name ? ' along ' + name : ''}`, icon: 'bi-person-walking' }
   if (type === 'arrive') return { text: 'Arrive at the stop', icon: 'bi-flag-fill' }
-  if (type === 'roundabout' || type === 'rotary') return { text: `Go round the roundabout${onto}`, icon: 'bi-arrow-repeat' }
+  if (type === 'roundabout' || type === 'rotary')
+    return { text: `Go round the roundabout${onto}`, icon: 'bi-arrow-repeat' }
   const icon = ICONS[modifier] || 'bi-arrow-up'
   if (!modifier || modifier === 'straight') return { text: `Continue straight${onto}`, icon }
   if (modifier === 'uturn') return { text: `Make a U-turn${onto}`, icon }

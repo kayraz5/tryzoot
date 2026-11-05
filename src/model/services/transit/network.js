@@ -19,9 +19,21 @@ const TRANSFER_MIN = 4 // added per line change
 // The Sentosa Express isn't in that dataset, so its two island stops are added by hand.
 export const HUBS = {}
 for (const [id, s] of Object.entries(network.stations)) {
-  HUBS[id] = { name: s.name, code: s.codes.filter((c) => !/^[A-Z]{2}0$/.test(c)).join('/'), lat: s.lat, lng: s.lng, exits: s.exits }
+  HUBS[id] = {
+    name: s.name,
+    code: s.codes.filter((c) => !/^[A-Z]{2}0$/.test(c)).join('/'),
+    lat: s.lat,
+    lng: s.lng,
+    exits: s.exits
+  }
 }
-HUBS.rws = { name: 'Resorts World (Sentosa Express)', code: 'SE2', lat: 1.2557, lng: 103.8210, exits: [] }
+HUBS.rws = {
+  name: 'Resorts World (Sentosa Express)',
+  code: 'SE2',
+  lat: 1.2557,
+  lng: 103.8210,
+  exits: []
+}
 HUBS.beach = { name: 'Beach (Sentosa Express)', code: 'SE3', lat: 1.2535, lng: 103.8174, exits: [] }
 
 /** Ride time between neighbouring stations: track ≈ 1.15 × straight line at 55 km/h, plus a 30 s stop. */
@@ -30,7 +42,8 @@ const hopMinutes = (a, b) => (distanceM(HUBS[a], HUBS[b]) * 1.15) / (55000 / 60)
 // [from, to, ride minutes, line]: consecutive stations along each line, plus loop links.
 const EDGES = []
 for (const [line, { stations, links }] of Object.entries(network.lines)) {
-  for (let i = 1; i < stations.length; i++) EDGES.push([stations[i - 1], stations[i], hopMinutes(stations[i - 1], stations[i]), line])
+  for (let i = 1; i < stations.length; i++)
+    EDGES.push([stations[i - 1], stations[i], hopMinutes(stations[i - 1], stations[i]), line])
   for (const [a, b] of links) EDGES.push([a, b, hopMinutes(a, b), line])
 }
 EDGES.push(['harbourfront', 'rws', 5, 'SE'], ['rws', 'beach', 3, 'SE'])
@@ -63,11 +76,26 @@ export function rideMinutes(fromHub, toHub) {
     const stateKey = cur.node + '|' + cur.line
     if (best.has(stateKey) && best.get(stateKey) <= cur.cost) continue
     best.set(stateKey, cur.cost)
-    if (cur.node === toHub) { result = { minutes: Math.round(cur.cost), lines: cur.lines, path: cur.path, edgeLines: cur.edgeLines }; break }
+    if (cur.node === toHub) {
+      result = {
+        minutes: Math.round(cur.cost),
+        lines: cur.lines,
+        path: cur.path,
+        edgeLines: cur.edgeLines
+      };
+      break
+    }
     for (const e of ADJ[cur.node] || []) {
       const change = cur.line && cur.line !== e.line ? TRANSFER_MIN : 0
       const lines = cur.line === e.line ? cur.lines : [...cur.lines, e.line]
-      queue.push({ node: e.to, line: e.line, cost: cur.cost + e.t + change, lines, path: [...cur.path, e.to], edgeLines: [...cur.edgeLines, e.line] })
+      queue.push({
+        node: e.to,
+        line: e.line,
+        cost: cur.cost + e.t + change,
+        lines,
+        path: [...cur.path, e.to],
+        edgeLines: [...cur.edgeLines, e.line]
+      })
     }
   }
   rideCache.set(key, result)
@@ -81,7 +109,8 @@ function lineIndex(line, hub) {
 
 // Station code ("CC19") → hub id, for routes that name stations by code (OneMap).
 const HUB_BY_CODE = {}
-for (const [id, s] of Object.entries(network.stations)) for (const code of s.codes) HUB_BY_CODE[code] = id
+for (const [id, s] of Object.entries(network.stations))
+  for (const code of s.codes) HUB_BY_CODE[code] = id
 export const hubByCode = (code) => (code && HUB_BY_CODE[code]) || null
 
 // Loop lines (Circle): the stations on the ring itself (the loop link closes it) and the
@@ -91,7 +120,10 @@ for (const [line, { stations, links }] of Object.entries(network.lines)) {
   if (!LINES[line]?.loop || !links?.length) continue
   const [i, j] = links[0].map((hub) => stations.indexOf(hub)).sort((x, y) => x - y)
   const ring = stations.slice(i, j + 1)
-  const centre = { lat: ring.reduce((sum, h) => sum + HUBS[h].lat, 0) / ring.length, lng: ring.reduce((sum, h) => sum + HUBS[h].lng, 0) / ring.length }
+  const centre = {
+    lat: ring.reduce((sum, h) => sum + HUBS[h].lat, 0) / ring.length,
+    lng: ring.reduce((sum, h) => sum + HUBS[h].lng, 0) / ring.length
+  }
   RINGS[line] = { hubs: new Set(ring), centre }
 }
 
@@ -131,7 +163,13 @@ export function rideRuns(ride) {
       last.to = ride.path[i + 1]
       last.stops++
     } else {
-      runs.push({ line, from: ride.path[i], to: ride.path[i + 1], nextStop: ride.path[i + 1], stops: 1 })
+      runs.push({
+        line,
+        from: ride.path[i],
+        to: ride.path[i + 1],
+        nextStop: ride.path[i + 1],
+        stops: 1
+      })
     }
   })
   for (const run of runs) Object.assign(run, rideDirection(run.line, run.from, run.nextStop))

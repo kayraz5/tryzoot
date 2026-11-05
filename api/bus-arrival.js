@@ -20,7 +20,8 @@ async function fetchJson(url, headers) {
   }
 }
 
-const minsUntil = (iso) => (iso ? Math.max(0, Math.round((Date.parse(iso) - Date.now()) / 60000)) : null)
+const minsUntil = (iso) =>
+  (iso ? Math.max(0, Math.round((Date.parse(iso) - Date.now()) / 60000)) : null)
 const present = (n) => n != null
 
 async function fromDataMall(code) {
@@ -30,7 +31,9 @@ async function fromDataMall(code) {
   )
   return (json.Services || []).map((s) => ({
     no: s.ServiceNo,
-    mins: [s.NextBus, s.NextBus2, s.NextBus3].map((b) => minsUntil(b?.EstimatedArrival)).filter(present),
+    mins: [s.NextBus, s.NextBus2, s.NextBus3]
+      .map((b) => minsUntil(b?.EstimatedArrival))
+      .filter(present),
     load: s.NextBus?.Load || null
   }))
 }
@@ -46,9 +49,12 @@ async function fromArrivelah(code) {
 
 export default async function handler(req, res) {
   const code = new URL(req.url, 'http://x').searchParams.get('code') || ''
-  if (!/^\d{5}$/.test(code)) return res.status(400).json({ error: 'code must be a 5-digit bus stop code' })
+  if (!/^\d{5}$/.test(code))
+    return res.status(400).json({ error: 'code must be a 5-digit bus stop code' })
   try {
-    const services = process.env.LTA_ACCOUNT_KEY ? await fromDataMall(code) : await fromArrivelah(code)
+    const services = process.env.LTA_ACCOUNT_KEY
+      ? await fromDataMall(code)
+      : await fromArrivelah(code)
     services.sort((a, b) => a.no.localeCompare(b.no, 'en', { numeric: true }))
     res.setHeader('Cache-Control', 's-maxage=20')
     return res.status(200).json({ services })

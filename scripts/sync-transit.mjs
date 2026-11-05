@@ -8,7 +8,8 @@
 // occasional run, not a live dependency: the bus file is fetched lazily from our own origin.
 import { mkdirSync, writeFileSync } from 'node:fs'
 
-const RAIL_URL = 'https://raw.githubusercontent.com/cheeaun/sgraildata/master/data/v1/sg-rail.geojson'
+const RAIL_URL =
+  'https://raw.githubusercontent.com/cheeaun/sgraildata/master/data/v1/sg-rail.geojson'
 const BUS_URL = 'https://data.busrouter.sg/v1'
 const MRT_OUT = new URL('../src/model/data/mrtNetwork.sg.json', import.meta.url)
 const BUS_OUT = new URL('../public/data/bus.sg.json', import.meta.url)
@@ -28,7 +29,11 @@ const get = async (url) => {
   if (!res.ok) throw new Error(`${url} -> ${res.status}`)
   return res.json()
 }
-const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
+const slug = (s) =>
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_|_$/g, '')
 const round = (n) => Math.round(n * 1e5) / 1e5
 
 // MRT
@@ -71,14 +76,17 @@ for (const [line, a, b] of EXTRA_LINKS) {
 }
 
 writeFileSync(MRT_OUT, JSON.stringify({ source: RAIL_URL, lines, stations }) + '\n')
-console.log(`MRT: ${Object.keys(stations).length} stations, ${LINES.length} lines -> ${MRT_OUT.pathname}`)
+console.log(
+  `MRT: ${Object.keys(stations).length} stations, ${LINES.length} lines -> ${MRT_OUT.pathname}`
+)
 
 // Buses
 const [stopsRaw, servicesRaw, routesRaw] = await Promise.all(
   ['stops', 'services', 'routes'].map((f) => get(`${BUS_URL}/${f}.min.json`))
 )
 const stops = {}
-for (const [code, [lng, lat, name, road]] of Object.entries(stopsRaw)) stops[code] = [lng, lat, name, road, []]
+for (const [code, [lng, lat, name, road]] of Object.entries(stopsRaw))
+  stops[code] = [lng, lat, name, road, []]
 const services = {}
 for (const [no, { name, routes }] of Object.entries(servicesRaw)) {
   services[no] = { name, routes, lines: routesRaw[no] || [] } // lines = encoded polyline per direction
@@ -87,4 +95,6 @@ for (const [no, { name, routes }] of Object.entries(servicesRaw)) {
 
 mkdirSync(new URL('.', BUS_OUT), { recursive: true })
 writeFileSync(BUS_OUT, JSON.stringify({ source: BUS_URL, stops, services }))
-console.log(`Bus: ${Object.keys(stops).length} stops, ${Object.keys(services).length} services -> ${BUS_OUT.pathname}`)
+console.log(
+  `Bus: ${Object.keys(stops).length} stops, ${Object.keys(services).length} services -> ${BUS_OUT.pathname}`
+)

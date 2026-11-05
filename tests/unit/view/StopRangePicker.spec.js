@@ -4,18 +4,32 @@ import { mount } from '@vue/test-utils'
 import StopRangePicker from '../../../src/view/components/quests/StopRangePicker.vue'
 
 const at = (hhmm) => `2026-10-21T${hhmm}:00+08:00`
-const stops = ['A', 'B', 'C', 'D', 'E'].map((name, i) => ({ name, place_id: name, arrive_iso: at(`1${i}:00`), depart_iso: at(`1${i}:40`) }))
+const stops = ['A', 'B', 'C', 'D', 'E'].map((name, i) => ({
+  name,
+  place_id: name,
+  arrive_iso: at(`1${i}:00`),
+  depart_iso: at(`1${i}:40`)
+}))
 
 /** Mount with v-model wired up, so each emitted value becomes the next state. */
 function picker(from, to, props = {}) {
   const w = mount(StopRangePicker, {
-    props: { stops, modelValue: { from, to }, ...props, 'onUpdate:modelValue': (v) => w.setProps({ modelValue: v }) }
+    props: {
+      stops,
+      modelValue: { from, to },
+      ...props,
+      'onUpdate:modelValue': (v) => w.setProps({ modelValue: v })
+    }
   })
   return w
 }
 const range = (w) => w.props('modelValue')
 const tap = async (w, n) => w.findAll('button.stop')[n - 1].trigger('click')
-const selected = (w) => w.findAll('button.stop').map((b, i) => (b.classes('in') ? i + 1 : null)).filter(Boolean)
+const selected = (w) =>
+  w
+    .findAll('button.stop')
+    .map((b, i) => (b.classes('in') ? i + 1 : null))
+    .filter(Boolean)
 
 describe('StopRangePicker: always one run of consecutive stops', () => {
   it('tapping outside the range extends it (no holes possible)', async () => {

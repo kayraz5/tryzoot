@@ -32,10 +32,10 @@ function visitLeg(placeId, point = STOP, extra = {}) {
 function setup() {
   setActivePinia(createPinia())
   const store = useMissionStore()
-  store.mission = missionFixture([
-    visitLeg('stop-a'),
-    visitLeg('stop-b', { lat: 1.281, lng: 103.8455 }),
-  ], '20:00')
+  store.mission = missionFixture(
+    [visitLeg('stop-a'), visitLeg('stop-b', { lat: 1.281, lng: 103.8455 }),],
+    '20:00'
+  )
   const returnLeg = store.mission.legs.at(-1)
   returnLeg.lat = store.mission.origin.lat
   returnLeg.lng = store.mission.origin.lng
@@ -76,7 +76,9 @@ describe('useMissionNav: next-stop navigation state', () => {
 
   it('uses the wider radius for the return leg', () => {
     const { store, nav } = setup()
-    store.visitLegs.forEach((leg) => { leg.status = 'stamped' })
+    store.visitLegs.forEach((leg) => {
+      leg.status = 'stamped'
+    })
     const origin = store.mission.origin
 
     setFake(true, origin)

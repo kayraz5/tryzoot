@@ -17,16 +17,27 @@ export async function fromOneMap(from, to) {
     const res = await fetch('/api/transit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ start: [from.lng, from.lat], end: [to.lng, to.lat], endName: to.name }),
+      body: JSON.stringify({
+        start: [from.lng, from.lat],
+        end: [to.lng, to.lat],
+        endName: to.name
+      }),
       signal: ctrl.signal
     })
     // 503 = no keys on the server; a non-JSON reply = no API at all (static preview).
-    if (res.status === 503 || !res.headers.get('content-type')?.includes('json')) oneMapAvailable = false
+    if (res.status === 503 || !res.headers.get('content-type')?.includes('json'))
+      oneMapAvailable = false
     if (!res.ok || !oneMapAvailable) return null
     const json = await res.json()
-    if (!json.parts?.length || json.parts.some((p) => p.coords.length < 2 && p.mode !== 'walk')) return null
+    if (!json.parts?.length || json.parts.some((p) => p.coords.length < 2 && p.mode !== 'walk'))
+      return null
     json.parts.forEach(fromOurNetwork)
-    return { coords: json.parts.flatMap((p) => p.coords), parts: json.parts, minutes: json.minutes, source: 'onemap' }
+    return {
+      coords: json.parts.flatMap((p) => p.coords),
+      parts: json.parts,
+      minutes: json.minutes,
+      source: 'onemap'
+    }
   } catch {
     return null
   } finally {

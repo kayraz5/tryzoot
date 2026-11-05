@@ -1,6 +1,9 @@
 // EDITOR: MATTHEW
 import { describe, expect, it, vi } from 'vitest'
-import { applyBuildingLayers, BUILDING_LAYERS } from '../../../src/view/components/map/mapBuildings.js'
+import {
+  applyBuildingLayers,
+  BUILDING_LAYERS
+} from '../../../src/view/components/map/mapBuildings.js'
 
 function fakeMap() {
   return {
@@ -18,9 +21,17 @@ describe('applyBuildingLayers', () => {
     applyBuildingLayers(map, { visible: false, extruded: false })
 
     expect(map.setLayerZoomRange).toHaveBeenCalledWith(BUILDING_LAYERS.flat, 13, 24)
-    expect(map.setLayoutProperty).toHaveBeenCalledWith(BUILDING_LAYERS.flat, 'visibility', 'visible')
+    expect(map.setLayoutProperty).toHaveBeenCalledWith(
+      BUILDING_LAYERS.flat,
+      'visibility',
+      'visible'
+    )
     expect(map.setPaintProperty).toHaveBeenCalledWith(BUILDING_LAYERS.flat, 'fill-opacity', 0)
-    expect(map.setLayoutProperty).toHaveBeenCalledWith(BUILDING_LAYERS.extruded, 'visibility', 'none')
+    expect(map.setLayoutProperty).toHaveBeenCalledWith(
+      BUILDING_LAYERS.extruded,
+      'visibility',
+      'none'
+    )
   })
 
   it('shows flat footprints when buildings are on without 3D', () => {
@@ -29,7 +40,11 @@ describe('applyBuildingLayers', () => {
     applyBuildingLayers(map, { visible: true, extruded: false })
 
     expect(map.setPaintProperty).toHaveBeenCalledWith(BUILDING_LAYERS.flat, 'fill-opacity', 1)
-    expect(map.setLayoutProperty).toHaveBeenCalledWith(BUILDING_LAYERS.extruded, 'visibility', 'none')
+    expect(map.setLayoutProperty).toHaveBeenCalledWith(
+      BUILDING_LAYERS.extruded,
+      'visibility',
+      'none'
+    )
   })
 
   it('shows extruded buildings and hides the flat fill when 3D is on', () => {
@@ -38,7 +53,11 @@ describe('applyBuildingLayers', () => {
     applyBuildingLayers(map, { visible: true, extruded: true })
 
     expect(map.setPaintProperty).toHaveBeenCalledWith(BUILDING_LAYERS.flat, 'fill-opacity', 0)
-    expect(map.setLayoutProperty).toHaveBeenCalledWith(BUILDING_LAYERS.extruded, 'visibility', 'visible')
+    expect(map.setLayoutProperty).toHaveBeenCalledWith(
+      BUILDING_LAYERS.extruded,
+      'visibility',
+      'visible'
+    )
   })
 
   it('does nothing when the map or its building layers are missing', () => {
