@@ -37,8 +37,6 @@ export function loadBusData() {
   return loading
 }
 
-export const busDataReady = () => Boolean(data)
-
 function stopInfo(code) {
   const s = data?.stops[code]
   return s && { code, lng: s[0], lat: s[1], name: s[2], road: s[3], services: s[4] }
