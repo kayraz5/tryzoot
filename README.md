@@ -1,5 +1,5 @@
-<p align="center">
-  <img src="public/brand/zoot-wordmark.png" alt="Zoot" width="260">
+<p align="center" style="background-color: yellow;">
+  <img src="public/brand/zoot-wordmark.png" width="260">
 </p>
 
 <h1 align="center">Zoot</h1>
