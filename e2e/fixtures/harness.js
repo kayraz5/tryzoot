@@ -10,10 +10,7 @@ export const EXTERNAL_FIXTURES = [
   [/api-open\.data\.gov\.sg\/.*lightning/, 'external/lightning.json']
 ]
 
-/**
- * Install the deterministic browser environment shared by smoke and draft specs.
- * auth is one of signed-out, needs-onboarding, or onboarded.
- */
+/** Install the deterministic browser state and request stubs shared by E2E specs. */
 export async function installHarness(page, { auth = 'signed-out', profile = {} } = {}) {
   await page.addInitScript(({ auth, profile }) => {
     localStorage.setItem('zoot.guest', '1')
@@ -42,11 +39,7 @@ export async function installHarness(page, { auth = 'signed-out', profile = {} }
   await installApiStubs(page)
 }
 
-/**
- * Fulfil the external fixtures (Open-Meteo, PSI, lightning) and abort every other non-localhost
- * request. `passThrough(url)` excludes hosts from routing altogether (the Supabase harness uses it
- * for the configured project's origin); the guest harness passes nothing, so it aborts them all.
- */
+/** Fulfil known external fixtures and abort other non-localhost requests. */
 export async function routeExternalHosts(page, { passThrough = () => false } = {}) {
   await page.route((url) => !APP_HOSTS.has(url.hostname) && !passThrough(url), (route) => {
     const hit = EXTERNAL_FIXTURES.find(([pattern]) => pattern.test(route.request().url()))
@@ -56,7 +49,7 @@ export async function routeExternalHosts(page, { passThrough = () => false } = {
   })
 }
 
-/** Stub the Vercel functions under /api/* from e2e/fixtures/api (/api/plan built from the posted catalog). */
+/** Stub Vercel functions with fixtures from e2e/fixtures/api. */
 export async function installApiStubs(page) {
   await page.route('**/api/**', (route) => {
     const { pathname } = new URL(route.request().url())

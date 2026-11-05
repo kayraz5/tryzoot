@@ -14,7 +14,7 @@ const SERVER_SECRETS = [
   'ORS_API_KEY',
 ]
 
-// Variables used only by the Supabase-gated test tiers.
+// Variables used only by Supabase-gated tests.
 const GATE_ONLY = [
   'E2E_SUPABASE_EMAIL',
   'E2E_SUPABASE_PASSWORD',
@@ -23,9 +23,7 @@ const GATE_ONLY = [
   'E2E_SUPABASE_WRITES',
 ]
 
-// Project `test.env` is applied last to both import.meta.env and process.env in the
-// workers, so a blank here wins over .env, .env.local, .env.test, .env.test.local and
-// the shell. Tests that need a configured branch stub it with vi.stubEnv.
+// Blank test values override local secrets; tests stub required values explicitly.
 const blank = (names) => Object.fromEntries(names.map((name) => [name, '']))
 
 export default mergeConfig(
@@ -58,9 +56,7 @@ export default mergeConfig(
           },
         },
         {
-          // Supabase-gated tests (*.supabase.spec.js). VITE_SUPABASE_* come from Vite's own env
-          // loading; server-only secrets stay blank. The global setup runs at most one read-only
-          // preflight and provides the gate; the setup file allows only same-origin GET /rest/v1/.
+          // Supabase-gated unit tests use the read-only preflight and same-origin GET boundary.
           extends: true,
           test: {
             name: 'supabase',
@@ -72,8 +68,7 @@ export default mergeConfig(
           },
         },
         {
-          // Migration and reusable-support checks share the unit network boundary. Keep all
-          // hermetic variables blank so integration support has the same environment contract.
+          // Integration-support tests share the unit network boundary and blank environment.
           extends: true,
           test: {
             name: 'integration-support',

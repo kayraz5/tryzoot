@@ -82,8 +82,7 @@ export function useCleanSlate() {
     vi.useRealTimers()
     vi.unstubAllEnvs()
     vi.unstubAllGlobals()
-    // Vitest 4's restoreAllMocks no longer clears vi.fn() call history, so clear it
-    // first; implementations set in beforeEach are kept.
+    // Reset mock state while preserving implementations configured in beforeEach.
     vi.clearAllMocks()
     vi.restoreAllMocks()
     clearStorage()
