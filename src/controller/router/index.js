@@ -53,7 +53,7 @@ router.beforeEach(async (to) => {
 
   // /plan is also the entry point from the landing page. Resume the current
   // account's unfinished mission before onboarding or showing a new plan form.
-  if (to.name === 'plan' && user.isAuthed) {
+  if (to.name === 'plan' && user.isAuthed && to.query.fresh !== '1') {
     try {
       const mission = await useMissionStore().loadUnfinished()
       if (mission) return { name: 'mission', params: { id: mission.id } }
