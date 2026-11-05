@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 import { computed, ref, watch } from 'vue'
 import { distanceM } from '../../../../model/services/distance.js'
 import { getBusAlternative, transitSteps, currentPartIndex } from '../../../../model/services/transit/index.js'

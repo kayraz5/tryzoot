@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 import distance from '@turf/distance'
 import { point } from '@turf/helpers'
 

@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 /**
  * Journey — Feature: route guards and legacy party-to-quest redirects.
  * Runs in the guest harness (zoot.guest='1', external hosts aborted); see e2e/fixtures/harness.js.

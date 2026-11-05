@@ -1,3 +1,4 @@
+<!-- EDITOR: MATTHEW -->
 <script setup>
 import {onBeforeUnmount, ref, watchEffect} from 'vue';
 import {useRoute, useRouter} from 'vue-router';

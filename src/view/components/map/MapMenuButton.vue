@@ -1,3 +1,4 @@
+<!-- EDITOR: HULBERT -->
 <script setup>
 // The hamburger that opens the map-tools drawer. Yellow when closed, dark while open.
 defineProps({ open: { type: Boolean, default: false } })

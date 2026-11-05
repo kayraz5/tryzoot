@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 /**
  * UI steps shared by the Supabase-gated social journeys (e2e/social/*.supabase.spec.js).
  * They drive the real app against the configured project: plan a layover (with the /api/plan

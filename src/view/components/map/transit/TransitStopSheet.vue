@@ -1,3 +1,4 @@
+<!-- EDITOR: KAYRA -->
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { LINES } from '../../../../model/data/transitLines.js'

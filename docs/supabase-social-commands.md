@@ -1,3 +1,4 @@
+<!-- EDITOR: EUDALE -->
 # Supabase commands: Social Quests
 
 Everything here runs in **Supabase → SQL Editor** (paste, then **Run**).

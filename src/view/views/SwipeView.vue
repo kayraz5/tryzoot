@@ -1,3 +1,4 @@
+<!-- EDITOR: HULBERT -->
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import PlaceArt from '../common/PlaceArt.vue'

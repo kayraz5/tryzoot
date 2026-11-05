@@ -1,3 +1,4 @@
+-- EDITOR: EUDALE
 -- ════════════════════════════════════════════════════════════════════════
 -- Zoot · Social quests (Eudale) — spec: docs/social-quests-spec.md
 -- Run in Supabase → SQL Editor AFTER schema.sql. Safe to re-run, and safe to run over the

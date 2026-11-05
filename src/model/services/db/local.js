@@ -1,3 +1,4 @@
+// EDITOR: HULBERT
 import {checkInStatus, sameSgDay} from '../checkin.js';
 import {DEFAULT_COVER} from '../brand.js';
 

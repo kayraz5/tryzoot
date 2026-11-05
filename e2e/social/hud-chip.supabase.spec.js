@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 /**
  * Social journey (Tier 2, two accounts): the map quest chip for a guest who joined a host's quest.
  * The host account plans a layover and opens its stops through OpenToCompanySheet; the test

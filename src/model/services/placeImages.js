@@ -1,3 +1,4 @@
+// EDITOR: EUDALE
 /**
  * Live photos for a place from Wikimedia Commons (and Wikipedia as a fallback).
  * Free, keyless and openly licensed. Every image carries its author + licence for the credit line.

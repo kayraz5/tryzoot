@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 /**
  * Buses, without any API key. The stop list, each service's stop order and its road line
  * come from public/data/bus.sg.json (pnpm sync:transit), fetched once on first use.

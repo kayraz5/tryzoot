@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 import { beforeEach, describe, expect, it } from 'vitest'
 import { placeById } from '../model/services/catalog.js'
 import {

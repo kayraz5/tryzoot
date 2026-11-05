@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 import { computed, watch } from 'vue'
 import { useTripStore } from '../../../model/stores/trip.js'
 import { useUserStore } from '../../../model/stores/user.js'

@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 /** Return a reproducible Mulberry32 pseudo-random number generator. */
 export function rng(seed = 216) {
   let state = seed >>> 0

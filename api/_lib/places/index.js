@@ -1,3 +1,4 @@
+// EDITOR: SHREY
 import { fetchOsmPlaces, addWikipediaBlurbs } from './osm.js'
 import { mergePlaces } from './merge.js'
 

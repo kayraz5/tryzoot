@@ -1,3 +1,4 @@
+<!-- EDITOR: EUDALE -->
 <script setup>
 import { useRouter } from 'vue-router'
 import { usePartyStore } from '../../../model/stores/party.js'

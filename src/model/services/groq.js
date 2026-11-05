@@ -1,3 +1,4 @@
+// EDITOR: HULBERT
 import { validateChoice, validateMission } from './itinerarySchema.js';
 import { planDeterministic, sequencePicks, groqCatalogSlice, computeBudget, dangerRefusal } from './planner.js';
 

@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 /**
  * Harness self-test (Requirement 3.5): in the guest harness, no request leaves localhost except
  * external calls the harness fulfils from e2e/fixtures/external. Everything else is aborted

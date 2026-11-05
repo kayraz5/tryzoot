@@ -1,3 +1,4 @@
+// EDITOR: SHREY
 // pnpm sync:places -> runs the places sync locally and refreshes src/model/data/places.synced.json (the app's offline copy)
 // pnpm sync:places --db -> also writes them to the Supabase `places` table (same as the daily cron)
 // Hand-picked places (source = 'seed') are read from Supabase, so .env needs SUPABASE_URL and SUPABASE_SECRET_KEY.

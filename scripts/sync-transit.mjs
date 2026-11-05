@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 // pnpm sync:transit -> refreshes the public-transport data the map and router use:
 //   src/model/data/mrtNetwork.sg.json  every MRT station (name, codes, position, exits) and the
 //                                      station order of each line, from cheeaun/sgraildata.

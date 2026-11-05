@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 import { describe, expect, it, vi } from 'vitest'
 import { buildMission, summarizePlace } from '../model/services/groq.js'
 import { groqCatalogSlice } from '../model/services/planner.js'

@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 /**
  * Social journey (Tier 2, demo seed, one account): the quest chat drawer on the map.
  * The test account plans a layover and opens its stops to company; a seeded demo traveller joins

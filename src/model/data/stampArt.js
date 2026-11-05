@@ -1,3 +1,4 @@
+// EDITOR: SHREY
 // Stamp artwork in src/assets/stamps/, named <place id>.png or area-<area>.png (e.g. area-civic-district.png).
 // Add a file with the right name and it shows up; anything without one keeps the drawn chop.
 const files = import.meta.glob('../../assets/stamps/*.png', { eager: true, query: '?url', import: 'default' })

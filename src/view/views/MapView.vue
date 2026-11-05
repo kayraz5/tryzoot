@@ -1,3 +1,4 @@
+<!-- EDITOR: MATTHEW -->
 <script setup>
 /**
  * 3D Map — the live quest screen.
@@ -255,6 +256,7 @@ const otterView = ref(false)            // third-person camera locked behind the
 
 const demoSpeed = ref(20)               // Demo-Walk multiplier (1×, 6×, 20×)
 const wasdEnabled = ref(true)           // keyboard movement during Demo-Walk
+const demoPanelOpen = ref(false)        // the panel can be tucked away while Demo-Walk keeps running
 
 // Route geometry: the live leg's resolved street path, and the cached paths for
 // the legs after it. Both are produced by refreshLiveRoute/refreshPlannedRoutes.
@@ -1252,24 +1254,43 @@ function pointNearNextStop(meters) {
   return pointAtOffset(target, bearingDegrees(target, previous), meters)
 }
 
-/** Toggle Demo-Walk (fake GPS) on/off. */
+/**
+ * Cycle the Demo-Walk button through three states, so one button both hides the
+ * panel and leaves the mode:
+ *
+ *   off            -> Demo-Walk on, panel open
+ *   on, panel open -> panel hidden, still walking (the map stays uncovered)
+ *   on, panel hid. -> back to the real GPS
+ */
 function toggleDemoWalk() {
-  if (geo.fake) {
-    setFake(false)
-    ui.toast('Using real GPS.', 'dark')
+  if (!geo.fake) {
+    setFake(true, here.value || pointNearNextStop(200) || undefined)
+    following.value = true
+    demoPanelOpen.value = true
+    ui.toast('Demo-Walk on: use WASD / arrow keys, or tap the map to move.', 'dark', 4000)
     return
   }
 
-  setFake(true, here.value || pointNearNextStop(200) || undefined)
-  following.value = true
-  ui.toast('Demo-Walk on: use WASD / arrow keys, or tap the map to move.', 'dark', 4000)
+  // Still in Demo-Walk — the first press only gets the panel out of the way.
+  if (demoPanelOpen.value) {
+    demoPanelOpen.value = false
+    ui.toast('Demo panel hidden. Press again for real GPS.', 'dark')
+    return
+  }
+
+  setFake(false)
+  ui.toast('Using real GPS.', 'dark')
 }
+
+// Demo-Walk can also be left from elsewhere (DevView, a page reload); never leave
+// the panel flag set behind it, or the next press would hide an already-closed panel.
+watch(demo, (on) => { if (!on) demoPanelOpen.value = false })
 
 /** Teleport a short distance before the next stop (demo shortcut). */
 function jumpNearNextStop(meters) {
   const place = pointNearNextStop(meters)
   if (!place) return
-  if (!geo.fake) setFake(true)
+  if (!geo.fake) { setFake(true); demoPanelOpen.value = true }
   teleport(place)
   following.value = true
 }
@@ -1549,8 +1570,8 @@ function writeMissionCardFlag(open) {
 
   <!-- ── Top-left HUD column: Singapore badge, weather chip, GPS/demo button ── -->
   <!-- The Demo-Walk controls (fake GPS, dev/demo only) sit in its slot, so they stack with the same gap. -->
-  <MapStatusStack :demo="demo" @toggle-demo="toggleDemoWalk">
-    <div v-if="demo" id="demo-controls" class="rounded-4">
+  <MapStatusStack :demo="demo" :panel-open="demoPanelOpen" @toggle-demo="toggleDemoWalk">
+    <div v-if="demo && demoPanelOpen" id="demo-controls" class="rounded-4">
       <div class="demo-row">
         <span class="demo-label">Speed</span>
         <button class="btn rounded-pill btn-sm" :class="demoSpeed === 1 ? 'btn-warning' : 'btn-outline-warning'" @click="demoSpeed = 1">1x</button>

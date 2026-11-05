@@ -1,3 +1,4 @@
+<!-- EDITOR: HULBERT -->
 <script setup>
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../model/stores/user.js'

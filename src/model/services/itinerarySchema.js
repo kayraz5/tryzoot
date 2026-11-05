@@ -1,3 +1,4 @@
+// EDITOR: HULBERT
 /**
  * Hand-written validators for the two versioned JSON contracts.
  *

@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 import { describe, expect, it } from 'vitest'
 import places from '../model/data/places.synced.json'
 import { ORIGINS } from '../model/data/origins.js'

@@ -1,3 +1,4 @@
+// EDITOR: HULBERT
 import { onMounted, onUnmounted } from 'vue'
 import { useUiStore } from '../../../model/stores/ui.js'
 

@@ -1,3 +1,4 @@
+<!-- EDITOR: KAYRA -->
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { getPlaceImages } from '../../../model/services/placeImages.js'

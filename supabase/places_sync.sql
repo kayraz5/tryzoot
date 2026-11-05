@@ -1,3 +1,4 @@
+-- EDITOR: SHREY
 -- Run once after schema.sql: extra columns used by the daily places sync (api/sync-places.js)
 alter table public.places
   add column if not exists source text not null default 'seed',      -- seed | osm

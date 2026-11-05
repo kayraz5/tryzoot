@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 import { describe, it, expect } from 'vitest'
 import { levelFor, TITLES, titleFor } from '../model/services/xp.js'
 import { useCleanSlate } from './helpers/index.js'
