@@ -7,7 +7,6 @@ import {
   trimRouteToPosition
 } from '../../../src/model/services/routeGeometry.js'
 
-// A straight 2 km route heading east at the equator-ish latitude of Singapore.
 const LINE = [
   [103.8, 1.3],
   [103.81, 1.3],
@@ -55,7 +54,6 @@ describe('trimRouteToPosition', () => {
 
   it('adds no connector when the traveller is on the line', () => {
     const trimmed = trimRouteToPosition(LINE, { lat: 1.3, lng: 103.805 })
-    // position → 103.81 → 103.82 (the projected point is the position itself)
     expect(trimmed).toHaveLength(3)
   })
 

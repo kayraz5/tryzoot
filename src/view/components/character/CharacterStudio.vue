@@ -1,17 +1,7 @@
 <!-- EDITOR: MATTHEW -->
 <script setup>
-//  CharacterStudio.vue — the dressing room, as a reusable component
-//  A live 3D traveller you can spin, plus the outfit/fur/pose pickers.
-//
-//  It owns NO saved state. The chosen outfit and fur come in as props and go
-//  back out as events (the v-model pattern), so the same component serves two
-//  different jobs without knowing about either of them:
-//    - the Character tab in ProfileView, where a Save button commits to the store
-//    - /wardrobe, a throwaway playground for trying things while editing the assets
-//
-//  This file is the only place the 3D preview exists. It's imported lazily by
-//  ProfileView so Three.js is never downloaded by someone who doesn't open the
-//  tab — see defineAsyncComponent there.
+// The only place the 3D preview exists. ProfileView imports it lazily
+// (defineAsyncComponent) so Three is never downloaded by someone who skips the tab.
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import * as THREE from 'three'
 import { createTraveller } from './traveller.js'
@@ -26,16 +16,11 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:outfit', 'update:fur', 'update:hat', 'update:eyewear'])
 
-// Both lists are read straight from the asset file, so anything you add in
-// travellerAssets.js shows up here with no edit to this component.
 const outfits = Object.entries(OUTFITS).map(([key, o]) => ({ key, label: o.label }))
 const furs = Object.entries(FURS).map(([key, f]) => ({ key, label: f.label }))
 const hats = Object.entries(HATS).map(([key, h]) => ({ key, label: h.label }))
 const eyewears = Object.entries(EYEWEAR).map(([key, e]) => ({ key, label: e.label }))
 
-// Picking an outfit also moves the hat/eyewear pickers to whatever that kit
-// suggests — so Island Hopper arrives with its sun hat on — but only as a
-// starting point: the two rows below stay yours to change afterwards.
 function chooseOutfit(key) {
   emit('update:outfit', key)
   const kit = OUTFITS[key]
@@ -43,8 +28,6 @@ function chooseOutfit(key) {
   if (kit?.eyewear) emit('update:eyewear', kit.eyewear)
 }
 
-// One description per wardrobe slot, so the chip rack and the mobile dropdowns
-// render from the same source instead of drifting apart as options are added.
 const slots = computed(() => [
   { key: 'outfit', label: 'Outfit', options: outfits, value: props.outfit, choose: chooseOutfit },
   { key: 'hat', label: 'Hat', options: hats, value: props.hat, choose: (k) => emit('update:hat', k) },
@@ -58,11 +41,9 @@ let traveller = null
 let renderer = null
 let frame = 0
 
-// Props are the source of truth, so re-apply whenever the parent changes them —
-// including when the parent reverts a change the user didn't save.
 watch(() => props.outfit, (v) => {
-  // setOutfit() rebuilds every slot, head and face included, so the hat and
-  // glasses must be re-applied after it or they'd vanish on an outfit change.
+// setOutfit() rebuilds every slot, head and face included, so hat and glasses
+  // must be re-applied after it or they vanish on an outfit change.
   traveller?.setOutfit(v)
   traveller?.setHat(props.hat)
   traveller?.setEyewear(props.eyewear)
@@ -72,13 +53,11 @@ watch(() => props.hat, (v) => traveller?.setHat(v))
 watch(() => props.eyewear, (v) => traveller?.setEyewear(v))
 
 onMounted(() => {
-  // alpha: true leaves the canvas transparent so the card behind it shows through.
+// alpha: true leaves the canvas transparent so the card behind shows through.
   renderer = new THREE.WebGLRenderer({ canvas: canvas.value, antialias: true, alpha: true })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
 
   const scene = new THREE.Scene()
-  // The same three lights the map layer uses, so what you pick here is exactly
-  // what you get out on the map.
   scene.add(new THREE.HemisphereLight(0xffffff, 0xbfd2a8, 2.0))
   const sun = new THREE.DirectionalLight(0xfff3dd, 2.4); sun.position.set(3, 6, 4); scene.add(sun)
   const rim = new THREE.DirectionalLight(0xcfe3ff, 0.8); rim.position.set(-3, 2, -4); scene.add(rim)
@@ -90,15 +69,15 @@ onMounted(() => {
   traveller.setBearing(bearing)
   scene.add(traveller.group)
 
-  // Keep the drawing buffer matching the element's CSS size. Without this the
-  // render stretches on resize, because those are two different things.
+// Keep the drawing buffer matching the element's CSS size, or the render
+  // stretches on resize - they are two different things.
   function resize() {
     const el = canvas.value
     if (!el || !el.clientWidth) return
     renderer.setSize(el.clientWidth, el.clientHeight, false)
     camera.aspect = el.clientWidth / el.clientHeight
-    // Framed for the TALLEST outfit — the monsoon umbrella reaches about y 2.9,
-    // well above his own 2.25, and a camera framed on just the body crops it.
+// Framed for the TALLEST outfit: the monsoon umbrella reaches about y 2.9, well
+  // above his own 2.25, and a body-framed camera crops it.
     camera.position.set(0, 1.7, 6.2)
     camera.lookAt(0, 1.35, 0)
     camera.updateProjectionMatrix()
@@ -106,8 +85,7 @@ onMounted(() => {
   resize()
   window.addEventListener('resize', resize)
 
-  // Drag to spin. Pointer events cover mouse and touch in one handler; capture
-  // keeps the drag alive when the finger slides off the canvas.
+// Pointer capture keeps the drag alive when the finger slides off the canvas.
   let dragging = false
   let lastX = 0
   const down = (e) => { dragging = true; lastX = e.clientX; canvas.value.setPointerCapture?.(e.pointerId) }
@@ -123,8 +101,7 @@ onMounted(() => {
   canvas.value.addEventListener('pointerup', up)
   canvas.value.addEventListener('pointercancel', up)
 
-  // performance.now() rather than THREE.Clock — Clock is deprecated as of
-  // three r186, and this matches how travellerLayer.js already times him.
+// performance.now() rather than THREE.Clock - Clock is deprecated as of three r186.
   const start = performance.now()
   function loop() {
     traveller.update((performance.now() - start) / 1000, walking.value)
@@ -150,9 +127,6 @@ onMounted(() => {
       <div v-for="slot in slots" :key="slot.key" class="rack-row rack-row--slot">
         <span class="rack-label">{{ slot.label }}</span>
 
-        <!-- Phones get a native select: the OS picker is one tap and one scroll,
-             against a wall of chips that pushed the Save button off-screen. The
-             chips below are the same options, kept for screens with room. -->
         <span class="rack-select-wrap">
           <select
             class="rack-select"
@@ -187,8 +161,6 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Lets the parent drop its own buttons under the pickers (the Me tab puts
-         Save / Reset here; /wardrobe puts nothing). -->
     <slot name="actions" />
   </div>
 </template>
@@ -218,12 +190,10 @@ onMounted(() => {
 }
 .rack-opts { display: flex; flex-wrap: wrap; gap: 0.35rem; }
 
-/* Hidden until the viewport is narrow enough for the chips to become a wall. */
 .rack-select-wrap { display: none; }
 
 @media (max-width: 767px) {
-  /* Swap chips for dropdowns, but only in the wardrobe slots — Pose is a single
-     toggle, so it stays a chip and must not be caught by this. */
+/* Wardrobe slots only - Pose is a single toggle and must not be caught by this. */
   .rack-row--slot .rack-opts { display: none; }
 
   .rack-select-wrap {
@@ -233,9 +203,8 @@ onMounted(() => {
     min-width: 0; /* a flex child must be allowed to shrink, or long labels overflow */
   }
 
-  /* Chevron drawn in CSS and inheriting currentColor, because --zt-line flips
-     from near-black to pale yellow between themes — a fixed-colour arrow would
-     disappear in one of them. */
+/* Inherits currentColor: --zt-line flips between themes, and a fixed-colour
+   arrow would disappear in one of them. */
   .rack-select-wrap::after {
     content: '';
     position: absolute;
@@ -250,8 +219,6 @@ onMounted(() => {
     pointer-events: none; /* the arrow must not swallow the tap */
   }
 
-  /* Matches .zt-chip's border, radius and surface so the row still reads as the
-     same control family, just collapsed. */
   .rack-select {
     width: 100%;
     appearance: none;
@@ -270,7 +237,7 @@ onMounted(() => {
 
   .rack-select:focus-visible { outline: 3px solid var(--zt-pink); outline-offset: 2px; }
 
-  /* The open menu is drawn by the OS, which otherwise ignores the theme. */
+/* The open menu is drawn by the OS, which otherwise ignores the theme. */
   .rack-select option { background: var(--zt-card); color: var(--zt-ink); text-transform: none; }
 
   .rack-row { align-items: center; }
