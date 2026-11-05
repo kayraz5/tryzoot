@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
-// maplibre-gl is excluded from optimizeDeps and wants a real WebGL context, so the
-// Marker is stubbed down to the one thing setPlayerFacing touches: getElement().
+// maplibre-gl wants a real WebGL context, so Marker is stubbed down to the one
+// thing setPlayerFacing touches: getElement().
 vi.mock('maplibre-gl', () => ({
   Marker: class {
     constructor({ element }) {
@@ -25,7 +25,7 @@ describe('the flat marker view cone', () => {
 
     expect(cone).not.toBeNull()
     expect(cone.style.opacity).toBe('') // nothing inline yet; the stylesheet hides it
-    // Painted first so the pulse and the dot sit on top of it.
+// Painted first so the pulse and the dot sit on top of it.
     expect(element.firstElementChild).toBe(cone)
     expect(element.querySelector('.core')).not.toBeNull()
   })
@@ -36,7 +36,7 @@ describe('the flat marker view cone', () => {
 
     setPlayerFacing(marker, 90)
 
-    // Rotation keeps the centring translate, or the cone would jump off the dot.
+// Rotation keeps the centring translate, or the cone jumps off the dot.
     expect(coneOf(marker).style.transform).toBe('translate(-50%, -50%) rotate(90deg)')
     expect(coneOf(marker).style.opacity).toBe('1')
   })

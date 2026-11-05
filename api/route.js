@@ -1,17 +1,12 @@
 // EDITOR: MATTHEW
 import { supabaseFromEnv } from './_lib/supabase.js'
 
-/**
- * POST /api/route — real road geometry for a walk or taxi leg, via OpenRouteService.
+/* POST /api/route - road geometry for a walk or taxi leg via OpenRouteService.
  * Body: { start: [lng,lat], end: [lng,lat], profile: 'walk' | 'taxi' }
  *
- * This is the failover provider behind routing.js's primary OSRM calls (see
- * src/model/services/routing.js) — it only gets hit when the free OSRM routers are
- * down or slow. ORS_API_KEY stays server-only here; the old code had this same key
- * hardcoded in the client bundle, which is how it kept getting rate-limited by anyone
- * who opened devtools. Checks the shared route_cache table first (supabase/route_cache.sql)
- * so a repeat stop-pair never needs a live call at all.
- */
+ * Failover behind routing.js's primary OSRM calls. ORS_API_KEY must stay
+ * server-only: it was once hardcoded in the client bundle, which is how it kept
+ * getting rate-limited. Checks route_cache first so repeats never hit the API. */
 const ORS_PROFILE = { walk: 'foot-walking', taxi: 'driving-car' }
 const TIMEOUT_MS = 8000
 
@@ -64,7 +59,7 @@ export default async function handler(req, res) {
   }
 }
 
-/** Rounded to ~11 m so repeat queries for the same stop-pair always hit the same row. */
+/** Rounded to ~11 m so repeat queries for the same stop-pair hit the same row. */
 function cacheKey(profile, start, end) {
   const r = (n) => n.toFixed(4)
   return `${profile}:${r(start[0])},${r(start[1])};${r(end[0])},${r(end[1])}`

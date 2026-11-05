@@ -1,22 +1,9 @@
 // EDITOR: MATTHEW
-/**
- * Street-following routes, with automatic failover across independent providers so a
- * single router being down never means a leg falls back to a straight line. Each mode
- * tries a short list of providers in order; a result only comes back null when every
- * provider in the list has failed or timed out. Callers (MapView.vue's refreshPlanned/
- * refreshLiveRoute) are the ones responsible for never drawing straight() on a null —
- * they keep the last-known-good geometry for that leg instead.
- *
- * getWalkRoute(from, to)  -> Promise<{ coords: [[lng,lat]…], distance_m, steps } | null>
- * getDriveRoute(from, to) -> Promise<{ coords: [[lng,lat]…], distance_m } | null>  (taxi legs)
- *
- * Providers, in order:
- *   walk  : FOSSGIS OSRM foot profile (free, keyless) -> /api/route (OpenRouteService, server-proxied)
- *   drive : FOSSGIS OSRM car profile -> the OSRM project's own public demo -> /api/route (ORS)
- * router.project-osrm.org's "foot" path silently serves car-route geometry regardless of
- * what profile you ask for (verified — it ignores the profile segment entirely), so it's
- * only ever used for drive.
- */
+// Each mode tries its providers in order and returns null only when all have failed.
+// Callers must never draw straight() on a null - they keep the last-good geometry.
+//
+// router.project-osrm.org's "foot" path silently serves car geometry whatever profile
+// you ask for (it ignores the profile segment), so it is only ever used for drive.
 
 const TIMEOUT_MS = 6000
 
@@ -32,7 +19,6 @@ async function fetchJson(url, opts) {
   }
 }
 
-/** One OSRM-API-shaped provider — works for any `routed-*`/`route/v1/...` deployment. */
 function osrm(baseUrl, { steps = false } = {}) {
   return async (from, to) => {
     const json = await fetchJson(`${baseUrl}/${from.lng},${from.lat};${to.lng},${to.lat}?overview=full&geometries=geojson&steps=${steps}`)
@@ -53,7 +39,7 @@ function osrm(baseUrl, { steps = false } = {}) {
   }
 }
 
-/** The server-proxied OpenRouteService failover — see api/route.js. The key never reaches the client. */
+/** Server-proxied OpenRouteService failover; the key never reaches the client. */
 function proxy(profile) {
   return async (from, to) => {
     const json = await fetchJson('/api/route', {
@@ -83,13 +69,11 @@ async function tryProviders(providers, from, to) {
     try {
       return await p(from, to)
     } catch {
-      // that provider failed or timed out — fall through to the next one
     }
   }
   return null // every provider in the list failed
 }
 
-/** One result cache (and in-flight dedupe) per mode, keyed by the exact coordinate pair. */
 function router(mode) {
   const cache = new Map()
   return function getRoute(from, to) {
@@ -112,7 +96,6 @@ const ICONS = {
   straight: 'bi-arrow-up', uturn: 'bi-arrow-return-left'
 }
 
-/** OSRM maneuver -> short instruction like "Turn left onto Seng Poh Road". */
 function describe({ type, modifier }, name) {
   const onto = name ? ` onto ${name}` : ''
   if (type === 'depart') return { text: `Head off${name ? ' along ' + name : ''}`, icon: 'bi-person-walking' }
