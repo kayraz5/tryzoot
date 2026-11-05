@@ -69,4 +69,16 @@ async function demoLocate() {
 .person:has(.bi) { padding-left: 10px; }
 .person .face { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 32%; border: 2px solid #111; font-size: 0.7rem; }
 .person.stale { opacity: 0.55; }
+/* Phones: the quest chip and the person pills sit above the stop name, so they
+   stay quiet. At 0.85rem "Hosting <name> until <time> · N live" wrapped onto a
+   second line and became the loudest thing in the card; 0.72rem fits one line. */
+@media (max-width: 575.98px) {
+  .coop-chip { gap: 6px; margin-bottom: 6px; padding: 4px 8px; border-radius: 10px; }
+  .coop-main { font-size: 0.72rem; line-height: 1.2; }
+  .coop-btn { width: 24px; height: 24px; font-size: 0.68rem; }
+  .live-people { gap: 5px; margin: -1px 0 6px; }
+  .person { font-size: 0.7rem; padding: 2px 8px 2px 2px; }
+  .person:has(.bi) { padding-left: 8px; }
+  .person .face { width: 18px; height: 18px; font-size: 0.62rem; }
+}
 </style>
