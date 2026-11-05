@@ -45,6 +45,9 @@ export const router = createRouter({
 router.beforeEach(async (to) => {
   const user = useUserStore()
   await user.init()
+  // Phones reopen the site at "/" after the browser was closed: a signed-in account goes back to
+  // its mission instead of the landing page's sign-up buttons. (Guest sessions still see the landing.)
+  if (to.name === 'landing' && user.isAuthed && user.mode === 'supabase') return { name: 'mission-active' }
   if (to.meta.auth && !user.isAuthed) return { name: 'auth', query: { next: to.fullPath } }
   if (to.meta.onboarded && user.needsOnboarding) return { name: 'onboard', query: { next: to.fullPath } }
   return true
