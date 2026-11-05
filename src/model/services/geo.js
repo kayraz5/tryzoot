@@ -1,16 +1,8 @@
 // EDITOR: MATTHEW
 import { reactive } from 'vue'
 
-/**
- * Shared live position and facing.
- *
- * Position comes from the real GPS (`watchPosition`) or from a fake fix the demo
- * controls can teleport. Facing comes from the device compass and is exposed as
- * `heading` in degrees clockwise from north (0 = north, 90 = east).
- *
- * A heading of `null` means "unknown" — desktop browsers, denied permission, or a
- * device without a magnetometer. Consumers must fall back to movement direction.
- */
+// `heading` is degrees clockwise from north; null means unknown (no magnetometer,
+// denied permission, desktop), and consumers must fall back to movement direction.
 export const geo = reactive({
   lat: null,
   lng: null,
@@ -29,21 +21,13 @@ export function hasFix() {
   return geo.lat != null && geo.lng != null
 }
 
-/** True when a compass reading is available (and not overridden by demo mode). */
 export function hasHeading() {
   return geo.heading != null
 }
 
-/**
- * How far the rendered page is rotated clockwise from the device's natural
- * orientation (0 / 90 / 180 / 270).
- *
- * The compass reports where the device's *natural top edge* points, but what we
- * want is where the top of the screen points — the direction the user is holding
- * the phone towards. In portrait those are the same; turn the phone to landscape
- * and they differ by exactly this angle, which is why an uncorrected cone points
- * 90° off as soon as the screen rotates.
- */
+/* The compass reports where the device's natural top edge points, not where the
+   top of the screen points. They match in portrait; in landscape they differ by
+   exactly this angle, which is why an uncorrected cone is 90 degrees off. */
 function screenAngle() {
   if (typeof window === 'undefined') return 0
 
@@ -70,7 +54,6 @@ export function startGps() {
   )
 }
 
-/** Toggle fake GPS; optionally drop the fake fix at a point. */
 export function setFake(on, point) {
   geo.fake = on
   if (on) {
@@ -88,15 +71,8 @@ export function teleport({ lat, lng }) {
   geo.source = 'fake'
 }
 
-/**
- * Start listening to the device compass.
- *
- * On iOS 13+ `DeviceOrientationEvent.requestPermission()` must be called from a
- * user gesture. The map calls this on mount (works on Android/desktop), then
- * retries from taps such as "otter view" or "recentre" when iOS needs consent.
- *
- * @returns {Promise<boolean>} true once a heading source is listening
- */
+/* iOS 13+ requires requestPermission() from a user gesture, so the map calls this
+   on mount (fine on Android/desktop) and retries from taps when iOS needs consent. */
 export async function startHeading() {
   if (headingStarted) return true
   if (headingDenied || typeof window === 'undefined') return false
@@ -112,7 +88,7 @@ export async function startHeading() {
         return false
       }
     } catch {
-      // Not called from a gesture, or the user dismissed the prompt: retry on a tap.
+// Not from a gesture, or dismissed: retry on a tap.
       return false
     }
   }
@@ -142,7 +118,6 @@ export async function startHeading() {
   return true
 }
 
-/** Stop listening to the compass (component teardown). */
 export function stopHeading() {
   if (headingListener && typeof window !== 'undefined') {
     window.removeEventListener('deviceorientationabsolute', headingListener, true)

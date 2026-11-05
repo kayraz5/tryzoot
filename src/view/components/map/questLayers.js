@@ -5,23 +5,14 @@ import { point } from '@turf/helpers'
 import { BRAND } from '../../../model/services/brand.js'
 import { BUILDING_LAYERS } from './mapBuildings.js'
 
-/**
- * MapLibre layers and DOM markers for the quest:
- *   - the route from the traveller through every pending stop and home, coloured
- *     by travel mode (the current leg is bold, later legs are faded)
- *   - the check-in ring around the next stop (pink outside, yellow inside)
- *   - numbered stop markers and the "you are here" marker
- *
- * All functions take the map as their first argument and keep no module state, so
- * the caller (MapView.vue) owns the collections and decides when to redraw.
- */
+// Every function takes the map first and keeps no module state: MapView.vue owns
+// the collections and decides when to redraw.
 
 const EMPTY = { type: 'FeatureCollection', features: [] }
 
 const ROUTE_LAYOUT = { 'line-cap': 'round', 'line-join': 'round' }
 
-// Widths grow with zoom so the follow-me line stays readable on a phone. Walking
-// legs are the chunkiest because the pink walking line is the main navigation cue.
+// Widths grow with zoom so the walking line stays readable on a phone.
 const ROUTE_WIDTH = {
   casing: ['interpolate', ['linear'], ['zoom'], 12, 9, 17, 18],
   walk: ['interpolate', ['linear'], ['zoom'], 12, 6, 17, 12],
@@ -35,7 +26,6 @@ const THEME = {
 
 export const FENCE = { out: BRAND.pink, in: BRAND.yellow }
 
-/** Create the route and fence sources/layers, under the 3D buildings. */
 export function addQuestLayers(map) {
   const beforeId = map.getLayer(BUILDING_LAYERS.extruded) ? BUILDING_LAYERS.extruded : undefined
   map.addSource('zt-route', { type: 'geojson', data: EMPTY })
@@ -73,7 +63,7 @@ export function addQuestLayers(map) {
     beforeId
   )
 
-  // Walking legs follow real streets (solid); MRT/taxi legs are as-the-crow-flies (dashed).
+// Walking legs follow real streets (solid); MRT/taxi are crow-flies (dashed).
   const routeLine = {
     type: 'line',
     source: 'zt-route',
@@ -102,7 +92,6 @@ export function addQuestLayers(map) {
   )
 }
 
-/** Recolour the route for the dark "Zoot" map or the light "Simple" one. */
 export function setQuestColors(map, isDark) {
   if (!map.getLayer('zt-route-walk')) return
   const colors = isDark ? THEME.dark : THEME.light
@@ -111,10 +100,6 @@ export function setQuestColors(map, isDark) {
   map.setPaintProperty('zt-route-casing', 'line-color', colors.casing)
 }
 
-/**
- * Replace the route geometry.
- * @param {{ coords: number[][], mode: 'walk'|'mrt'|'taxi', active?: boolean }[]} segments
- */
 export function setRoute(map, segments) {
   map.getSource('zt-route')?.setData({
     type: 'FeatureCollection',
@@ -126,12 +111,6 @@ export function setRoute(map, segments) {
   })
 }
 
-/**
- * Draw a circular check-in fence.
- * @param {{lat:number,lng:number}|null} target  the next stop (null clears it)
- * @param {number} radiusMeters                  geofence radius
- * @param {boolean} isInside                     true once the traveller is inside
- */
 export function setFence(map, target, radiusMeters, isInside) {
   const source = map.getSource('zt-fence')
   if (!source) return
@@ -140,7 +119,7 @@ export function setFence(map, target, radiusMeters, isInside) {
     return
   }
 
-  // 49 points: the last point repeats the first to close the polygon cleanly.
+// 49 points: the last repeats the first to close the polygon.
   const ring = Array.from({ length: 49 }, (_, index) =>
     destination(point([target.lng, target.lat]), radiusMeters / 1000, (index * 360) / 48, {
       units: 'kilometers'
@@ -159,15 +138,6 @@ export function setFence(map, target, radiusMeters, isInside) {
   })
 }
 
-/**
- * Keep one flat marker per mission leg in sync: number, ✓ when stamped, home icon
- * for the return leg, highlighted while it is the next stop.
- *
- * @param {Map} markers  caller-owned map of legKey → marker record (mutated)
- * @param {object[]} legs
- * @param {object|null} nextLeg
- * @param {(leg: object) => void} onSelect
- */
 export function syncStopMarkers(map, markers, legs, nextLeg, onSelect) {
   const keep = new Set()
 
@@ -212,13 +182,7 @@ export function syncStopMarkers(map, markers, legs, nextLeg, onSelect) {
   }
 }
 
-/**
- * Create the flat "you are here" marker (the caller decides when to add it).
- *
- * The `.cone` is the Google-Maps style field-of-view wedge. It is first in the
- * DOM so the pulse and the dot paint on top of it, and it stays hidden until
- * someone calls setPlayerFacing with a known heading.
- */
+/** The .cone is first in the DOM so the pulse and dot paint on top of it. */
 export function createPlayerMarker() {
   const element = document.createElement('div')
   element.className = 'zt-player-marker'
@@ -227,14 +191,9 @@ export function createPlayerMarker() {
   return new Marker({ element })
 }
 
-/**
- * Aim the view cone.
- *
- * `screenDegrees` is clockwise from the top of the screen, not from north: a
- * marker's element lives in screen space and is never rotated with the map, so
- * callers pass the facing *relative to the map's current bearing*.
- * Passing `visible: false` fades the cone out, for when no heading is known.
- */
+/* screenDegrees is clockwise from the top of the SCREEN, not north: the marker
+   element lives in screen space and never rotates with the map, so callers pass
+   the facing relative to the map's current bearing. */
 export function setPlayerFacing(marker, screenDegrees, visible = true) {
   const cone = marker?.getElement()?.querySelector('.cone')
   if (!cone) return

@@ -6,13 +6,6 @@ import { catalog } from '../../../model/services/catalog.js'
 import { tick } from '../../../model/services/clock.js'
 import { formatTime } from '../../../model/services/hours.js'
 
-/**
- * "I need to get to the airport" dialog.
- *
- * Shows the two realistic options from wherever the traveller is (MRT and a
- * Grab/taxi), which one is quickest, whether it beats their airport time, and the
- * practical steps: which station/lines, or how to book and where to meet the car.
- */
 const props = defineProps({
   mission: { type: Object, default: null },
   position: { type: Object, default: null }
@@ -31,7 +24,6 @@ const plan = computed(() =>
 
 const urgent = computed(() => plan.value.minutesLeft != null && plan.value.minutesLeft <= 45)
 
-/** "9 h 33 min" reads better than "573 min" on a small card. */
 function remainingLabel(minutes) {
   const total = Math.abs(minutes)
   if (total < 90) return `${total} min`
@@ -40,8 +32,6 @@ function remainingLabel(minutes) {
   return rest ? `${hours} h ${rest} min` : `${hours} h`
 }
 
-// Only surfaced when the options do not beat the airport time. The normal case
-// just shows the two choices and their durations, without a "fastest" verdict.
 const warning = computed(() => {
   const p = plan.value
   if (!p.ok || p.atAirport || p.onTime !== false) return null
@@ -73,7 +63,7 @@ async function copyDestination() {
       copied.value = false
     }, 2000)
   } catch {
-    // Clipboard can be blocked; the written destination is still visible.
+// Clipboard can be blocked; the written destination is still visible.
   }
 }
 
@@ -118,7 +108,6 @@ onBeforeUnmount(() => clearTimeout(copiedTimer))
         <p v-else-if="warning" class="airport-warning">{{ warning }}</p>
 
         <template v-if="!plan.atAirport">
-          <!-- MRT -->
           <section class="airport-option" :class="{ off: plan.mrt && !plan.mrt.available }">
             <header>
               <span class="airport-mode"><i class="bi bi-train-front-fill" aria-hidden="true"></i> MRT</span>
@@ -145,7 +134,6 @@ onBeforeUnmount(() => clearTimeout(copiedTimer))
             <p v-else class="airport-hint">No MRT route from here.</p>
           </section>
 
-          <!-- Grab / taxi -->
           <section class="airport-option">
             <header>
               <span class="airport-mode"><i class="bi bi-taxi-front-fill" aria-hidden="true"></i> Grab / taxi</span>
