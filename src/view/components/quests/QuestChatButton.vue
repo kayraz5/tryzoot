@@ -1,3 +1,4 @@
+<!-- EDITOR: EUDALE -->
 <script setup>
 import { computed } from 'vue'
 import { usePartyStore } from '../../../model/stores/party.js'
@@ -40,4 +41,11 @@ const who = computed(() => (active.value?.role === 'guest' ? joined.value.host_n
 }
 .quest-chat-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #8a6d00; }
 .unread { flex: none; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; background: var(--zt-pink); color: #111; font-size: 0.75rem; line-height: 22px; }
+/* Phones: still the card's primary action, so it keeps the 44px touch target —
+   only the type and padding come down. Shrinking the box instead would trade
+   clutter for a button that is harder to hit. */
+@media (max-width: 575.98px) {
+  .quest-chat-btn { font-size: 0.85rem; padding: 6px 12px; gap: 8px; border-radius: 14px; }
+  .unread { min-width: 20px; height: 20px; font-size: 0.68rem; line-height: 20px; }
+}
 </style>

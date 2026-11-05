@@ -1,3 +1,4 @@
+// EDITOR: HULBERT
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount, enableAutoUnmount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
@@ -147,6 +148,19 @@ describe('MapStatusStack / MapMenuButton', () => {
     await btn.trigger('click')
     expect(w.emitted('toggle-demo')).toHaveLength(1)
     await w.setProps({ demo: true })
+    expect(btn.text()).toBe('Use Real GPS')
+    expect(btn.classes()).toContain('demo-on')
+  })
+  it('names the next press at each step of the Demo-Walk cycle', async () => {
+    const w = mount(MapStatusStack, { props: { demo: false, panelOpen: false } })
+    const btn = w.find('button.status-demo')
+    expect(btn.text()).toBe('Enable Demo-Walk')
+    // Demo-Walk running with the panel up: the next press only tucks the panel away.
+    await w.setProps({ demo: true, panelOpen: true })
+    expect(btn.text()).toBe('Hide Demo Panel')
+    expect(btn.classes()).toContain('demo-on')
+    // Panel already hidden: the next press leaves Demo-Walk, but it still reads as "on".
+    await w.setProps({ demo: true, panelOpen: false })
     expect(btn.text()).toBe('Use Real GPS')
     expect(btn.classes()).toContain('demo-on')
   })

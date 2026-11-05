@@ -1,3 +1,4 @@
+<!-- EDITOR: KAYRA -->
 <script setup>
 import { useUserStore } from '../../../model/stores/user.js'
 import { useUiStore } from '../../../model/stores/ui.js'

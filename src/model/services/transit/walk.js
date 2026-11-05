@@ -1,3 +1,4 @@
+// EDITOR: KAYRA
 import { getWalkRoute } from '../routing.js'
 import { distanceM } from '../distance.js'
 

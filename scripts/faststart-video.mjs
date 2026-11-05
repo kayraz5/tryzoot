@@ -1,3 +1,4 @@
+// EDITOR: MATTHEW
 /**
  * Moves an MP4's `moov` atom in front of `mdat` (what ffmpeg calls -movflags
  * +faststart), without needing ffmpeg.

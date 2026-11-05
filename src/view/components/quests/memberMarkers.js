@@ -1,3 +1,4 @@
+// EDITOR: MATTHEW + EUDALE
 import { Marker } from 'maplibre-gl'
 import { DEFAULT_COVER, onColor } from '../../../model/services/brand.js'
 

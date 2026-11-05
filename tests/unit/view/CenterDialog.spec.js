@@ -1,3 +1,4 @@
+// EDITOR: EUDALE
 import { it, expect } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'

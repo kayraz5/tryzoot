@@ -1,3 +1,4 @@
+// EDITOR: HULBERT
 // Generates supabase/seed.sql (a fresh database's hand-picked places + sidequests) from the app's offline copy. `node scripts/gen-seed.mjs`
 import { readFileSync, writeFileSync } from 'node:fs'
 import { nearestHub } from '../src/model/services/travel.js'

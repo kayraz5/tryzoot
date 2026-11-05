@@ -1,3 +1,4 @@
+// EDITOR: HULBERT
 /** Zoot brand colours shared by JS-drawn things (passport canvas, 3D scenes, cover swatches). */
 export const BRAND = {
   yellow: '#ffcc00',

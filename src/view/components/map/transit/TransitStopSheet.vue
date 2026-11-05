@@ -1,3 +1,4 @@
+<!-- EDITOR: KAYRA -->
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { LINES } from '../../../../model/data/transitLines.js'
@@ -79,6 +80,7 @@ const when = (m) => (m <= 0 ? 'Arr' : `${m} min`)
 .sheet-close {
   position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border: 0; border-radius: 50%;
   background: none; color: var(--zt-yellow-pale); opacity: 0.7;
+  z-index: 1; /* above the eyebrow: its opacity makes it a layer that would otherwise cover this button */
 }
 .eyebrow { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.75; padding-right: 28px; }
 .title { font-size: 1.2rem; font-weight: 800; color: var(--zt-yellow); margin: 2px 0 8px; }

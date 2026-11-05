@@ -1,3 +1,4 @@
+// EDITOR: HULBERT
 // XP calculation library, exponential growth
 export function levelFor(xp = 0) {
   const level = Math.floor(Math.sqrt(xp / 100)) + 1;

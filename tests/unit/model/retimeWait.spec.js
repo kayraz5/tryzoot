@@ -1,3 +1,4 @@
+// EDITOR: EUDALE
 import { describe, it, expect } from 'vitest'
 import { waitUntilOpen } from '../../../src/model/services/hours.js'
 

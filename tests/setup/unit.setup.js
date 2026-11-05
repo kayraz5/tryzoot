@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 import { afterAll, afterEach } from 'vitest'
 import { installNetworkGuard } from '../support/networkGuard.js'
 

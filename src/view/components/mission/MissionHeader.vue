@@ -1,6 +1,9 @@
+<!-- EDITOR: KAYRA -->
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useMissionStore } from '../../../model/stores/mission.js'
+import { useTripStore } from '../../../model/stores/trip.js'
 import { STYLES } from '../../../model/data/origins.js'
 import TimeToGate from './TimeToGate.vue'
 
@@ -13,9 +16,16 @@ const editingSchedule = defineModel('editingSchedule', { type: Boolean, default:
 const emit = defineEmits(['regenerate'])
 
 const store = useMissionStore()
+const trip = useTripStore()
+const router = useRouter()
 const m = computed(() => store.mission)
 const style = computed(() => STYLES[m.value.style] || STYLES.budget)
 const hasPending = computed(() => store.visitLegs.some((l) => l.status === 'pending'))
+
+function newLayover() {
+  trip.startNewLayover()
+  router.push({ name: 'plan', query: { fresh: '1' } })
+}
 </script>
 
 <template>
@@ -43,6 +53,9 @@ const hasPending = computed(() => store.visitLegs.some((l) => l.status === 'pend
         :disabled="store.status === 'planning'" @click="emit('regenerate')">
         <i class="bi" :class="store.status === 'planning' ? 'bi-hourglass-split' : 'bi-shuffle'"></i>
         {{ store.status === 'planning' ? 'Finding new stops…' : 'New itinerary' }}
+      </button>
+      <button v-if="!m.completed" type="button" class="btn btn-sm btn-primary" @click="newLayover">
+        <i class="bi bi-plus-lg"></i> Plan a new layover
       </button>
     </div>
     <div v-if="store.previousPlan" class="undo-strip mt-2" role="status">

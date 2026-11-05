@@ -1,3 +1,4 @@
+// EDITOR: KAYRA + HULBERT
 import { groqConfig, groqJson, tooLarge } from './_lib/groq.js'
 
 /**

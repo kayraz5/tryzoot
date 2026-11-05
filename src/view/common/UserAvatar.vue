@@ -1,3 +1,4 @@
+<!-- EDITOR: EUDALE -->
 <script setup>
 import { computed } from 'vue'
 import { DEFAULT_COVER, onColor } from '../../model/services/brand.js'

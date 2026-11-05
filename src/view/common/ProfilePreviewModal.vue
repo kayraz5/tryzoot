@@ -1,3 +1,4 @@
+<!-- EDITOR: EUDALE -->
 <script setup>
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import UserAvatar from './UserAvatar.vue'

@@ -1,3 +1,4 @@
+// EDITOR: EUDALE
 import { describe, it, expect } from 'vitest'
 import { windowAfterEdit, openableStops, toWindowStop } from '../../../src/model/services/social.js'
 

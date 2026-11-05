@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 /**
  * Social journey (Tier 2, demo seed, one account): the co-op stamp notice.
  * The test account hosts a window, a demo traveller joins, the account stamps the first stop with

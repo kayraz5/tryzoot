@@ -1,3 +1,4 @@
+<!-- EDITOR: SHREY -->
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { usePassportStore } from '../../../model/stores/passport.js'

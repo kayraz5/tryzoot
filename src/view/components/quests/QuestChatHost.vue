@@ -1,3 +1,4 @@
+<!-- EDITOR: EUDALE -->
 <script setup>
 import { onUnmounted, ref, watch } from 'vue'
 import { usePartyStore } from '../../../model/stores/party.js'

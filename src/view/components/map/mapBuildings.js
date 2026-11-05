@@ -1,3 +1,4 @@
+// EDITOR: MATTHEW
 /**
  * Building visibility for the 3D map.
  *

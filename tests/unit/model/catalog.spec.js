@@ -1,3 +1,4 @@
+// EDITOR: STEVEN
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { catalog, placeById } from '../../../src/model/services/catalog.js'
 import { jsonResponse, stubFetch, useCleanSlate } from '../../support/unit/index.js'

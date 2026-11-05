@@ -1,6 +1,8 @@
+// EDITOR: MATTHEW
 import { createRouter, createWebHistory } from 'vue-router'
 import { DEV_PANEL } from '../../model/services/config.js'
 import { useUserStore } from '../../model/stores/user.js'
+import { useMissionStore } from '../../model/stores/mission.js'
 
 /**
  * Routes from the IA table. meta.auth → needs a session; meta.onboarded → needs a travel style.
@@ -44,7 +46,23 @@ export const router = createRouter({
 router.beforeEach(async (to) => {
   const user = useUserStore()
   await user.init()
+  // Phones reopen the site at "/" after the browser was closed: a signed-in account goes back to
+  // its mission instead of the landing page's sign-up buttons. (Guest sessions still see the landing.)
+  if (to.name === 'landing' && user.isAuthed && user.mode === 'supabase') return { name: 'mission-active' }
   if (to.meta.auth && !user.isAuthed) return { name: 'auth', query: { next: to.fullPath } }
+
+  // /plan is also the entry point from the landing page. Resume the current
+  // account's unfinished mission before onboarding or showing a new plan form.
+  if (to.name === 'plan' && user.isAuthed && to.query.fresh !== '1') {
+    try {
+      const mission = await useMissionStore().loadUnfinished()
+      if (mission) return { name: 'mission', params: { id: mission.id } }
+    } catch (err) {
+      // A transient mission lookup failure should not prevent normal planning.
+      console.warn('[router] could not resume an unfinished mission:', err)
+    }
+  }
+
   if (to.meta.onboarded && user.needsOnboarding) return { name: 'onboard', query: { next: to.fullPath } }
   return true
 })

@@ -1,3 +1,4 @@
+// EDITOR: EUDALE
 /**
  * Phone / browser notifications for quest chat, used only while the app is in the background.
  * (iPhone Safari allows them only for apps added to the Home Screen; elsewhere they just work.)
