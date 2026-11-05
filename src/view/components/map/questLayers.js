@@ -212,10 +212,32 @@ export function syncStopMarkers(map, markers, legs, nextLeg, onSelect) {
   }
 }
 
-/** Create the flat "you are here" marker (the caller decides when to add it). */
+/**
+ * Create the flat "you are here" marker (the caller decides when to add it).
+ *
+ * The `.cone` is the Google-Maps style field-of-view wedge. It is first in the
+ * DOM so the pulse and the dot paint on top of it, and it stays hidden until
+ * someone calls setPlayerFacing with a known heading.
+ */
 export function createPlayerMarker() {
   const element = document.createElement('div')
   element.className = 'zt-player-marker'
-  element.innerHTML = '<span class="pulse"></span><span class="core"><i class="bi bi-person-walking"></i></span>'
+  element.innerHTML =
+    '<span class="cone"></span><span class="pulse"></span><span class="core"><i class="bi bi-person-walking"></i></span>'
   return new Marker({ element })
+}
+
+/**
+ * Aim the view cone.
+ *
+ * `screenDegrees` is clockwise from the top of the screen, not from north: a
+ * marker's element lives in screen space and is never rotated with the map, so
+ * callers pass the facing *relative to the map's current bearing*.
+ * Passing `visible: false` fades the cone out, for when no heading is known.
+ */
+export function setPlayerFacing(marker, screenDegrees, visible = true) {
+  const cone = marker?.getElement()?.querySelector('.cone')
+  if (!cone) return
+  cone.style.transform = `translate(-50%, -50%) rotate(${screenDegrees}deg)`
+  cone.style.opacity = visible ? '1' : '0'
 }
