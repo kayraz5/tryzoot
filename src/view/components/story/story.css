@@ -31,7 +31,7 @@ html.zt-story-route,
 	--zt-shadow: 5px 5px 0 #000000;
 }
 
-/* ------------------------------------------------------------------ the film */
+/* the film */
 
 .zt-story [data-sc-segment] > video,
 .zt-story [data-sc-segment] > img {
@@ -61,7 +61,7 @@ html.zt-story-route,
 	}
 }
 
-/* --------------------------------------------------------------- the scrims */
+/* the scrims */
 
 /* Each scrim is sized to one copy block and fades out before the far side of the
    frame, so the film keeps its own contrast everywhere the reader is not
@@ -132,7 +132,7 @@ html.zt-story-route,
 	}
 }
 
-/* ------------------------------------------------------------------ the copy */
+/* the copy */
 
 .zt-story .zt-copy {
 	max-width: min(40rem, 82vw);
@@ -209,7 +209,7 @@ html.zt-story-route,
 	margin-inline: auto;
 }
 
-/* ----------------------------------------------------------------- actions */
+/* actions */
 
 /* One label for one intent, used in both places it appears. The hard offset
    shadow matches the sticker styling already shipping in view/styles/app.css. */
@@ -308,7 +308,7 @@ html.zt-story-route,
 	color: #fffbea;
 }
 
-/* ------------------------------------------------------------------ phones */
+/* phones */
 
 /* Art-directed rather than shrunk: every copy anchor collapses to one
    full-width band and the headline steps down so it cannot wrap to six lines. */
@@ -353,7 +353,7 @@ html.zt-story-route,
 	.zt-story .zt-wordmark { width: min(168px, 36vw); }
 }
 
-/* ----------------------------------------------------------- reduced motion */
+/* reduced motion */
 
 /* Fewer and gentler, not none: the scene stills still cross-dissolve and every
    copy window still opens and closes, so the whole story reads. */

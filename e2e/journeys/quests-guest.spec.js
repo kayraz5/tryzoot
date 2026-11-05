@@ -4,7 +4,6 @@
  * Runs in the guest harness (zoot.guest='1', external hosts aborted); social features are off in
  * guest mode, so the pages show the GuestModeError notice. The signed-in quest list and detail
  * journeys live in the Supabase-gated social specs.
- * Reference: docs/repo-audit.md §1–§4.
  */
 import { expect, test } from '../fixtures/harness.js'
 

@@ -104,7 +104,7 @@ export function airportPlan({ from, mission = null, nowMs = Date.now(), places =
     }
   }
 
-  // ── MRT ──
+  // MRT
   const mrtRoute = transit(from, destination)
   const trainsRunning = mrtRunning(nowMs)
   const mrt = mrtRoute
@@ -123,7 +123,7 @@ export function airportPlan({ from, mission = null, nowMs = Date.now(), places =
       }
     : null
 
-  // ── Grab / taxi ──
+  // Grab / taxi
   const taxi = {
     minutes: taxiMinutes(from, destination),
     km: Math.round((distanceM(from, destination) / 1000) * 10) / 10

@@ -1,7 +1,5 @@
 // EDITOR: MATTHEW
-// ─────────────────────────────────────────────────────────────────────────────
 //  traveller.js — THE CHARACTER
-// ─────────────────────────────────────────────────────────────────────────────
 //  Builds the Zoot traveller: a chunky, round-faced otter mascot, assembled
 //  entirely out of spheres, capsules and rounded boxes — no modelling software,
 //  no .glb file to download. Everything he *wears* lives in travellerAssets.js;
@@ -18,7 +16,6 @@
 //
 //  He stands on y = 0 (feet on the floor) and is about 2.25 units tall, facing
 //  +Z. Scale the group if you need him bigger.
-// ─────────────────────────────────────────────────────────────────────────────
 
 import * as THREE from 'three'
 import {
@@ -71,7 +68,7 @@ export function createTraveller({ outfit = 'zoot', fur = 'zoot', hat, eyewear, o
   hat = hat ?? startKit.hat ?? 'none'
   eyewear = eyewear ?? startKit.eyewear ?? 'none'
 
-  // ── MATERIALS ──────────────────────────────────────────────────────────────
+  // MATERIALS
   // Made once and kept in `M`. Recolouring later is then just M.shirt.color.set(…)
   // — no rebuilding geometry, which is why outfit swaps are instant.
   const M = {
@@ -94,7 +91,7 @@ export function createTraveller({ outfit = 'zoot', fur = 'zoot', hat, eyewear, o
   // `root` is the whole character. Everything below gets added into it.
   const root = new THREE.Group()
 
-  // ── LEGS + BOOTS ───────────────────────────────────────────────────────────
+  // LEGS + BOOTS
   // Each leg hangs from its own little pivot Group placed at the hip. Rotating
   // the PIVOT swings the leg from the hip (correct); rotating the leg mesh would
   // spin it around its own middle (wrong). Same idea is used for arms and tail.
@@ -125,7 +122,7 @@ export function createTraveller({ outfit = 'zoot', fur = 'zoot', hat, eyewear, o
   const legL = makeLeg(-1)
   const legR = makeLeg(1)
 
-  // ── BODY ───────────────────────────────────────────────────────────────────
+  // BODY
   // Three overlapping squashed spheres: hips (trousers), belly and chest (shirt).
   // Overlapping soft blobs is what gives the plump, stuffed-toy silhouette —
   // a single box torso would read as a robot.
@@ -143,7 +140,7 @@ export function createTraveller({ outfit = 'zoot', fur = 'zoot', hat, eyewear, o
   beltLoop.scale.z = 0.86
   const buckle = at(box(0.17, 0.14, 0.07, M.metal, 0.03), 0, 0.98, 0.4)
 
-  // ── ARMS ───────────────────────────────────────────────────────────────────
+  // ARMS
   function makeArm(side) {
     // x = 0.58 puts the shoulder just outside the belly (which reaches x 0.475),
     // so the arm reads as an arm instead of disappearing into the torso.
@@ -167,7 +164,7 @@ export function createTraveller({ outfit = 'zoot', fur = 'zoot', hat, eyewear, o
   const armL = makeArm(-1)
   const armR = makeArm(1)
 
-  // ── HEAD ───────────────────────────────────────────────────────────────────
+  // HEAD
   // Deliberately oversized (nearly half his height). Big head + small body is the
   // single strongest "this is a character, not a person" cue.
   const head = at(new THREE.Group(), 0, 1.58, 0)
@@ -224,7 +221,7 @@ export function createTraveller({ outfit = 'zoot', fur = 'zoot', hat, eyewear, o
 
   head.add(skull, muzzle, cheekL, cheekR, nose, eyes, browL, browR, ear(-1), ear(1), whiskers)
 
-  // ── TAIL ───────────────────────────────────────────────────────────────────
+  // TAIL
   // An otter's rudder tail: thick where it leaves the rump, tapering to a point,
   // and drooping in a curve. A single cone can't curve, so instead it's a short
   // CHAIN of shrinking spheres — each one parented to the last and bent a few
@@ -247,7 +244,7 @@ export function createTraveller({ outfit = 'zoot', fur = 'zoot', hat, eyewear, o
     link = joint
   })
 
-  // ── ATTACHMENT SLOTS ───────────────────────────────────────────────────────
+  // ATTACHMENT SLOTS
   // Empty markers. Accessories get parented to these, so a hat follows the head
   // when it tilts and a compass follows the paw when the arm swings — the prop
   // never has to know anything about the animation.
@@ -268,7 +265,7 @@ export function createTraveller({ outfit = 'zoot', fur = 'zoot', hat, eyewear, o
   armL.elbow.add(slots.handL)
   armR.elbow.add(slots.handR)
 
-  // ── THE SPINE ──────────────────────────────────────────────────────────────
+  // THE SPINE
   // Everything from the waist up goes in one group so it can twist against the
   // legs — shoulders rotating one way while the hips go the other is most of
   // what separates "walking" from "two legs moving". Rotating about Y works
@@ -282,7 +279,7 @@ export function createTraveller({ outfit = 'zoot', fur = 'zoot', hat, eyewear, o
   // not inherit the shoulder twist.
   root.add(legL.hip, legR.hip, hips, upper, tail)
 
-  // ── GROUND SHADOW ──────────────────────────────────────────────────────────
+  // GROUND SHADOW
   // Not a real shadow (those need extra render passes) — just a dark translucent
   // disc on the floor. It's the cheapest possible way to stop him looking like
   // he's hovering, which matters a lot on a tilted 3D map.
@@ -302,7 +299,7 @@ export function createTraveller({ outfit = 'zoot', fur = 'zoot', hat, eyewear, o
   // they're built, down in applyOutfit().
   if (outline) outlineAll(root)
 
-  // ── WEARING AN OUTFIT ──────────────────────────────────────────────────────
+  // WEARING AN OUTFIT
   // Three independent choices: the kit (body clothes + carried gear), the hat,
   // and the eyewear. They're kept separate so any hat goes with any kit; the
   // outfit only *suggests* a hat the first time you pick it (see applyOutfit).
@@ -374,7 +371,7 @@ export function createTraveller({ outfit = 'zoot', fur = 'zoot', hat, eyewear, o
 
   applyOutfit(outfit)
 
-  // ── ANIMATION ──────────────────────────────────────────────────────────────
+  // ANIMATION
   // A walk is built from one number: `phase`, the position in the stride, which
   // every limb reads at a different offset. Two things make it look alive
   // rather than mechanical:
@@ -410,7 +407,7 @@ export function createTraveller({ outfit = 'zoot', fur = 'zoot', hat, eyewear, o
     if (phase > Math.PI * 2) phase -= Math.PI * 2
     const swing = Math.sin(phase)
 
-    // ── legs ────────────────────────────────────────────────────────────────
+    // legs
     // Positive rotation.x swings a limb backwards (it hangs along -Y), so the
     // two legs take opposite signs and are always half a cycle apart.
     legL.hip.rotation.x = swing * 0.5 * gait
@@ -420,7 +417,7 @@ export function createTraveller({ outfit = 'zoot', fur = 'zoot', hat, eyewear, o
     legL.foot.rotation.x = -swing * 0.26 * gait
     legR.foot.rotation.x = swing * 0.26 * gait
 
-    // ── arms ────────────────────────────────────────────────────────────────
+    // arms
     // Opposite to the leg on the same side — left arm forward as the left leg
     // goes back — swinging around whatever rest pose the held prop asked for.
     armL.shoulder.rotation.x = restArm.L - swing * 0.38 * gait
@@ -430,7 +427,7 @@ export function createTraveller({ outfit = 'zoot', fur = 'zoot', hat, eyewear, o
     armL.elbow.rotation.x = -(0.1 + 0.22 * (0.5 + 0.5 * Math.sin(phase - 0.9))) * gait
     armR.elbow.rotation.x = -(0.1 + 0.22 * (0.5 - 0.5 * Math.sin(phase - 0.9))) * gait
 
-    // ── body ────────────────────────────────────────────────────────────────
+    // body
     // Shoulders twist against the hips, and the torso leans over whichever leg
     // is carrying the weight.
     upper.rotation.y = -swing * 0.13 * gait
@@ -444,20 +441,20 @@ export function createTraveller({ outfit = 'zoot', fur = 'zoot', hat, eyewear, o
     const bounce = Math.cos(phase * 2) * 0.5 + 0.5
     root.position.y = (bounce - 0.5) * 0.06 * gait + Math.sin(time * 2.2) * 0.02 * idle
 
-    // ── head ────────────────────────────────────────────────────────────────
+    // head
     // Counter-twist so he keeps looking where he's going while his shoulders
     // rotate underneath him, plus an idle glance around when standing.
     head.rotation.y = -upper.rotation.y * 0.75 + Math.sin(time * 0.6) * 0.09 * idle
     head.rotation.z = Math.sin(time * 0.9) * 0.035 * idle - upper.rotation.z * 0.5
     head.rotation.x = -0.03 * gait   // leans into the walk a touch
 
-    // ── tail ────────────────────────────────────────────────────────────────
+    // tail
     // Swings against the shoulder twist (that's what a tail is for), and keeps
     // a slow idle flick when he's standing.
     tail.rotation.z = swing * 0.22 * gait + Math.sin(time * 1.7) * 0.16 * idle
     tail.rotation.y = -upper.rotation.y * 1.2 + Math.sin(time * 1.1) * 0.1 * idle
 
-    // ── blinking ────────────────────────────────────────────────────────────
+    // blinking
     // Cheap, and does more for "alive" than any amount of limb work. A blink is
     // a 130 ms squash of the eye groups, every few seconds at an uneven spacing
     // so it never reads as a metronome.
@@ -472,7 +469,7 @@ export function createTraveller({ outfit = 'zoot', fur = 'zoot', hat, eyewear, o
     eyeR.scale.y = lid
   }
 
-  // ── THE PUBLIC API ─────────────────────────────────────────────────────────
+  // THE PUBLIC API
   return {
     group: root,
     parts: { head, upper, tail, armL, armR, legL, legR, eyeL, eyeR, slots },  // exposed so you can pose him by hand

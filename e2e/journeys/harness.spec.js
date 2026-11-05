@@ -1,6 +1,6 @@
 // EDITOR: STEVEN
 /**
- * Harness self-test (Requirement 3.5): in the guest harness, no request leaves localhost except
+ * Harness self-test: in the guest harness, no request leaves localhost except
  * external calls the harness fulfils from e2e/fixtures/external. Everything else is aborted
  * before it reaches the network, including the Supabase host when the dev server has keys
  * configured (the app then tries its catalog read, and the harness must abort it).
@@ -62,9 +62,10 @@ test.describe('guest harness network boundary', () => {
     await page.goto('/quests', { waitUntil: 'domcontentloaded' })
     await expect(page.getByRole('heading', { name: 'Sign in to quest with others' })).toBeVisible()
 
-    // Wait until every external request has settled (fulfilled or aborted).
-    const unsettled = () => external.filter((r) => !finished.has(r) && !failed.has(r)).length
-    await expect.poll(unsettled, { message: 'external requests still in flight' }).toBe(0)
+    // Wait until every external request that bypassed the harness route has settled. Intercepted
+    // requests may remain pending while MapLibre tears down a view, but cannot reach the network.
+    const unsettled = () => external.filter((r) => !intercepted.has(r) && !finished.has(r) && !failed.has(r)).length
+    await expect.poll(unsettled, { timeout: 15_000, message: 'external requests still in flight' }).toBe(0)
 
     const notRouted = external.filter((r) => !intercepted.has(r))
     // Split unrouted requests: browser-aborted with no response is settled, not a bypass.

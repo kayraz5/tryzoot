@@ -31,7 +31,7 @@ const get = async (url) => {
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
 const round = (n) => Math.round(n * 1e5) / 1e5
 
-// ── MRT ─────────────────────────────────────────────────────────────────────
+// MRT
 const rail = await get(RAIL_URL)
 const stations = {}
 const byCode = {}
@@ -73,7 +73,7 @@ for (const [line, a, b] of EXTRA_LINKS) {
 writeFileSync(MRT_OUT, JSON.stringify({ source: RAIL_URL, lines, stations }) + '\n')
 console.log(`MRT: ${Object.keys(stations).length} stations, ${LINES.length} lines -> ${MRT_OUT.pathname}`)
 
-// ── Buses ───────────────────────────────────────────────────────────────────
+// Buses
 const [stopsRaw, servicesRaw, routesRaw] = await Promise.all(
   ['stops', 'services', 'routes'].map((f) => get(`${BUS_URL}/${f}.min.json`))
 )

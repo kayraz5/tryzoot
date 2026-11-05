@@ -1,8 +1,6 @@
 <!-- EDITOR: MATTHEW -->
 <script setup>
-// ─────────────────────────────────────────────────────────────────────────────
 //  CharacterStudio.vue — the dressing room, as a reusable component
-// ─────────────────────────────────────────────────────────────────────────────
 //  A live 3D traveller you can spin, plus the outfit/fur/pose pickers.
 //
 //  It owns NO saved state. The chosen outfit and fur come in as props and go
@@ -14,7 +12,6 @@
 //  This file is the only place the 3D preview exists. It's imported lazily by
 //  ProfileView so Three.js is never downloaded by someone who doesn't open the
 //  tab — see defineAsyncComponent there.
-// ─────────────────────────────────────────────────────────────────────────────
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import * as THREE from 'three'
 import { createTraveller } from './traveller.js'

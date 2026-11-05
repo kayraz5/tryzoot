@@ -28,7 +28,7 @@ const routes = [
   { path: '/explore', name: 'explore', component: () => import('../../view/views/ExploreView.vue'), meta: { nav: true } },
   { path: '/me', name: 'me', component: () => import('../../view/views/ProfileView.vue'), meta: { auth: true, nav: true } },
   { path: '/swipe', name: 'swipe', component: () => import('../../view/views/SwipeView.vue'), meta: { auth: true, nav: true } },
-  // Social quests: hosts open a window of stops, guests join part of it (docs/social-quests-spec.md).
+  // Social quests: hosts open a window of stops, guests join part of it.
   { path: '/quests', name: 'quests', component: () => import('../../view/views/QuestsView.vue'), meta: { auth: true, nav: true } },
   { path: '/quests/:id', name: 'quest', component: () => import('../../view/views/QuestDetailView.vue'), meta: { auth: true, nav: true } },
   { path: '/party/:id?', redirect: (to) => (to.params.id ? `/quests/${to.params.id}` : '/quests') },

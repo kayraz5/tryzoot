@@ -1,7 +1,5 @@
 // EDITOR: MATTHEW
-// ─────────────────────────────────────────────────────────────────────────────
 //  travellerLayer.js — PUTTING THE CHARACTER ON THE MAP
-// ─────────────────────────────────────────────────────────────────────────────
 //  traveller.js builds a character that knows nothing about maps. This file is
 //  the adapter: it wraps him in MapLibre's "custom layer" contract so he can
 //  stand at a real [lng, lat] on the 3D map, keep his size and facing as you
@@ -20,7 +18,6 @@
 //    you.setBearing(90)        // face east
 //    you.setMoving(true)       // switch the idle bob to a walk cycle
 //    you.setOutfit('rain')     // change clothes live (default kit is 'zoot')
-// ─────────────────────────────────────────────────────────────────────────────
 
 import * as THREE from 'three'
 import { MercatorCoordinate } from 'maplibre-gl'
@@ -143,7 +140,7 @@ export class TravellerLayer {
     this.map.triggerRepaint()
   }
 
-  // ── Controls you can call from the Vue component ───────────────────────────
+  // Controls you can call from the Vue component
 
   /** Move him to a new position. */
   setLngLat(lng, lat) {

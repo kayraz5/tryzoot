@@ -40,8 +40,13 @@ export default mergeConfig(
           extends: true,
           test: {
             name: 'unit',
-            include: ['src/**/*.spec.js', 'tests/**/*.spec.js'],
-            exclude: [...configDefaults.exclude, 'e2e/**', '**/*.supabase.spec.js'],
+            include: ['tests/unit/**/*.spec.js'],
+            exclude: [
+              ...configDefaults.exclude,
+              'tests/integration/**',
+              'e2e/**',
+              '**/*.supabase.spec.js',
+            ],
             env: blank([
               'VITE_SUPABASE_URL',
               'VITE_SUPABASE_ANON_KEY',
@@ -59,10 +64,29 @@ export default mergeConfig(
           extends: true,
           test: {
             name: 'supabase',
-            include: ['src/**/*.supabase.spec.js'],
+            include: ['tests/unit/**/*.supabase.spec.js'],
+            exclude: [...configDefaults.exclude, 'tests/integration/**', 'e2e/**'],
             env: blank(SERVER_SECRETS),
             globalSetup: ['./tests/setup/supabase.globalSetup.js'],
             setupFiles: ['./tests/setup/supabase.setup.js'],
+          },
+        },
+        {
+          // Migration and reusable-support checks share the unit network boundary. Keep all
+          // hermetic variables blank so integration support has the same environment contract.
+          extends: true,
+          test: {
+            name: 'integration-support',
+            include: ['tests/integration/**/*.spec.js'],
+            exclude: [...configDefaults.exclude, 'e2e/**'],
+            env: blank([
+              'VITE_SUPABASE_URL',
+              'VITE_SUPABASE_ANON_KEY',
+              'VITE_DEV_PANEL',
+              ...SERVER_SECRETS,
+              ...GATE_ONLY,
+            ]),
+            setupFiles: ['./tests/setup/unit.setup.js'],
           },
         },
       ],

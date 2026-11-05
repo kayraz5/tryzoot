@@ -215,7 +215,7 @@ export function syncStopMarkers(map, markers, legs, nextLeg, onSelect) {
 /** Create the flat "you are here" marker (the caller decides when to add it). */
 export function createPlayerMarker() {
   const element = document.createElement('div')
-  element.className = 'zt-traveller-marker'
+  element.className = 'zt-player-marker'
   element.innerHTML = '<span class="pulse"></span><span class="core"><i class="bi bi-person-walking"></i></span>'
   return new Marker({ element })
 }
