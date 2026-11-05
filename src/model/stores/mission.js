@@ -112,6 +112,12 @@ export const useMissionStore = defineStore('mission', {
       usePartyStore().syncHostedWindow(mission)
     },
 
+    /** Another account signed in (or this one signed out): forget everything about the last one's plan. */
+    forgetAccount() {
+      this.$reset()
+      try { localStorage.removeItem(ACTIVE_KEY) } catch {}
+    },
+
     async load(id) {
       if (this.mission?.id === id) return this.mission
       const db = await getDb()
@@ -128,7 +134,9 @@ export const useMissionStore = defineStore('mission', {
       if (this.mission) return this.mission
       let id = null
       try { id = localStorage.getItem(ACTIVE_KEY) } catch {}
-      if (id) return this.load(id)
+      // The remembered id can belong to another account on this device: fall back to my latest.
+      const remembered = id && await this.load(id)
+      if (remembered) return remembered
       const db = await getDb()
       const [latest] = await db.listMissions()
       if (latest) return this.load(latest.id)
