@@ -88,7 +88,10 @@ test.describe('joined quest map chip', () => {
         await openMapCard(page)
         await expect(questChip(page)).toBeVisible()
 
-        await page.clock.fastForward(msUntil(quest.ends_at))
+        const offset = Date.parse(quest.ends_at) - Date.now() + 1_000
+        await page.evaluate((value) => localStorage.setItem('zoot.clockOffset', String(value)), offset)
+        await page.reload({ waitUntil: 'domcontentloaded' })
+        await page.clock.runFor(1_000)
         const notice = page.getByRole('alertdialog', { name: `Your stops with ${hostName} are done` })
         await expect(notice).toBeVisible({ timeout: 20_000 })
         await expect(notice).toContainText("You'll carry on with your own plan")

@@ -32,7 +32,7 @@ test.describe('mission itinerary', () => {
   test('marks a mission stop as skipped when the traveller skips it', async ({ page }) => {
     await openGeneratedMission(page)
 
-    await page.getByRole('button', { name: 'Skip' }).first().click()
+    await page.locator('li.tl-stop.next').getByRole('button', { name: 'Skip', exact: true }).click()
 
     // Completed stops (stamped or skipped) collapse into one summary row; expand it to see them.
     await page.getByRole('button', { name: /1 completed stop · Show/ }).click()
