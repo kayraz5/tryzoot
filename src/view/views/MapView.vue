@@ -42,7 +42,7 @@ import {
   stopHeading
 } from '../../model/services/geo.js'
 import { distanceM } from '../../model/services/travel.js'
-import { addQuestLayers, createPlayerMarker, setFence, setPlayerFacing, setQuestColors, syncStopMarkers } from '../components/map/questLayers.js'
+import { addQuestLayers, createPlayerMarker, setFence, setPlayerFacing, syncStopMarkers } from '../components/map/questLayers.js'
 import { applyMapLabelStyle } from '../components/map/mapLabels.js'
 import { applyBuildingLayers, BUILDING_LAYERS } from '../components/map/mapBuildings.js'
 import { loadCatalog } from '../../model/services/catalog.js'
@@ -1182,10 +1182,7 @@ watch(
   syncTravellerAppearance
 )
 
-watch(mapTheme, () => {
-  applyBasemapStyle()
-  if (map) setQuestColors(map, mapTheme.value === 'theme')
-})
+watch(mapTheme, applyBasemapStyle)
 
 function onHereChanged() {
   if (!mapReady.value) return

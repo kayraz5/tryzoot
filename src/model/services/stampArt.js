@@ -19,4 +19,3 @@ function placeIdForName(name) {
 }
 
 export const placeStampUrl = (name) => placeStamp(placeIdForName(name))
-export const areaStampUrl = (areaId) => areaStamp(areaId || '')
