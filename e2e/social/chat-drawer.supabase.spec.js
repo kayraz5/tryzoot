@@ -1,17 +1,5 @@
 // EDITOR: STEVEN
-/**
- * Social journey (Tier 2, demo seed, one account): the quest chat drawer on the map.
- * The test account plans a layover and opens its stops to company; a seeded demo traveller joins
- * through dev_simulate('guest_joins'), so the map shows "Chat with <traveller>".
- * 
- * Gate: Tier 1 plus E2E_SUPABASE_WRITES=1 and the demo seed (demo_users, app_config.dev_social);
- * without the seed the tests skip with "Supabase-gated: demo seed missing (…)".
- * 
- * Writes: trips, missions, a quest, a demo join, a chat message, and the profile style/name if missing.
- * The account is cleaned up (cleanupSocial) before and after each test.
- * 
- * Reference: docs/social-quests-spec.md "Messaging".
- */
+
 import {
   cleanupSocial, ensureOnboarded, expect, installSupabaseHarness, requireSeed, requireSupabase, simulate, test
 } from '../fixtures/supabase.js'

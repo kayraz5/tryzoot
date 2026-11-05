@@ -113,7 +113,7 @@ h2, h3, h4, .h2, .h3, .h4, .display-font { font-family: var(--zt-font-head); fon
 @keyframes zt-sheet-up { from { transform: translateY(40px); opacity: 0; } }
 a { text-underline-offset: 3px; }
 
-/* ── Buttons: pill, outlined, hard shadow ───────────────────────────── */
+/* Buttons: pill, outlined, hard shadow */
 .btn {
   font-weight: 700; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.03em; font-size: 0.85rem;
   border: var(--zt-bw) solid var(--zt-line); padding: 0.5rem 1.05rem;
@@ -151,7 +151,7 @@ a { text-underline-offset: 3px; }
 }
 .btn:focus-visible, .zt-chip:focus-visible { outline: 3px solid var(--zt-pink); outline-offset: 2px; }
 
-/* ── Surfaces ───────────────────────────────────────────────────────── */
+/* Surfaces */
 .zt-card {
   background: var(--zt-card);
   border: var(--zt-bw) solid var(--zt-line);
@@ -167,7 +167,7 @@ a { text-underline-offset: 3px; }
 .zt-page { max-width: 760px; margin: 0 auto; padding: 18px 16px calc(var(--zt-nav-h) + 36px); }
 .zt-page-wide { max-width: 1100px; }
 
-/* ── Chips and pills (the deck's outlined yellow labels) ────────────── */
+/* Chips and pills (the deck's outlined yellow labels) */
 .zt-chip {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 6px 14px; border-radius: 999px;
@@ -190,7 +190,7 @@ a { text-underline-offset: 3px; }
 .zt-pill.paper { background: var(--zt-card); color: var(--zt-ink); }
 [data-bs-theme='dark'] .zt-pill.ink { border-color: var(--zt-yellow); }
 
-/* ── Bottom nav ─────────────────────────────────────────────────────── */
+/* Bottom nav */
 .zt-nav {
   position: fixed; left: 50%; transform: translateX(-50%);
   bottom: var(--zt-nav-inset);
@@ -206,7 +206,7 @@ a { text-underline-offset: 3px; }
 .zt-nav a i { font-size: 1.3rem; line-height: 1; }
 .zt-nav a.router-link-active { color: #111; background: var(--zt-yellow); border-color: var(--zt-line); }
 
-/* ── Forms ──────────────────────────────────────────────────────────── */
+/* Forms */
 .form-control, .form-select {
   border-radius: 14px; border: var(--zt-bw) solid var(--zt-line); padding: 0.6rem 0.9rem;
   background-color: var(--zt-card); color: var(--zt-ink); font-weight: 500;
@@ -222,7 +222,7 @@ a { text-underline-offset: 3px; }
 .form-check-input:focus { box-shadow: 0 0 0 4px var(--zt-yellow); border-color: var(--zt-line); }
 .form-label { font-weight: 800; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
 
-/* ── Bootstrap pieces we reuse ──────────────────────────────────────── */
+/* Bootstrap pieces we reuse */
 .alert { border: var(--zt-bw) solid var(--zt-line); border-radius: 16px; color: #111; font-weight: 500; }
 .alert-info { background: #ffffff; }
 .alert-warning { background: var(--zt-yellow-soft); }
@@ -238,7 +238,7 @@ a { text-underline-offset: 3px; }
 .list-group-item { border-color: var(--zt-soft-line); }
 .placeholder { background-color: var(--zt-yellow-soft); border-radius: 6px; }
 
-/* ── Toasts ─────────────────────────────────────────────────────────── */
+/* Toasts */
 .zt-toasts { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 2000; width: min(420px, calc(100% - 24px)); }
 .zt-toast {
   border-radius: 16px; padding: 10px 14px; font-weight: 700; font-size: 0.85rem; margin-bottom: 8px;
@@ -252,7 +252,7 @@ a { text-underline-offset: 3px; }
 [data-bs-theme='dark'] .zt-toast { border-color: var(--zt-yellow); box-shadow: 4px 4px 0 var(--zt-yellow); }
 @keyframes zt-drop { from { transform: translateY(-12px); opacity: 0; } to { transform: none; opacity: 1; } }
 
-/* ── Motion helpers ─────────────────────────────────────────────────── */
+/* Motion helpers */
 @keyframes zt-pulse { 0% { box-shadow: 0 0 0 0 rgba(248, 56, 120, 0.7); } 70% { box-shadow: 0 0 0 16px rgba(248, 56, 120, 0); } 100% { box-shadow: 0 0 0 0 rgba(248, 56, 120, 0); } }
 .zt-pulse { animation: zt-pulse 1.4s infinite; }
 @keyframes zt-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }

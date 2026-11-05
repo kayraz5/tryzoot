@@ -2,7 +2,6 @@
 /**
  * Journey — Feature: route guards and legacy party-to-quest redirects.
  * Runs in the guest harness (zoot.guest='1', external hosts aborted); see e2e/fixtures/harness.js.
- * Reference: docs/repo-audit.md §1 and §3.
  */
 import { expect, test } from '../fixtures/harness.js'
 
@@ -37,5 +36,5 @@ test.describe('onboarded party aliases', () => {
 test('redirects an unknown path to the landing page', async ({ page }) => {
   await page.goto('/not-a-real-zoot-route')
   await expect(page).toHaveURL(/\/$/)
-  await expect(page.getByRole('button', { name: 'Start a layover' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Sign up' }).first()).toBeVisible()
 })

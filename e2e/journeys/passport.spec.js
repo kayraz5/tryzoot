@@ -2,7 +2,6 @@
 /**
  * Journey — Feature: passport view and area pages.
  * Runs in the guest harness (zoot.guest='1', external hosts aborted); see e2e/fixtures/harness.js.
- * Reference: docs/repo-audit.md §1.
  */
 import { expect, test } from '../fixtures/harness.js'
 

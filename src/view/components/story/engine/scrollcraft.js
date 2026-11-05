@@ -1,7 +1,6 @@
 // EDITOR: MATTHEW
-/* ============================================================================
+/*
    scrollcraft: a scroll-driven interaction runtime
-   ----------------------------------------------------------------------------
    Vanilla JS. Zero dependencies. Zero DOM generation.
 
    The engine does NOT build your page. You author real, semantic HTML and mark
@@ -10,9 +9,7 @@
    generates its own DOM from a config object makes every site it touches look
    identical, which is the failure mode this replaces.
 
-   ---------------------------------------------------------------------------
    ACTS: the unit of scroll time
-   ---------------------------------------------------------------------------
      <section data-sc-act="pin" data-sc-span="2.5"> ... </section>
 
      data-sc-act   scrub | pin | pan | flow   (default: flow)
@@ -38,9 +35,7 @@
        flow    p = (y + vh - top) / (height + vh)
      and publishes it as --sc-p on the act element, so CSS can read it too.
 
-   ---------------------------------------------------------------------------
    DEVICES: what p drives
-   ---------------------------------------------------------------------------
      data-sc-scrub            on <video>. p scrubs currentTime. Blob-loaded, so
                               it seeks without needing HTTP range support.
      data-sc-sequence="a/{i}.webp:120:1"
@@ -65,9 +60,7 @@
      data-sc-drift="#07090c"  page background interpolates toward this colour
                               while the act is on screen.
 
-   ---------------------------------------------------------------------------
    WORLDFLIGHT: the page mode for one continuous flight
-   ---------------------------------------------------------------------------
      <div data-sc-mode="worldflight" data-sc-seam="0.12">
        <div data-sc-world>
          <div data-sc-segment data-sc-w="1.4" data-sc-linger="0.3"
@@ -107,9 +100,7 @@
    opacity over the seam band; nothing ever swaps a src, because a src swap is a
    black frame and a black frame is the cut this mode exists to avoid.
 
-   ---------------------------------------------------------------------------
    POINTER: interactivity that isn't scroll
-   ---------------------------------------------------------------------------
      data-sc-tilt="8"         3D tilt toward the pointer, spring-damped, degrees.
      data-sc-magnet="0.35"    element drifts toward the pointer inside its bounds.
      data-sc-spotlight        publishes --sc-mx/--sc-my (0..1) for a light that
@@ -117,17 +108,13 @@
    All three are gated to (hover: hover) and (pointer: fine) and disabled under
    prefers-reduced-motion. Touch never fires them.
 
-   ---------------------------------------------------------------------------
    REDUCED MOTION
-   ---------------------------------------------------------------------------
    Fewer and gentler, not zero. Cues still fade (comprehension survives), but
    translation collapses, video clips are never fetched (the poster holds), and
    pointer devices are inert. A worldflight still tells its whole story: the
    posters cross-dissolve through the same seams and the same copy windows.
 
-   ---------------------------------------------------------------------------
    THE PLAYHEAD
-   ---------------------------------------------------------------------------
    Every scrub clip on the page, act or worldflight, is driven by one smoothed
    playhead. Scroll only ever writes a TARGET; a standalone rAF loop walks the
    current time toward it at a fixed fraction per frame (data-sc-lerp, default
@@ -182,7 +169,7 @@
     return isNaN(v) || v <= 0 ? 0 : clamp(v, 0.02, 1);
   }
 
-  // ---- colour -------------------------------------------------------------
+  // colour
   function parseColor(str) {
     str = (str || '').trim();
     var m = str.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
@@ -204,7 +191,7 @@
                     Math.round(lerp(a[2], b[2], t)) + ')';
   }
 
-  // ---- text splitting -----------------------------------------------------
+  // text splitting
   // Wraps each unit in a masked span so the reveal can slide from behind a clean
   // edge instead of just fading. Lines are measured after layout, so this must
   // run once fonts are ready or the line boxes are wrong.
@@ -265,7 +252,7 @@
     return units;
   }
 
-  // ---- number formatting --------------------------------------------------
+  // number formatting
   function formatNum(v, template) {
     var decimals = 0;
     var dot = template.indexOf('.');
@@ -279,7 +266,6 @@
     return s;
   }
 
-  // =========================================================================
   function mount(root, opts) {
     root = typeof root === 'string' ? document.querySelector(root) : (root || document);
     opts = opts || {};
@@ -332,7 +318,7 @@
       return rec;
     }
 
-    // ---- collect acts -----------------------------------------------------
+    // collect acts
     Array.prototype.forEach.call(root.querySelectorAll('[data-sc-act]'), function (el) {
       var device = el.getAttribute('data-sc-act') || 'flow';
       var pinned = device === 'scrub' || device === 'pin' || device === 'pan';
@@ -431,7 +417,7 @@
       if (d) { var rgb = parseColor(d); if (rgb) drifts.push({ act: act, rgb: rgb }); }
     });
 
-    // ---- collect worldflights --------------------------------------------
+    // collect worldflights
     Array.prototype.forEach.call(root.querySelectorAll('[data-sc-mode="worldflight"]'), function (el) {
       var W = {
         el: el,
@@ -502,7 +488,7 @@
       worlds.push(W);
     });
 
-    // ---- flow reveals (fire once) ----------------------------------------
+    // flow reveals (fire once)
     // `cio` is assigned inside the counters IIFE below; it is declared here so
     // destroy() can disconnect it. An IntersectionObserver holds a strong ref to
     // every observed target, and unobserve only runs on first intersection, so a
@@ -530,7 +516,7 @@
       Array.prototype.forEach.call(root.querySelectorAll('[data-sc-in]'), function (el) { el.classList.add('sc-in'); });
     }
 
-    // ---- entry counters (fire once) --------------------------------------
+    // entry counters (fire once)
     // A [data-sc-count] outside any pinned act is not scrubbed by scroll; it
     // ticks up once when it enters view, over data-sc-count-ms (default 1400).
     // Same formatting rules as the act counter: write the target as it should
@@ -573,7 +559,7 @@
       }
     })();
 
-    // ---- layout -----------------------------------------------------------
+    // layout
     function layout() {
       // layout() and read() are both on the returned api, so a framework's
       // updated() arriving after destroyed() enters them directly.
@@ -646,7 +632,7 @@
       read();
     }
 
-    // ---- video ------------------------------------------------------------
+    // video
     function loadVideo(a) { loadClip(a.video); }
     function loadClip(V) {
       // Under reduced motion the clip is never fetched. The poster holds the
@@ -711,7 +697,7 @@
         .catch(function () { V.loading = false; });
     }
 
-    // ---- image sequence ---------------------------------------------------
+    // image sequence
     function loadSeq(a) {
       var S = a.seq;
       if (!S || S.frames.length) return;
@@ -743,7 +729,7 @@
       S.drawn = idx;
     }
 
-    // ---- worldflight ------------------------------------------------------
+    // worldflight
     // t is the position along the flight, measured in viewport-heights of
     // scroll, so every number here is in the same unit the author wrote the
     // weights in. There is no per-segment geometry to read: the stage never
@@ -845,7 +831,7 @@
       }
     }
 
-    // ---- per-frame scroll read -------------------------------------------
+    // per-frame scroll read
     function read() {
       if (scDead) return;
       y = scrollY || pageYOffset;
@@ -1019,7 +1005,7 @@
       }
     }
 
-    // ---- video seek loop --------------------------------------------------
+    // video seek loop
     // Split from read() on purpose: seeking is asynchronous and rate-limited by
     // the decoder, while read() must stay cheap enough to run on every scroll
     // event. The lerp here is also what turns a jittery wheel into a glide.
@@ -1124,7 +1110,7 @@
     on('click', prime, { passive: true });
     on('scroll', prime, { passive: true });
 
-    // ---- pointer devices --------------------------------------------------
+    // pointer devices
     var tilts = [], magnets = [], spots = [];
     function initPointer() {
       if (reduce || !fineMQ.matches) return;
@@ -1186,7 +1172,7 @@
       })();
     }
 
-    // ---- wiring -----------------------------------------------------------
+    // wiring
     var ticking = false;
     on('scroll', function () {
       if (scDead) return;

@@ -1,9 +1,7 @@
 // EDITOR: HULBERT
 import { CITY } from './config.js'
 
-// ---------------------------------------------------------------
 // 1. Turning weather codes into words and icons
-// ---------------------------------------------------------------
 
 const WEATHER_CODES = {
 	0: ['Clear', 'bi-sun'], 1: ['Mostly clear', 'bi-sun'], 2: ['Partly cloudy', 'bi-cloud-sun'], 3: ['Overcast', 'bi-cloud'],
@@ -22,9 +20,7 @@ export function describeCode(code) {
 	return entry ? { label: entry[0], icon: entry[1] } : UNKNOWN_WEATHER;
 }
 
-// ---------------------------------------------------------------
 // 2. Fetching the forecast
-// ---------------------------------------------------------------
 
 const CACHE_MINUTES = 15;
 
@@ -94,9 +90,7 @@ export async function fetchForecast(lat = CITY.lat, lng = CITY.lng) {
 	return data;
 }
 
-// ---------------------------------------------------------------
 // 3. Looking up the chance of rain at a given time
-// ---------------------------------------------------------------
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const DOWNPOUR_CHANCE = 90 // used by dev panel to fake heavy rain
@@ -123,9 +117,7 @@ export function rainLookup(forecast, force = false) {
 	}
 }
 
-// ---------------------------------------------------------------
 // 4. Haze (PSI) from NEA via data.gov.sg
-// ---------------------------------------------------------------
 
 // Official PSI bands. Returns a label and a colour for a PSI number.
 export function describePsi(psi) {
@@ -177,9 +169,7 @@ export async function fetchHaze(lat = CITY.lat, lng = CITY.lng) {
 	return data
 }
 
-// ---------------------------------------------------------------
 // 5. Lightning from NEA via data.gov.sg
-// ---------------------------------------------------------------
 
 // Distance in km between two points on Earth (haversine formula).
 function distanceKm(lat1, lng1, lat2, lng2) {

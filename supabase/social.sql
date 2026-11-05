@@ -1,6 +1,5 @@
 -- EDITOR: EUDALE
--- ════════════════════════════════════════════════════════════════════════
--- Zoot · Social quests (Eudale) — spec: docs/social-quests-spec.md
+-- Zoot · Social quests (Eudale)
 -- Run in Supabase → SQL Editor AFTER schema.sql. Safe to re-run, and safe to run over the
 -- earlier version of this file (it removes the old request/approve design first).
 --
@@ -14,9 +13,8 @@
 --   messages       = chat for joined members (text | chip | system)
 --   coop_stamps    = co-op stamps: two members, same place, same time, both there for the first time
 --   blocks/reports = safety;  party_locations = live location, joined members only
--- ════════════════════════════════════════════════════════════════════════
 
--- ── 0. Remove the earlier request/approve + ready-check + group-deadline design ──
+-- 0. Remove the earlier request/approve + ready-check + group-deadline design
 drop trigger if exists parties_guard on public.parties;
 drop trigger if exists party_members_guard on public.party_members;
 drop trigger if exists party_members_changed on public.party_members;
@@ -41,7 +39,7 @@ drop policy if exists "members leave" on public.party_members;
 drop policy if exists "parties host write" on public.parties;
 drop policy if exists "parties host update" on public.parties;
 
--- ── 1. parties → open windows ───────────────────────────────────────────
+-- 1. parties → open windows
 alter table public.parties
   add column if not exists title text,
   add column if not exists stops jsonb not null default '[]',
@@ -75,7 +73,7 @@ alter table public.parties drop constraint if exists parties_meeting_public;
 alter table public.parties add constraint parties_meeting_public check (meeting_place_id is not null);
 create index if not exists parties_status_idx on public.parties (status, ends_at);
 
--- ── 2. party_members → joined ranges ────────────────────────────────────
+-- 2. party_members → joined ranges
 alter table public.party_members
   add column if not exists from_seq int,
   add column if not exists to_seq int,
@@ -109,7 +107,7 @@ alter table public.party_members drop constraint if exists party_members_range_c
 alter table public.party_members add constraint party_members_range_check check (from_seq >= 1 and to_seq >= from_seq);
 create index if not exists party_members_user_idx on public.party_members (user_id);
 
--- ── 3. messages → chat ──────────────────────────────────────────────────
+-- 3. messages → chat
 alter table public.messages
   add column if not exists type text not null default 'text',
   add column if not exists meta jsonb;
@@ -118,7 +116,7 @@ alter table public.messages drop constraint if exists messages_type_check;
 alter table public.messages add constraint messages_type_check check (type in ('text', 'chip', 'system'));
 create index if not exists messages_party_idx on public.messages (party_id, created_at);
 
--- ── 4. Safety, live location, demo users ────────────────────────────────
+-- 4. Safety, live location, demo users
 create table if not exists public.blocks (
   blocker_id uuid not null references auth.users (id) on delete cascade default auth.uid(),
   blocked_id uuid not null references auth.users (id) on delete cascade,
@@ -154,9 +152,8 @@ create table if not exists public.demo_users (
 insert into public.app_config (key, value) values ('dev_social', '1') on conflict (key) do nothing;
 -- Switch the multiplayer simulator off before real users:  update public.app_config set value = '0' where key = 'dev_social';
 
--- ════════════════════════════════════════════════════════════════════════
 -- Helpers
--- ── 5. Co-op stamps ─────────────────────────────────────────────────────
+-- 5. Co-op stamps
 -- One row per stamp that earned the co-op bonus. Written only by the stamps trigger below.
 create table if not exists public.coop_stamps (
   id bigint generated always as identity primary key,
@@ -171,7 +168,6 @@ create table if not exists public.coop_stamps (
 );
 create index if not exists coop_stamps_user_idx on public.coop_stamps (user_id, notified);
 
--- ════════════════════════════════════════════════════════════════════════
 create or replace function public.is_party_member(p_party uuid)
 returns boolean language sql stable security definer set search_path = public as $$
   select exists (select 1 from party_members where party_id = p_party and user_id = auth.uid());
@@ -266,9 +262,7 @@ returns text language sql immutable as $$
               else (p_stops -> (p_from - 1) ->> 'name') || ' → ' || (p_stops -> (p_to - 1) ->> 'name') end;
 $$;
 
--- ════════════════════════════════════════════════════════════════════════
 -- Publishing a window
--- ════════════════════════════════════════════════════════════════════════
 create or replace function public.parties_before_insert()
 returns trigger language plpgsql set search_path = public as $$
 declare
@@ -319,7 +313,7 @@ drop trigger if exists party_members_after_delete on public.party_members;
 create trigger party_members_after_delete after delete on public.party_members
   for each row execute function public.party_members_after_delete();
 
--- ── Check-ins and co-op stamps ──────────────────────────────────────────
+-- Check-ins and co-op stamps
 -- Is this place one of the stops this member joined? (The host's range is the whole window.)
 create or replace function public.member_has_place(p_party uuid, p_user uuid, p_place text)
 returns boolean language sql stable security definer set search_path = public as $$
@@ -406,9 +400,7 @@ drop trigger if exists stamps_after_insert_social on public.stamps;
 create trigger stamps_after_insert_social after insert on public.stamps
   for each row execute function public.stamps_after_insert_social();
 
--- ════════════════════════════════════════════════════════════════════════
 -- RPCs (what the app calls)
--- ════════════════════════════════════════════════════════════════════════
 
 /**
  * Join stops p_from..p_to of a window, instantly.
@@ -613,9 +605,7 @@ language sql stable security definer set search_path = public as $$
    order by (m.role = 'host') desc, m.joined_at;
 $$;
 
--- ════════════════════════════════════════════════════════════════════════
 -- Row Level Security
--- ════════════════════════════════════════════════════════════════════════
 alter table public.blocks enable row level security;
 alter table public.reports enable row level security;
 alter table public.party_locations enable row level security;
@@ -675,14 +665,12 @@ create policy "locations self write" on public.party_locations for all using (us
 drop policy if exists "demo users readable" on public.demo_users;
 create policy "demo users readable" on public.demo_users for select using (auth.uid() is not null);
 
--- ════════════════════════════════════════════════════════════════════════
 -- Dev: drive the seeded fake travellers so one person can demo multiplayer.
 -- Only while app_config.dev_social = '1', and only on quests you're in.
 --   guest_joins  a fake traveller joins YOUR open window (random consecutive stops)
 --   guest_leaves a fake guest goes solo
 --   chat         a fake member sends a message / quick reply
 --   checkin      a fake member checks in at one of their stops (system message)
--- ════════════════════════════════════════════════════════════════════════
 create or replace function public.dev_simulate(p_party uuid, p_action text)
 returns text language plpgsql security definer set search_path = public as $$
 declare
@@ -786,19 +774,15 @@ begin
   raise exception 'Unknown action %', p_action;
 end $$;
 
--- ════════════════════════════════════════════════════════════════════════
 -- One quest at a time: remove quests hosted by someone who is a guest in another running quest
 -- (could happen before this rule existed). Safe to re-run.
--- ════════════════════════════════════════════════════════════════════════
 delete from public.parties h
  where h.status <> 'closed' and h.ends_at > now()
    and exists (select 1 from public.party_members m join public.parties o on o.id = m.party_id
                 where m.user_id = h.host_id and m.role = 'member' and o.id <> h.id
                   and o.status <> 'closed' and o.ends_at > now());
 
--- ════════════════════════════════════════════════════════════════════════
 -- Grants + Realtime
--- ════════════════════════════════════════════════════════════════════════
 revoke all on function public.post_system(uuid, text, jsonb) from public, anon, authenticated;
 revoke all on function public.refresh_party(uuid) from public, anon, authenticated;
 grant execute on function public.join_window(uuid, int, int, timestamptz, int) to authenticated;
