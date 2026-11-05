@@ -14,6 +14,7 @@ import { usePassportStore } from '../../model/stores/passport.js'
 import { useUserStore } from '../../model/stores/user.js'
 import { useUiStore } from '../../model/stores/ui.js'
 import { placeStampUrl } from '../../model/services/stampArt.js'
+import { isSaved, toggleSaved } from '../../model/services/bookmarks.js'
 
 /** Place story, AI summary and stamp button (Hulbert: content + Groq summary). */
 const route = useRoute()
@@ -23,7 +24,6 @@ const user = useUserStore()
 const ui = useUiStore()
 const summary = ref(null)
 const busy = ref(false)
-const bookmarks = ref(readBookmarks())
 
 const place = computed(() => placeById.value.get(route.params.id))
 const leg = computed(() => mission.mission?.legs.find((l) => l.place_id === route.params.id && l.status === 'pending'))
@@ -36,7 +36,7 @@ const check = computed(() => {
 })
 const cost = computed(() => ['Free', '$', '$$', '$$$'][place.value?.cost_band ?? 1])
 const mapsUrl = computed(() => place.value && `https://www.google.com/maps/search/?api=1&query=${place.value.lat},${place.value.lng}`)
-const bookmarked = computed(() => bookmarks.value.includes(route.params.id))
+const bookmarked = computed(() => isSaved(route.params.id))
 
 async function load() {
   await loadCatalog()
@@ -63,14 +63,6 @@ async function stamp() {
   }
 }
 
-function toggleBookmark() {
-  const id = route.params.id
-  bookmarks.value = bookmarked.value ? bookmarks.value.filter((b) => b !== id) : [...bookmarks.value, id]
-  try { localStorage.setItem('zoot.bookmarks', JSON.stringify(bookmarks.value)) } catch {}
-}
-function readBookmarks() {
-  try { return JSON.parse(localStorage.getItem('zoot.bookmarks')) || [] } catch { return [] }
-}
 </script>
 
 <template>
@@ -79,7 +71,7 @@ function readBookmarks() {
     <template v-else>
       <div class="d-flex justify-content-between mb-2">
         <button class="btn btn-link px-0" @click="$router.back()"><i class="bi bi-arrow-left"></i> Back</button>
-        <button class="btn btn-soft btn-sm" @click="toggleBookmark" :aria-pressed="bookmarked">
+        <button class="btn btn-soft btn-sm" @click="toggleSaved(route.params.id)" :aria-pressed="bookmarked">
           <i class="bi" :class="bookmarked ? 'bi-bookmark-fill' : 'bi-bookmark'"></i> {{ bookmarked ? 'Saved' : 'Save' }}
         </button>
       </div>

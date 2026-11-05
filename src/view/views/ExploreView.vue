@@ -7,6 +7,7 @@ import { isOpenDuringVisit } from '../../model/services/hours.js'
 import { now } from '../../model/services/clock.js'
 import { TILES } from '../../model/data/interests.js'
 import PlaceCard from '../components/places/PlaceCard.vue'
+import { savedIds } from '../../model/services/bookmarks.js'
 
 /**
  * Explore: scroll through every place in the catalog. Search plus a few filters,
@@ -19,6 +20,7 @@ const area = ref('')
 const openNow = ref(false)
 const indoorOnly = ref(false)
 const freeOnly = ref(false)
+const savedOnly = ref(false) // the Saved view: same grid, narrowed to what I bookmarked
 
 const areas = computed(() => [...new Set(catalog.value.map((p) => p.area))].sort())
 
@@ -27,6 +29,7 @@ const results = computed(() => {
 	const wanted = TILES.filter((tile) => interests.value.includes(tile.id)).flatMap((tile) => tile.tags)
 	const t = now()
 	return catalog.value
+		.filter((p) => !savedOnly.value || savedIds.value.includes(p.id))
 		.filter((p) => !q || [p.name, p.area, ...(p.tags || [])].some((s) => s?.toLowerCase().includes(q)))
 		.filter((p) => !wanted.length || wanted.some((tag) => p.tags?.includes(tag)))
 		.filter((p) => !area.value || p.area === area.value)
@@ -72,8 +75,27 @@ function clearAll() {
 <template>
 	<main class="zt-page zt-page-wide explore">
 		<header class="mb-3">
-			<h1 class="zt-display mb-1 title">Explore Singapore</h1>
-			<p class="text-muted small mb-0">{{ catalog.length }} places to discover on a layover. Tap one for details.</p>
+			<div class="d-flex align-items-start justify-content-between gap-2">
+				<h1 class="zt-display mb-1 title">{{ savedOnly ? 'Saved places' : 'Explore Singapore' }}</h1>
+				<!-- Switches the same grid between the whole catalogue and just my
+				     bookmarks, so search and filters keep working either way. -->
+				<button
+					type="button"
+					class="zt-chip saved-toggle"
+					:class="{ active: savedOnly }"
+					:aria-pressed="savedOnly"
+					:title="savedOnly ? 'Show every place' : 'Show only places I have saved'"
+					@click="savedOnly = !savedOnly"
+				>
+					<i class="bi" :class="savedOnly ? 'bi-bookmark-fill' : 'bi-bookmark'" aria-hidden="true"></i>
+					<span class="d-none d-sm-inline">Saved</span>
+					<span v-if="savedIds.length" class="saved-count">{{ savedIds.length }}</span>
+				</button>
+			</div>
+			<p class="text-muted small mb-0">
+				<template v-if="savedOnly">Places you kept for later. Tap one for details.</template>
+				<template v-else>{{ catalog.length }} places to discover on a layover. Tap one for details.</template>
+			</p>
 		</header>
 
 		<!-- Search + filters stay reachable while scrolling -->
@@ -110,6 +132,14 @@ function clearAll() {
 				<button type="button" class="btn btn-soft" @click="showMore">Show more places <span class="text-muted">({{ remaining }} left)</span></button>
 			</div>
 		</template>
+		<!-- Nothing saved at all is a different problem from filters hiding
+		     everything, so it gets its own way out. -->
+		<div v-else-if="savedOnly && !savedIds.length" class="empty zt-card p-4 text-center">
+			<i class="bi bi-bookmark fs-2"></i>
+			<p class="fw-800 mb-1 mt-2">No saved places yet</p>
+			<p class="small text-muted mb-3">Open any place and tap Save to keep it here.</p>
+			<button type="button" class="btn btn-primary btn-sm" @click="savedOnly = false">Browse all places</button>
+		</div>
 		<div v-else class="empty zt-card p-4 text-center">
 			<i class="bi bi-binoculars fs-2"></i>
 			<p class="fw-800 mb-1 mt-2">No places match</p>
@@ -122,6 +152,29 @@ function clearAll() {
 <style scoped>
 .title {
   font-size: clamp(2.2rem, 8vw, 3rem);
+}
+
+.saved-toggle {
+  flex: none;
+  align-self: center;
+  white-space: nowrap;
+}
+
+/* Reads against both the chip's normal surface and its yellow active state. */
+.saved-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.25rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--zt-line);
+  color: var(--zt-card);
+  font-size: 0.68rem;
+}
+
+.zt-chip.active .saved-count {
+  background: #111;
+  color: var(--zt-yellow);
 }
 
 .filters {
