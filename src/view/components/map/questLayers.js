@@ -10,25 +10,10 @@ import { BUILDING_LAYERS } from './mapBuildings.js'
 
 const EMPTY = { type: 'FeatureCollection', features: [] }
 
-const ROUTE_LAYOUT = { 'line-cap': 'round', 'line-join': 'round' }
-
-// Widths grow with zoom so the walking line stays readable on a phone.
-const ROUTE_WIDTH = {
-  casing: ['interpolate', ['linear'], ['zoom'], 12, 9, 17, 18],
-  walk: ['interpolate', ['linear'], ['zoom'], 12, 6, 17, 12],
-  ride: ['interpolate', ['linear'], ['zoom'], 12, 5, 17, 10]
-}
-
-const THEME = {
-  dark: { walk: BRAND.pink, mrt: BRAND.yellow, bus: '#3bceac', taxi: '#ff4d00', casing: BRAND.ink },
-  light: { walk: BRAND.pink, mrt: BRAND.ink, bus: '#1a9e80', taxi: '#ff4d00', casing: '#ffffff' }
-}
-
 export const FENCE = { out: BRAND.pink, in: BRAND.yellow }
 
 export function addQuestLayers(map) {
   const beforeId = map.getLayer(BUILDING_LAYERS.extruded) ? BUILDING_LAYERS.extruded : undefined
-  map.addSource('zt-route', { type: 'geojson', data: EMPTY })
   map.addSource('zt-fence', { type: 'geojson', data: EMPTY })
 
   map.addLayer(
@@ -49,66 +34,6 @@ export function addQuestLayers(map) {
     },
     beforeId
   )
-  map.addLayer(
-    {
-      id: 'zt-route-casing',
-      type: 'line',
-      source: 'zt-route',
-      layout: ROUTE_LAYOUT,
-      paint: {
-        'line-width': ROUTE_WIDTH.casing,
-        'line-opacity': ['case', ['get', 'active'], 0.95, 0.5]
-      }
-    },
-    beforeId
-  )
-
-// Walking legs follow real streets (solid); MRT/taxi are crow-flies (dashed).
-  const routeLine = {
-    type: 'line',
-    source: 'zt-route',
-    layout: ROUTE_LAYOUT,
-    paint: {
-      'line-width': ROUTE_WIDTH.walk,
-      'line-opacity': ['case', ['get', 'active'], 1, 0.6]
-    }
-  }
-  map.addLayer(
-    { ...routeLine, id: 'zt-route-walk', filter: ['==', ['get', 'mode'], 'walk'] },
-    beforeId
-  )
-  map.addLayer(
-    {
-      ...routeLine,
-      id: 'zt-route-ride',
-      filter: ['!=', ['get', 'mode'], 'walk'],
-      paint: {
-        ...routeLine.paint,
-        'line-width': ROUTE_WIDTH.ride,
-        'line-dasharray': [1.2, 1.4]
-      }
-    },
-    beforeId
-  )
-}
-
-export function setQuestColors(map, isDark) {
-  if (!map.getLayer('zt-route-walk')) return
-  const colors = isDark ? THEME.dark : THEME.light
-  map.setPaintProperty('zt-route-walk', 'line-color', colors.walk)
-  map.setPaintProperty('zt-route-ride', 'line-color', ['match', ['get', 'mode'], 'mrt', colors.mrt, 'bus', colors.bus, colors.taxi])
-  map.setPaintProperty('zt-route-casing', 'line-color', colors.casing)
-}
-
-export function setRoute(map, segments) {
-  map.getSource('zt-route')?.setData({
-    type: 'FeatureCollection',
-    features: segments.map((segment) => ({
-      type: 'Feature',
-      properties: { mode: segment.mode, active: !!segment.active },
-      geometry: { type: 'LineString', coordinates: segment.coords }
-    }))
-  })
 }
 
 export function setFence(map, target, radiusMeters, isInside) {

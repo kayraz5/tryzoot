@@ -10,8 +10,7 @@ import { useMissionStore } from '../../model/stores/mission.js'
  */
 const routes = [
   // The landing page is "The Layover Flight": one continuous scroll-driven world
-  // (src/view/components/story/). The previous LandingView.vue is kept on disk and
-  // unreferenced, so reverting is a one-line change back to it.
+  // (src/view/components/story/).
   { path: '/', name: 'landing', component: () => import('../../view/views/StoryView.vue') },
   { path: '/auth', name: 'auth', component: () => import('../../view/views/AuthView.vue') },
   { path: '/onboard', name: 'onboard', component: () => import('../../view/views/OnboardView.vue'), meta: { auth: true } },
@@ -19,9 +18,6 @@ const routes = [
   { path: '/mission', name: 'mission-active', component: () => import('../../view/views/MissionView.vue'), meta: { auth: true, nav: true } },
   { path: '/mission/:id', name: 'mission', component: () => import('../../view/views/MissionView.vue'), meta: { auth: true, nav: true } },
   { path: '/map', name: 'map', component: () => import('../../view/views/MapView.vue'), meta: { auth: true, fullscreen: true } },
-  // Dressing room for the 3D traveller (src/view/components/character/traveller.js). No auth so it's
-  // quick to open while you're tweaking his outfits.
-  { path: '/wardrobe', name: 'wardrobe', component: () => import('../../view/views/WardrobeView.vue') },
   { path: '/place/:id', name: 'place', component: () => import('../../view/views/PlaceView.vue'), meta: { nav: true } },
   { path: '/passport', name: 'passport', component: () => import('../../view/views/PassportView.vue'), meta: { auth: true, nav: true } },
   { path: '/codex', name: 'codex', component: () => import('../../view/views/CodexView.vue'), meta: { auth: true, nav: true } },
@@ -32,8 +28,12 @@ const routes = [
   // Social quests: hosts open a window of stops, guests join part of it.
   { path: '/quests', name: 'quests', component: () => import('../../view/views/QuestsView.vue'), meta: { auth: true, nav: true } },
   { path: '/quests/:id', name: 'quest', component: () => import('../../view/views/QuestDetailView.vue'), meta: { auth: true, nav: true } },
-  { path: '/party/:id?', redirect: (to) => (to.params.id ? `/quests/${to.params.id}` : '/quests') },
-  ...(DEV_PANEL ? [{ path: '/dev', name: 'dev', component: () => import('../../view/views/DevView.vue'), meta: { auth: true, nav: true } }] : []),
+  ...(DEV_PANEL ? [
+    { path: '/dev', name: 'dev', component: () => import('../../view/views/DevView.vue'), meta: { auth: true, nav: true } },
+    // Dressing room for the 3D traveller (src/view/components/character/traveller.js). No auth so it's
+    // quick to open while you're tweaking his outfits.
+    { path: '/wardrobe', name: 'wardrobe', component: () => import('../../view/views/WardrobeView.vue') },
+  ] : []),
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 
