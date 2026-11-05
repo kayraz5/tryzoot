@@ -35,7 +35,8 @@ const eyewear = ref('none')
       v-model:fur="fur"
       v-model:hat="hat"
       v-model:eyewear="eyewear"
-      height="min(58dvh, 460px)" />
+      height="min(58dvh, 460px)"
+    />
   </div>
 </template>
 
@@ -57,5 +58,7 @@ header p {
   max-width: 52ch;
   margin-bottom: 1rem;
 }
-header code { color: var(--zt-ink); }
+header code {
+  color: var(--zt-ink);
+}
 </style>

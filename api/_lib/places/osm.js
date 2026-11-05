@@ -8,7 +8,8 @@ const OVERPASS_URLS = [
   'https://overpass.kumi.systems/api/interpreter'
 ]
 // Wikimedia and Overpass ask callers to identify themselves with a way to reach them
-const USER_AGENT = 'ZootLayoverApp/1.0 (https://github.com/kayraz5/zoot-; SMU IS216 student project)'
+const USER_AGENT =
+  'ZootLayoverApp/1.0 (https://github.com/kayraz5/zoot-; SMU IS216 student project)'
 
 export const OSM_QUERY = `[out:json][timeout:90];
 area["ISO3166-1"="SG"][admin_level=2]->.sg;
@@ -22,14 +23,14 @@ area["ISO3166-1"="SG"][admin_level=2]->.sg;
 out center tags;`
 
 const HAWKER_NAME = /hawker|food cent(re|er)|market/i
-const FOOD_COURT_CHAIN = /happy hawkers|kim san leng|koufu|kopitiam|food junction|food republic|coffee ?shop/i
-const GENERIC_NAME = /^(bunker|food court|canteen|toilets?|shelter|playground|market hall|gun emplacement.*)$|future site/i
+const FOOD_COURT_CHAIN =
+  /happy hawkers|kim san leng|koufu|kopitiam|food junction|food republic|coffee ?shop/i
+const GENERIC_NAME =
+  /^(bunker|food court|canteen|toilets?|shelter|playground|market hall|gun emplacement.*)$|future site/i
 
 export async function fetchOsmPlaces() {
   const json = await overpass(OSM_QUERY)
-  return json.elements
-    .map(toPlace)
-    .filter(Boolean)
+  return json.elements.map(toPlace).filter(Boolean)
 }
 
 // A busy server can take ~100 s, so 2 tries of up to 130 s each (fits the 5 minute cron limit)
@@ -85,7 +86,8 @@ function worthAdding(kind, tags) {
 }
 
 function kindFromTags(tags, name) {
-  if (tags.amenity === 'food_court') return HAWKER_NAME.test(name) && !FOOD_COURT_CHAIN.test(name) ? 'hawker' : null
+  if (tags.amenity === 'food_court')
+    return HAWKER_NAME.test(name) && !FOOD_COURT_CHAIN.test(name) ? 'hawker' : null
   if (tags.tourism === 'museum') return 'museum'
   if (tags.tourism === 'gallery') return 'arts'
   if (tags.tourism === 'viewpoint') return 'lookout'
@@ -116,8 +118,13 @@ export function parseOsmHours(raw) {
 
   const openDays = new Set()
   const ranges = []
-  for (const rule of text.split(';').map((r) => r.trim()).filter(Boolean)) {
-    const match = rule.match(/^(?:([A-Za-z,\- ]+?)\s+)?((?:\d{2}:\d{2}-\d{2}:\d{2},?\s*)+|off|closed)$/)
+  for (const rule of text
+    .split(';')
+    .map((r) => r.trim())
+    .filter(Boolean)) {
+    const match = rule.match(
+      /^(?:([A-Za-z,\- ]+?)\s+)?((?:\d{2}:\d{2}-\d{2}:\d{2},?\s*)+|off|closed)$/
+    )
     if (!match) return null
     const [, dayPart, timePart] = match
     const days = dayPart ? expandDays(dayPart) : OSM_DAYS.map((_, i) => i)
@@ -135,7 +142,10 @@ export function parseOsmHours(raw) {
   const open = Math.max(...ranges.map((r) => toMinutes(r[0][0])))
   const close = Math.min(...ranges.map((r) => closeMinutes(r[r.length - 1])))
   if (close - open < 60) return null
-  return { hours: [fixClose([fromMinutes(open), fromMinutes(close % 1440)])], closed_days: closedDays }
+  return {
+    hours: [fixClose([fromMinutes(open), fromMinutes(close % 1440)])],
+    closed_days: closedDays
+  }
 }
 
 function expandDays(part) {
@@ -156,8 +166,10 @@ function expandDays(part) {
 }
 
 const toMinutes = (hhmm) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5))
-const closeMinutes = ([open, close]) => (toMinutes(close) <= toMinutes(open) ? toMinutes(close) + 1440 : toMinutes(close))
-const fromMinutes = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+const closeMinutes = ([open, close]) =>
+  (toMinutes(close) <= toMinutes(open) ? toMinutes(close) + 1440 : toMinutes(close))
+const fromMinutes = (m) =>
+  `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
 // hours.js reads "23:59" as "until midnight"
 const fixClose = ([open, close]) => [open, close === '24:00' || close === '00:00' ? '23:59' : close]
 
@@ -169,7 +181,9 @@ export async function addWikipediaBlurbs(items, cachedBlurbs = new Map()) {
 
   const todo = items.filter((item) => !item.blurb)
   // Many link to a Malay/Tamil/Chinese article; Wikidata knows the English one
-  await addTitlesFromWikidata(todo.filter((item) => !item.wikipedia?.startsWith('en:') && item.wikidata))
+  await addTitlesFromWikidata(
+    todo.filter((item) => !item.wikipedia?.startsWith('en:') && item.wikidata)
+  )
 
   // Wikipedia rate-limits one-by-one requests, so ask for 20 intros at a time
   const withArticle = todo.filter((item) => item.wikipedia?.startsWith('en:'))
@@ -209,7 +223,9 @@ async function fetchIntros(titles) {
   if (!res.ok) throw new Error(`Wikipedia ${res.status}`)
   const { query = {} } = await res.json()
 
-  const renamed = new Map([...(query.normalized || []), ...(query.redirects || [])].map((r) => [r.from, r.to]))
+  const renamed = new Map(
+    [...(query.normalized || []), ...(query.redirects || [])].map((r) => [r.from, r.to])
+  )
   const byTitle = new Map((query.pages || []).map((page) => [page.title, page.extract || '']))
   const result = new Map()
   for (const title of titles) {
@@ -220,11 +236,27 @@ async function fetchIntros(titles) {
   return result
 }
 
-const NAME_FILLER = new Set(['the', 'of', 'and', 'park', 'mosque', 'masjid', 'church', 'temple', 'museum', 'centre', 'singapore'])
+const NAME_FILLER = new Set([
+  'the',
+  'of',
+  'and',
+  'park',
+  'mosque',
+  'masjid',
+  'church',
+  'temple',
+  'museum',
+  'centre',
+  'singapore'
+])
 
 function mentionsName(text, name) {
   const lower = text.toLowerCase()
-  const words = name.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter((w) => w.length > 2 && !NAME_FILLER.has(w))
+  const words = name
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length > 2 && !NAME_FILLER.has(w))
   return words.length === 0 || words.some((w) => lower.includes(w))
 }
 

@@ -36,7 +36,9 @@ describe('catalog service', () => {
     expect(catalog.value.length).toBeGreaterThan(0)
     expect(catalog.value.every((place) => place.active !== false)).toBe(true)
     expect(catalog.value.every((place) => Array.isArray(place.tags))).toBe(true)
-    expect(catalog.value.every((place) => typeof place.mrt === 'string' && place.mrt.length > 0)).toBe(true)
+    expect(
+      catalog.value.every((place) => typeof place.mrt === 'string' && place.mrt.length > 0)
+    ).toBe(true)
   })
 
   it('keeps inactive bundled places available through placeById', () => {
@@ -86,7 +88,14 @@ describe('catalog service', () => {
     const bundledIds = catalog.value.map((place) => place.id)
     const warning = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const fresh = await importFreshCatalog({ configured: true })
-    const fetchMock = stubFetch([['/rest/v1/places', () => { throw new Error('database unavailable') }]])
+    const fetchMock = stubFetch([
+      [
+        '/rest/v1/places',
+        () => {
+          throw new Error('database unavailable')
+        }
+      ]
+    ])
 
     await fresh.loadCatalog()
 

@@ -11,7 +11,7 @@ function screenAt(angle) {
 
 beforeEach(() => {
   vi.resetModules()
-// jsdom has no DeviceOrientationEvent; the listener only needs the constructor.
+  // jsdom has no DeviceOrientationEvent; the listener only needs the constructor.
   vi.stubGlobal('DeviceOrientationEvent', function DeviceOrientationEvent() {})
 })
 
@@ -41,7 +41,7 @@ describe('compass heading', () => {
   })
 
   it('corrects for a landscape screen, so the cone tracks the phone', async () => {
-// Device top points north, page rotated 90: the top of the SCREEN points east.
+    // Device top points north, page rotated 90: the top of the SCREEN points east.
     screenAt(90)
     expect(await headingFrom({ webkitCompassHeading: 0 })).toBe(90)
   })
@@ -86,7 +86,9 @@ describe('compass heading', () => {
     screenAt(0)
     const { startHeading, stopHeading, geo, hasHeading } = await loadGeo()
     await startHeading()
-    window.dispatchEvent(Object.assign(new Event('deviceorientationabsolute'), { webkitCompassHeading: 42 }))
+    window.dispatchEvent(
+      Object.assign(new Event('deviceorientationabsolute'), { webkitCompassHeading: 42 })
+    )
     expect(hasHeading()).toBe(true)
 
     stopHeading()

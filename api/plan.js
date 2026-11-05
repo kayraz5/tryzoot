@@ -2,8 +2,8 @@
 import { groqConfig, groqJson, tooLarge } from './_lib/groq.js'
 
 /**
- * POST /api/plan — Groq chooses places and writes copy. It never outputs minutes
- * or coordinates; the client validates the reply (zoot.choice.v1) and times
+ * POST /api/plan — Groq chooses places and writes copy.
+ * It never outputs minutes or coordinates; the client validates the reply (zoot.choice.v1) and times
  * every leg with Turf + the MRT matrix. Any failure → client falls back.
  */
 const SYSTEM = `You are the itinerary chooser for Zoot, a layover side-quest app in Singapore.
@@ -50,10 +50,14 @@ Each pick has exactly the keys "place_id" and "why". Never include coordinates, 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' })
   const { key } = groqConfig()
-  if (!key) return res.status(503).json({ error: 'GROQ_API_KEY is not set; client should use the deterministic planner.' })
+  if (!key)
+    return res
+      .status(503)
+      .json({ error: 'GROQ_API_KEY is not set; client should use the deterministic planner.' })
   const body = req.body || {}
   if (tooLarge(body)) return res.status(413).json({ error: 'payload too large' })
-  if (!Array.isArray(body.catalog) || !body.catalog.length) return res.status(400).json({ error: 'catalog required' })
+  if (!Array.isArray(body.catalog) || !body.catalog.length)
+    return res.status(400).json({ error: 'catalog required' })
 
   try {
     const { model, data } = await groqJson({

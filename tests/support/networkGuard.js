@@ -7,7 +7,13 @@ const blockedMessage = (method, url) => `Network request blocked in unit test: $
 
 function requestParts(input, init) {
   const isRequest = typeof Request !== 'undefined' && input instanceof Request
-  const url = String(isRequest ? input.url : (input && typeof input === 'object' && 'href' in input ? input.href : input))
+  const url = String(
+    isRequest
+      ? input.url
+      : (input && typeof input === 'object' && 'href' in input
+        ? input.href
+        : input
+  ))
   const method = String(init?.method ?? (isRequest ? input.method : 'GET')).toUpperCase()
   return { url, method }
 }

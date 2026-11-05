@@ -10,9 +10,19 @@ const NOON_SGT = Date.UTC(2026, 10, 2, 4, 0)
 
 function ctx(extra) {
   return {
-    catalog: places, origin: T3, startMs: NOON_SGT, mustReturnMs: NOON_SGT + 9 * 3600e3, cleared: true,
-    style: 'budget', interests: ['hawker', 'gardens'], energy: 'med', indoorPref: 'any', maxWalk: 15, partySize: 1,
-    rainAt: () => 0, ...extra
+    catalog: places,
+    origin: T3,
+    startMs: NOON_SGT,
+    mustReturnMs: NOON_SGT + 9 * 3600e3,
+    cleared: true,
+    style: 'budget',
+    interests: ['hawker', 'gardens'],
+    energy: 'med',
+    indoorPref: 'any',
+    maxWalk: 15,
+    partySize: 1,
+    rainAt: () => 0,
+    ...extra
   }
 }
 

@@ -13,18 +13,29 @@ export function useMissionNav() {
   const store = useMissionStore()
 
   const HOME_RADIUS_M = 300
-  const modeIcon = { walk: 'bi-person-walking', mrt: 'bi-train-front-fill', bus: 'bi-bus-front-fill', taxi: 'bi-taxi-front-fill' }
+  const modeIcon = {
+    walk: 'bi-person-walking',
+    mrt: 'bi-train-front-fill',
+    bus: 'bi-bus-front-fill',
+    taxi: 'bi-taxi-front-fill'
+  }
 
   const demo = computed(() => geo.fake) // Demo-Walk = fake GPS moved with WASD / taps
   const mission = computed(() => store.mission)
   const next = computed(() => store.nextLeg)
   const here = computed(() => (hasFix() ? { lat: geo.lat, lng: geo.lng } : null))
-  const travelOptions = computed(() => ({ maxWalk: mission.value?.prefs?.maxWalk, transport: mission.value?.prefs?.transport, style: mission.value?.style }))
+  const travelOptions = computed(() => ({
+    maxWalk: mission.value?.prefs?.maxWalk,
+    transport: mission.value?.prefs?.transport,
+    style: mission.value?.style
+  }))
 
   const liveTravel = computed(() =>
     next.value && here.value ? travel(here.value, next.value, travelOptions.value) : null
   )
-  const distance = computed(() => (next.value && here.value ? distanceM(here.value, next.value) : null))
+  const distance = computed(() =>
+    (next.value && here.value ? distanceM(here.value, next.value) : null
+  ))
 
   const stopNumber = computed(() => {
     const visits = store.visitLegs
@@ -65,8 +76,10 @@ export function useMissionNav() {
   const guidance = computed(() => {
     const travelInfo = liveTravel.value
     if (!travelInfo || !here.value) return null
-    if (travelInfo.mode !== 'walk') return { icon: modeIcon[travelInfo.mode], text: travelInfo.detail }
-    if (distance.value < 40) return { icon: 'bi-flag-fill', text: "You're there. Look around for the spot." }
+    if (travelInfo.mode !== 'walk')
+      return { icon: modeIcon[travelInfo.mode], text: travelInfo.detail }
+    if (distance.value < 40)
+      return { icon: 'bi-flag-fill', text: "You're there. Look around for the spot." }
     return { icon: 'bi-person-walking', text: `Walk ${formatDistance(distance.value)} to the stop` }
   })
 

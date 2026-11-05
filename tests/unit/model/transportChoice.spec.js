@@ -23,7 +23,9 @@ describe('transport choice: how the traveller gets around beyond walking distanc
     const car = travel(changiT3, cityHall, { transport: 'car', atMs: afternoon })
     expect(car.mode).toBe('taxi')
     expect(car.minutes).toBe(taxiMinutes(changiT3, cityHall))
-    expect(car.minutes).toBeLessThan(travel(changiT3, cityHall, { transport: 'transit', atMs: afternoon }).minutes)
+    expect(car.minutes).toBeLessThan(
+      travel(changiT3, cityHall, { transport: 'transit', atMs: afternoon }).minutes
+    )
   })
 
   it('public transport: MRT where it helps, never a taxi while trains and buses run', () => {
@@ -53,11 +55,34 @@ describe('switching transport mid-plan (map card): the stops ahead are re-timed'
   it('car → shorter rides and earlier arrivals than public transport', async () => {
     const { retimeMission } = await import('../../../src/model/services/planner.js')
     const at = (h) => new Date(Date.parse('2030-01-15T00:00:00+08:00') + h * 3600e3).toISOString()
-    const leg = (place_id, p) => ({ kind: 'visit', status: 'pending', place_id, name: place_id, ...p, stay_min: 30, arrive_iso: at(13), depart_iso: at(13.5) })
+    const leg = (place_id, p) => ({
+      kind: 'visit',
+      status: 'pending',
+      place_id,
+      name: place_id,
+      ...p,
+      stay_min: 30,
+      arrive_iso: at(13),
+      depart_iso: at(13.5)
+    })
     const mission = (transport) => ({
-      origin: { label: 'Changi', ...changiT3 }, start_iso: at(12), must_return_iso: at(23), buffers: { exit_min: 30 }, style: 'budget',
+      origin: { label: 'Changi', ...changiT3 },
+      start_iso: at(12),
+      must_return_iso: at(23),
+      buffers: { exit_min: 30 },
+      style: 'budget',
       prefs: { transport },
-      legs: [leg('city-hall', cityHall), leg('maxwell', maxwell), { kind: 'return', status: 'pending', arrive_by: at(22), arrive_iso: at(20), depart_iso: at(20) }]
+      legs: [
+        leg('city-hall', cityHall),
+        leg('maxwell', maxwell),
+        {
+          kind: 'return',
+          status: 'pending',
+          arrive_by: at(22),
+          arrive_iso: at(20),
+          depart_iso: at(20)
+        }
+      ]
     })
     const start = { point: changiT3, ms: Date.parse(at(12.5)) }
     const byCar = retimeMission(mission('car'), { start, catalogById: new Map() }).mission

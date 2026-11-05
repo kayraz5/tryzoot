@@ -1,7 +1,11 @@
 // EDITOR: KAYRA
 import { computed, ref, watch } from 'vue'
 import { distanceM } from '../../../../model/services/distance.js'
-import { getBusAlternative, transitSteps, currentPartIndex } from '../../../../model/services/transit/index.js'
+import {
+  getBusAlternative,
+  transitSteps,
+  currentPartIndex
+} from '../../../../model/services/transit/index.js'
 import { addTransitLayers, syncBusStops, setTransitVisible, TAPPABLE_LAYERS } from './layers.js'
 
 const BUS_STOPS_RELOAD_M = 400 // reload nearby bus stops after the camera moves this far
@@ -23,7 +27,9 @@ export function useTransit({ getMap, liveRoute, next, here, liveTravel }) {
   let busStopsAt = null // map centre bus stops were last loaded around
 
   // Steps only for the leg actually being travelled (bus/MRT legs have parts; walks don't).
-  const liveParts = computed(() => (liveRoute.value?.to === next.value ? liveRoute.value?.parts : null) || null)
+  const liveParts = computed(
+    () => (liveRoute.value?.to === next.value ? liveRoute.value?.parts : null) || null
+  )
   const liveSteps = computed(() => transitSteps(liveParts.value))
   const liveStepIndex = computed(() => currentPartIndex(liveParts.value, here.value))
 
@@ -33,7 +39,13 @@ export function useTransit({ getMap, liveRoute, next, here, liveTravel }) {
     if (!transitVisible.value || !map) return
     const { x, y } = event.point
     const layers = TAPPABLE_LAYERS.filter((id) => map.getLayer(id))
-    const hit = map.queryRenderedFeatures([[x - 14, y - 14], [x + 14, y + 14]], { layers })[0]
+    const hit = map.queryRenderedFeatures(
+      [
+        [x - 14, y - 14],
+        [x + 14, y + 14]
+      ],
+      { layers }
+    )[0]
     if (!hit) return
     const [lng, lat] = hit.geometry.coordinates
     selectedStop.value = { ...hit.properties, lat, lng }
@@ -56,13 +68,16 @@ export function useTransit({ getMap, liveRoute, next, here, liveTravel }) {
   }
 
   // A taxi leg (no train nearby): is there one bus that does the job?
-  watch(() => [next.value, liveTravel.value?.mode], async () => {
-    busAlt.value = null
-    const target = next.value
-    if (!target || !here.value || liveTravel.value?.mode !== 'taxi') return
-    const alt = await getBusAlternative({ ...here.value }, target)
-    if (next.value === target) busAlt.value = alt
-  })
+  watch(
+    () => [next.value, liveTravel.value?.mode],
+    async () => {
+      busAlt.value = null
+      const target = next.value
+      if (!target || !here.value || liveTravel.value?.mode !== 'taxi') return
+      const alt = await getBusAlternative({ ...here.value }, target)
+      if (next.value === target) busAlt.value = alt
+    }
+  )
 
   watch(transitVisible, (visible) => {
     const map = getMap()

@@ -110,7 +110,9 @@ describe('trip store exported helpers', () => {
 
     expect(layoverError(NaN, T('18:00'), now)).toBe('Enter both times.')
     expect(layoverError(T('08:00'), T('09:00'), now)).toBe('That flight has already left.')
-    expect(layoverError(T('10:00'), T('10:00'), now)).toBe('Your next flight has to leave after you land.')
+    expect(layoverError(T('10:00'), T('10:00'), now)).toBe(
+      'Your next flight has to leave after you land.'
+    )
     expect(layoverError(T('10:00'), T('14:59'), now)).toBe(
       'Layovers need at least 5 h to leave the airport safely.',
     )

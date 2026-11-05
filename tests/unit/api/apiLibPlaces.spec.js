@@ -3,19 +3,10 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mergePlaces } from '../../../api/_lib/places/merge.js'
-import {
-  addWikipediaBlurbs,
-  fetchOsmPlaces,
-  parseOsmHours,
-} from '../../../api/_lib/places/osm.js'
+import { addWikipediaBlurbs, fetchOsmPlaces, parseOsmHours, } from '../../../api/_lib/places/osm.js'
 import { placesDbFromEnv, savePlaces } from '../../../api/_lib/places/supabase.js'
 import { supabaseRest } from '../../../api/_lib/supabase.js'
-import {
-  jsonResponse,
-  stubFetch,
-  textResponse,
-  useCleanSlate,
-} from '../../support/unit/index.js'
+import { jsonResponse, stubFetch, textResponse, useCleanSlate, } from '../../support/unit/index.js'
 
 useCleanSlate()
 
@@ -49,8 +40,16 @@ describe('places merge helper', () => {
 
   it.each([
     ['a place within 40 metres', seedPlace(), osmPlace({ lat: 1.35631, lng: 103.98661 })],
-    ['the same name within 3 kilometres', seedPlace({ name: 'Exact Place' }), osmPlace({ name: 'Exact Place', lat: 1.3563, lng: 103.996 })],
-    ['a similar name within 700 metres', seedPlace({ name: 'Garden Museum' }), osmPlace({ name: 'Garden Gallery', lat: 1.359, lng: 103.9866 })],
+    [
+      'the same name within 3 kilometres',
+      seedPlace({ name: 'Exact Place' }),
+      osmPlace({ name: 'Exact Place', lat: 1.3563, lng: 103.996 })
+    ],
+    [
+      'a similar name within 700 metres',
+      seedPlace({ name: 'Garden Museum' }),
+      osmPlace({ name: 'Garden Gallery', lat: 1.359, lng: 103.9866 })
+    ],
   ])('drops %s instead of adding a duplicate', (_description, seed, item) => {
     const places = mergePlaces({ seed: [seed], osm: [item] })
 
@@ -61,13 +60,15 @@ describe('places merge helper', () => {
   it('assigns a slug, nearest area, parsed hours and verification to a new OSM place', () => {
     const places = mergePlaces({
       seed: [seedPlace()],
-      osm: [osmPlace({
-        name: 'National Art House',
-        ref: 'osm:way/22',
-        lat: 1.37,
-        lng: 103.99,
-        hoursText: 'Mo-Su 10:00-18:00',
-      })],
+      osm: [
+        osmPlace({
+          name: 'National Art House',
+          ref: 'osm:way/22',
+          lat: 1.37,
+          lng: 103.99,
+          hoursText: 'Mo-Su 10:00-18:00',
+        })
+      ],
     })
 
     expect(places[1]).toMatchObject({
@@ -97,16 +98,18 @@ describe('places merge helper', () => {
   })
 
   it('keeps a previous OSM place as inactive when it is missing from the new response', () => {
-    const previous = [{
-      id: 'old-place',
-      name: 'Old Place',
-      area: 'Changi',
-      lat: 1.36,
-      lng: 103.99,
-      source: 'osm',
-      source_ref: 'osm:node/old',
-      active: true,
-    }]
+    const previous = [
+      {
+        id: 'old-place',
+        name: 'Old Place',
+        area: 'Changi',
+        lat: 1.36,
+        lng: 103.99,
+        source: 'osm',
+        source_ref: 'osm:node/old',
+        active: true,
+      }
+    ]
 
     const places = mergePlaces({ seed: [seedPlace()], osm: [], previous })
 
@@ -114,16 +117,18 @@ describe('places merge helper', () => {
   })
 
   it('preserves a previous source reference ID across syncs', () => {
-    const previous = [{
-      id: 'stable-place-id',
-      name: 'Previous Name',
-      area: 'Changi',
-      lat: 1.36,
-      lng: 103.99,
-      source: 'osm',
-      source_ref: 'osm:node/42',
-      active: true,
-    }]
+    const previous = [
+      {
+        id: 'stable-place-id',
+        name: 'Previous Name',
+        area: 'Changi',
+        lat: 1.36,
+        lng: 103.99,
+        source: 'osm',
+        source_ref: 'osm:node/42',
+        active: true,
+      }
+    ]
     const places = mergePlaces({
       seed: [seedPlace()],
       previous,
@@ -152,19 +157,52 @@ describe('OSM places helper', () => {
 
   it('maps named node and way elements while filtering unusable elements', async () => {
     const fetchMock = stubFetch([
-      ['overpass-api.de', () => jsonResponse({
-        elements: [
-          { type: 'node', id: 1, lat: 1.3, lon: 103.8, tags: { name: 'Museum Node', tourism: 'museum' } },
-          { type: 'way', id: 2, center: { lat: 1.31, lon: 103.81 }, tags: { name: 'Gallery Way', tourism: 'gallery', wikidata: 'Q2' } },
-          { type: 'node', id: 3, lat: 1.32, lon: 103.82, tags: { tourism: 'museum' } },
-          { type: 'node', id: 4, lat: 1.33, lon: 103.83, tags: { name: 'Bunker', historic: 'fort', website: 'https://example.test' } },
-        ],
-      })],
+      [
+        'overpass-api.de',
+        () =>
+          jsonResponse({
+            elements: [
+              {
+                type: 'node',
+                id: 1,
+                lat: 1.3,
+                lon: 103.8,
+                tags: { name: 'Museum Node', tourism: 'museum' }
+              },
+              {
+                type: 'way',
+                id: 2,
+                center: { lat: 1.31, lon: 103.81 },
+                tags: { name: 'Gallery Way', tourism: 'gallery', wikidata: 'Q2' }
+              },
+              { type: 'node', id: 3, lat: 1.32, lon: 103.82, tags: { tourism: 'museum' } },
+              {
+                type: 'node',
+                id: 4,
+                lat: 1.33,
+                lon: 103.83,
+                tags: { name: 'Bunker', historic: 'fort', website: 'https://example.test' }
+              },
+            ],
+          })
+      ],
     ])
 
     await expect(fetchOsmPlaces()).resolves.toEqual([
-      expect.objectContaining({ ref: 'osm:node/1', name: 'Museum Node', lat: 1.3, lng: 103.8, kind: 'museum' }),
-      expect.objectContaining({ ref: 'osm:way/2', name: 'Gallery Way', lat: 1.31, lng: 103.81, kind: 'arts' }),
+      expect.objectContaining({
+        ref: 'osm:node/1',
+        name: 'Museum Node',
+        lat: 1.3,
+        lng: 103.8,
+        kind: 'museum'
+      }),
+      expect.objectContaining({
+        ref: 'osm:way/2',
+        name: 'Gallery Way',
+        lat: 1.31,
+        lng: 103.81,
+        kind: 'arts'
+      }),
     ])
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
@@ -191,10 +229,14 @@ describe('OSM places helper', () => {
 
   it('uses cached Wikipedia blurbs without making a Wikipedia request', async () => {
     const item = osmPlace({ ref: 'osm:node/cached', name: 'Cached Place' })
-    const fetchMock = vi.fn(() => { throw new Error('Wikipedia should not be fetched') })
+    const fetchMock = vi.fn(() => {
+      throw new Error('Wikipedia should not be fetched')
+    })
     vi.stubGlobal('fetch', fetchMock)
 
-    await expect(addWikipediaBlurbs([item], new Map([[item.ref, 'A cached description.']]))).resolves.toEqual([item])
+    await expect(
+      addWikipediaBlurbs([item], new Map([[item.ref, 'A cached description.']]))
+    ).resolves.toEqual([item])
     expect(item.blurb).toBe('A cached description.')
     expect(fetchMock).not.toHaveBeenCalled()
   })
@@ -210,7 +252,11 @@ describe('places sync index helper', () => {
     addWikipediaBlurbsMock.mockReset()
     vi.doMock('../../../api/_lib/places/osm.js', async () => {
       const actual = await vi.importActual('../../../api/_lib/places/osm.js')
-      return { ...actual, fetchOsmPlaces: fetchOsmPlacesMock, addWikipediaBlurbs: addWikipediaBlurbsMock }
+      return {
+        ...actual,
+        fetchOsmPlaces: fetchOsmPlacesMock,
+        addWikipediaBlurbs: addWikipediaBlurbsMock
+      }
     })
   })
 
@@ -227,7 +273,12 @@ describe('places sync index helper', () => {
     const result = await syncPlaces({ seed: [seedPlace()] })
 
     expect(result.ok).toBe(true)
-    expect(result.report).toMatchObject({ osm: 1, total: 2, active: 2, bySource: { seed: 1, osm: 1 } })
+    expect(result.report).toMatchObject({
+      osm: 1,
+      total: 2,
+      active: 2,
+      bySource: { seed: 1, osm: 1 }
+    })
     expect(result.places).toHaveLength(2)
     expect(addWikipediaBlurbsMock).toHaveBeenCalledWith(osm, expect.any(Map))
   })
@@ -287,27 +338,23 @@ describe('Supabase places helper', () => {
   })
 
   it('throws a useful error when Supabase REST fails', async () => {
-    stubFetch([
-      ['supabase.test', () => textResponse('database unavailable', 500)],
-    ])
+    stubFetch([['supabase.test', () => textResponse('database unavailable', 500)],])
     const db = supabaseRest('https://supabase.test', 'sb_secret_test')
 
-    await expect(db.select('places', 'select=*')).rejects.toThrow('Supabase 500: database unavailable')
+    await expect(db.select('places', 'select=*')).rejects.toThrow(
+      'Supabase 500: database unavailable'
+    )
   })
 
   it('returns null for a successful Supabase 204 response', async () => {
-    stubFetch([
-      ['supabase.test', () => textResponse('', 204)],
-    ])
+    stubFetch([['supabase.test', () => textResponse('', 204)],])
     const db = supabaseRest('https://supabase.test', 'sb_secret_test')
 
     await expect(db.upsert('places', [])).resolves.toBeNull()
   })
 
   it('sends JWT keys in the Supabase Authorization header', async () => {
-    const fetchMock = stubFetch([
-      ['supabase.test', () => jsonResponse([])],
-    ])
+    const fetchMock = stubFetch([['supabase.test', () => jsonResponse([])],])
     const db = supabaseRest('https://supabase.test', 'eyJservice-role-key')
 
     await expect(db.select('places', 'select=id')).resolves.toEqual([])

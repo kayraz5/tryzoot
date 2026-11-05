@@ -14,7 +14,9 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' })
   const { start, end, profile } = req.body || {}
   if (!Array.isArray(start) || !Array.isArray(end) || !ORS_PROFILE[profile]) {
-    return res.status(400).json({ error: 'start, end ([lng,lat]) and profile (walk|taxi) required' })
+    return res
+      .status(400)
+      .json({ error: 'start, end ([lng,lat]) and profile (walk|taxi) required' })
   }
 
   const db = supabaseFromEnv()
@@ -22,7 +24,10 @@ export default async function handler(req, res) {
 
   if (db) {
     try {
-      const rows = await db.select('route_cache', `id=eq.${encodeURIComponent(key)}&select=geometry`)
+      const rows = await db.select(
+        'route_cache',
+        `id=eq.${encodeURIComponent(key)}&select=geometry`
+      )
       if (rows?.[0]) return res.status(200).json(rows[0].geometry)
     } catch (err) {
       console.error('[api/route] cache read failed', err) // non-fatal — fall through to a live call
@@ -35,20 +40,33 @@ export default async function handler(req, res) {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS)
   try {
-    const url = `https://api.openrouteservice.org/v2/directions/${ORS_PROFILE[profile]}` +
+    const url =
+      `https://api.openrouteservice.org/v2/directions/${ORS_PROFILE[profile]}` +
       `?api_key=${apiKey}&start=${start[0]},${start[1]}&end=${end[0]},${end[1]}`
     const r = await fetch(url, { signal: ctrl.signal })
     if (!r.ok) return res.status(r.status === 429 ? 429 : 502).json({ error: `ORS ${r.status}` })
     const data = await r.json()
     const feature = data.features?.[0]
-    if (!feature?.geometry?.coordinates) return res.status(502).json({ error: 'ORS returned no route' })
-    const result = { coords: feature.geometry.coordinates, distance_m: feature.properties?.segments?.[0]?.distance ?? null }
+    if (!feature?.geometry?.coordinates)
+      return res.status(502).json({ error: 'ORS returned no route' })
+    const result = {
+      coords: feature.geometry.coordinates,
+      distance_m: feature.properties?.segments?.[0]?.distance ?? null
+    }
 
     if (db) {
-      db.upsert('route_cache', [{
-        id: key, profile, start_lng: start[0], start_lat: start[1], end_lng: end[0], end_lat: end[1],
-        geometry: result, provider: 'ors'
-      }]).catch((err) => console.error('[api/route] cache write failed', err)) // non-fatal
+      db.upsert('route_cache', [
+        {
+          id: key,
+          profile,
+          start_lng: start[0],
+          start_lat: start[1],
+          end_lng: end[0],
+          end_lat: end[1],
+          geometry: result,
+          provider: 'ors'
+        }
+      ]).catch((err) => console.error('[api/route] cache write failed', err)) // non-fatal
     }
 
     return res.status(200).json(result)

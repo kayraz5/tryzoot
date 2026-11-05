@@ -17,38 +17,64 @@ const passport = usePassportStore()
 const d = useTripStore().draft
 
 const MESSAGES = {
-	no: { tone: 'warn', icon: 'bi-exclamation-triangle-fill', text: 'Your passport may need a Singapore visa to leave the airport.' },
-	ask: { tone: 'warn', icon: 'bi-question-circle-fill', text: 'One question to check you can leave the airport.' },
-	none: { tone: 'info', icon: 'bi-passport', text: 'Add your passport to check you can leave the airport.' },
-	yes: { tone: 'ok', icon: 'bi-check-circle-fill', text: 'Your passport can leave the airport.' }
+  no: {
+    tone: 'warn',
+    icon: 'bi-exclamation-triangle-fill',
+    text: 'Your passport may need a Singapore visa to leave the airport.'
+  },
+  ask: {
+    tone: 'warn',
+    icon: 'bi-question-circle-fill',
+    text: 'One question to check you can leave the airport.'
+  },
+  none: {
+    tone: 'info',
+    icon: 'bi-passport',
+    text: 'Add your passport to check you can leave the airport.'
+  },
+  yes: { tone: 'ok', icon: 'bi-check-circle-fill', text: 'Your passport can leave the airport.' }
 }
 const open = ref(false)
 const touched = ref(false) // opened on this page: keep showing it after the answer turns 'yes'
 const message = computed(() => {
-	const status = passport.canLeaveAirport
-	if (status === undefined || (status === 'yes' && !touched.value)) return null
-	return MESSAGES[status ?? 'none'] || null
+  const status = passport.canLeaveAirport
+  if (status === undefined || (status === 'yes' && !touched.value)) return null
+  return MESSAGES[status ?? 'none'] || null
 })
 function toggle() {
-	open.value = !open.value
-	touched.value = true
+  open.value = !open.value
+  touched.value = true
 }
 </script>
 
 <template>
-	<div v-if="message && !d.entryDismissed" class="entry-drop" :class="message.tone" role="note">
-		<div class="entry-head">
-			<button type="button" class="entry-toggle" :aria-expanded="open" aria-controls="entry-check" @click="toggle">
-				<i class="bi" :class="message.icon" aria-hidden="true"></i>
-				<span class="flex-grow-1">{{ message.text }}</span>
-				<span class="fw-800 nowrap">{{ open ? 'Hide' : 'Check' }} <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i></span>
-			</button>
-			<button type="button" class="btn-close" aria-label="Dismiss" @click="d.entryDismissed = true"></button>
-		</div>
-		<div v-if="open" id="entry-check" class="entry-body">
-			<EntryCheck embedded />
-		</div>
-	</div>
+  <div v-if="message && !d.entryDismissed" class="entry-drop" :class="message.tone" role="note">
+    <div class="entry-head">
+      <button
+        type="button"
+        class="entry-toggle"
+        :aria-expanded="open"
+        aria-controls="entry-check"
+        @click="toggle"
+      >
+        <i class="bi" :class="message.icon" aria-hidden="true"></i>
+        <span class="flex-grow-1">{{ message.text }}</span>
+        <span class="fw-800 nowrap"
+          >{{ open ? 'Hide' : 'Check' }}
+          <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'"></i
+        ></span>
+      </button>
+      <button
+        type="button"
+        class="btn-close"
+        aria-label="Dismiss"
+        @click="d.entryDismissed = true"
+      ></button>
+    </div>
+    <div v-if="open" id="entry-check" class="entry-body">
+      <EntryCheck embedded />
+    </div>
+  </div>
 </template>
 
 <style scoped>

@@ -25,18 +25,24 @@ const savedOnly = ref(false) // the Saved view: same grid, narrowed to what I bo
 const areas = computed(() => [...new Set(catalog.value.map((p) => p.area))].sort())
 
 const results = computed(() => {
-	const q = query.value.trim().toLowerCase()
-	const wanted = TILES.filter((tile) => interests.value.includes(tile.id)).flatMap((tile) => tile.tags)
-	const t = now()
-	return catalog.value
-		.filter((p) => !savedOnly.value || savedIds.value.includes(p.id))
-		.filter((p) => !q || [p.name, p.area, ...(p.tags || [])].some((s) => s?.toLowerCase().includes(q)))
-		.filter((p) => !wanted.length || wanted.some((tag) => p.tags?.includes(tag)))
-		.filter((p) => !area.value || p.area === area.value)
-		.filter((p) => !openNow.value || (p.hours_verified !== false && isOpenDuringVisit(p, t, t + 60000)))
-		.filter((p) => !indoorOnly.value || p.indoor)
-		.filter((p) => !freeOnly.value || !p.cost_band)
-		.sort((a, b) => a.name.localeCompare(b.name))
+  const q = query.value.trim().toLowerCase()
+  const wanted = TILES.filter((tile) => interests.value.includes(tile.id)).flatMap(
+    (tile) => tile.tags
+  )
+  const t = now()
+  return catalog.value
+    .filter((p) => !savedOnly.value || savedIds.value.includes(p.id))
+    .filter(
+      (p) => !q || [p.name, p.area, ...(p.tags || [])].some((s) => s?.toLowerCase().includes(q))
+    )
+    .filter((p) => !wanted.length || wanted.some((tag) => p.tags?.includes(tag)))
+    .filter((p) => !area.value || p.area === area.value)
+    .filter(
+      (p) => !openNow.value || (p.hours_verified !== false && isOpenDuringVisit(p, t, t + 60000))
+    )
+    .filter((p) => !indoorOnly.value || p.indoor)
+    .filter((p) => !freeOnly.value || !p.cost_band)
+    .sort((a, b) => a.name.localeCompare(b.name))
 })
 
 // Render in pages of 24 (the catalog can hold hundreds of places); more load as you near the end.
@@ -50,103 +56,180 @@ watch(results, () => (limit.value = PAGE)) // new filters start from the top
 const sentinel = ref(null)
 let observer = null
 onMounted(() => {
-	if (typeof IntersectionObserver === 'undefined') return
-	observer = new IntersectionObserver((entries) => entries.some((e) => e.isIntersecting) && remaining.value > 0 && showMore(), { rootMargin: '600px' })
-	watch(sentinel, (el, old) => {
-		if (old) observer.unobserve(old)
-		if (el) observer.observe(el)
-	}, { immediate: true })
+  if (typeof IntersectionObserver === 'undefined') return
+  observer = new IntersectionObserver(
+    (entries) => entries.some((e) => e.isIntersecting) && remaining.value > 0 && showMore(),
+    { rootMargin: '600px' }
+  )
+  watch(
+    sentinel,
+    (el, old) => {
+      if (old) observer.unobserve(old)
+      if (el) observer.observe(el)
+    },
+    { immediate: true }
+  )
 })
 onBeforeUnmount(() => observer?.disconnect())
 
 function toggleInterest(id) {
-	interests.value = interests.value.includes(id) ? interests.value.filter((x) => x !== id) : [...interests.value, id]
+  interests.value = interests.value.includes(id)
+    ? interests.value.filter((x) => x !== id)
+    : [...interests.value, id]
 }
 
-const filtered = computed(() => Boolean(query.value || interests.value.length || area.value || openNow.value || indoorOnly.value || freeOnly.value))
+const filtered = computed(() =>
+  Boolean(
+    query.value ||
+    interests.value.length ||
+    area.value ||
+    openNow.value ||
+    indoorOnly.value ||
+    freeOnly.value
+  )
+)
 function clearAll() {
-	query.value = ''
-	interests.value = []
-	area.value = ''
-	openNow.value = indoorOnly.value = freeOnly.value = false
+  query.value = ''
+  interests.value = []
+  area.value = ''
+  openNow.value = indoorOnly.value = freeOnly.value = false
 }
 </script>
 
 <template>
-	<main class="zt-page zt-page-wide explore">
-		<header class="mb-3">
-			<div class="d-flex align-items-start justify-content-between gap-2">
-				<h1 class="zt-display mb-1 title">{{ savedOnly ? 'Saved places' : 'Explore Singapore' }}</h1>
-				<!-- Switches the same grid between the whole catalogue and just my
+  <main class="zt-page zt-page-wide explore">
+    <header class="mb-3">
+      <div class="d-flex align-items-start justify-content-between gap-2">
+        <h1 class="zt-display mb-1 title">
+          {{ savedOnly ? 'Saved places' : 'Explore Singapore' }}
+        </h1>
+        <!-- Switches the same grid between the whole catalogue and just my
 				     bookmarks, so search and filters keep working either way. -->
-				<button
-					type="button"
-					class="zt-chip saved-toggle"
-					:class="{ active: savedOnly }"
-					:aria-pressed="savedOnly"
-					:title="savedOnly ? 'Show every place' : 'Show only places I have saved'"
-					@click="savedOnly = !savedOnly"
-				>
-					<i class="bi" :class="savedOnly ? 'bi-bookmark-fill' : 'bi-bookmark'" aria-hidden="true"></i>
-					<span class="d-none d-sm-inline">Saved</span>
-					<span v-if="savedIds.length" class="saved-count">{{ savedIds.length }}</span>
-				</button>
-			</div>
-			<p class="text-muted small mb-0">
-				<template v-if="savedOnly">Places you kept for later. Tap one for details.</template>
-				<template v-else>{{ catalog.length }} places to discover on a layover. Tap one for details.</template>
-			</p>
-		</header>
+        <button
+          type="button"
+          class="zt-chip saved-toggle"
+          :class="{ active: savedOnly }"
+          :aria-pressed="savedOnly"
+          :title="savedOnly ? 'Show every place' : 'Show only places I have saved'"
+          @click="savedOnly = !savedOnly"
+        >
+          <i
+            class="bi"
+            :class="savedOnly ? 'bi-bookmark-fill' : 'bi-bookmark'"
+            aria-hidden="true"
+          ></i>
+          <span class="d-none d-sm-inline">Saved</span>
+          <span v-if="savedIds.length" class="saved-count">{{ savedIds.length }}</span>
+        </button>
+      </div>
+      <p class="text-muted small mb-0">
+        <template v-if="savedOnly">Places you kept for later. Tap one for details.</template>
+        <template v-else
+          >{{ catalog.length }} places to discover on a layover. Tap one for details.</template
+        >
+      </p>
+    </header>
 
-		<!-- Search + filters stay reachable while scrolling -->
-		<div class="filters">
-			<div class="search">
-				<i class="bi bi-search" aria-hidden="true"></i>
-				<input v-model="query" type="search" class="form-control" placeholder="Search places, areas or things to do" aria-label="Search places" />
-			</div>
-			<div class="chips" role="group" aria-label="Filters">
-				<button v-for="t in TILES" :key="t.id" type="button" class="zt-chip" :class="{ active: interests.includes(t.id) }" :aria-pressed="interests.includes(t.id)"
-					@click="toggleInterest(t.id)">
-					<i class="bi" :class="interests.includes(t.id) ? 'bi-check-lg' : t.icon"></i> {{ t.label }}
-				</button>
-				<span class="sep" aria-hidden="true"></span>
-				<button type="button" class="zt-chip" :class="{ active: openNow }" :aria-pressed="openNow" @click="openNow = !openNow"><i class="bi bi-clock"></i> Open now</button>
-				<button type="button" class="zt-chip" :class="{ active: indoorOnly }" :aria-pressed="indoorOnly" @click="indoorOnly = !indoorOnly"><i class="bi bi-house"></i> Indoor</button>
-				<button type="button" class="zt-chip" :class="{ active: freeOnly }" :aria-pressed="freeOnly" @click="freeOnly = !freeOnly"><i class="bi bi-tag"></i> Free</button>
-			</div>
-			<div class="d-flex align-items-center gap-2 mt-2">
-				<select v-model="area" class="form-select form-select-sm area" aria-label="Area">
-					<option value="">All areas</option>
-					<option v-for="a in areas" :key="a" :value="a">{{ a }}</option>
-				</select>
-				<span class="tiny text-muted fw-800 ms-auto" aria-live="polite">{{ results.length }} {{ results.length === 1 ? 'place' : 'places' }}</span>
-				<button v-if="filtered" type="button" class="btn btn-link btn-sm p-0 fw-800" @click="clearAll">Clear</button>
-			</div>
-		</div>
+    <!-- Search + filters stay reachable while scrolling -->
+    <div class="filters">
+      <div class="search">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <input
+          v-model="query"
+          type="search"
+          class="form-control"
+          placeholder="Search places, areas or things to do"
+          aria-label="Search places"
+        />
+      </div>
+      <div class="chips" role="group" aria-label="Filters">
+        <button
+          v-for="t in TILES"
+          :key="t.id"
+          type="button"
+          class="zt-chip"
+          :class="{ active: interests.includes(t.id) }"
+          :aria-pressed="interests.includes(t.id)"
+          @click="toggleInterest(t.id)"
+        >
+          <i class="bi" :class="interests.includes(t.id) ? 'bi-check-lg' : t.icon"></i>
+          {{ t.label }}
+        </button>
+        <span class="sep" aria-hidden="true"></span>
+        <button
+          type="button"
+          class="zt-chip"
+          :class="{ active: openNow }"
+          :aria-pressed="openNow"
+          @click="openNow = !openNow"
+        >
+          <i class="bi bi-clock"></i> Open now
+        </button>
+        <button
+          type="button"
+          class="zt-chip"
+          :class="{ active: indoorOnly }"
+          :aria-pressed="indoorOnly"
+          @click="indoorOnly = !indoorOnly"
+        >
+          <i class="bi bi-house"></i> Indoor
+        </button>
+        <button
+          type="button"
+          class="zt-chip"
+          :class="{ active: freeOnly }"
+          :aria-pressed="freeOnly"
+          @click="freeOnly = !freeOnly"
+        >
+          <i class="bi bi-tag"></i> Free
+        </button>
+      </div>
+      <div class="d-flex align-items-center gap-2 mt-2">
+        <select v-model="area" class="form-select form-select-sm area" aria-label="Area">
+          <option value="">All areas</option>
+          <option v-for="a in areas" :key="a" :value="a">{{ a }}</option>
+        </select>
+        <span class="tiny text-muted fw-800 ms-auto" aria-live="polite"
+          >{{ results.length }} {{ results.length === 1 ? 'place' : 'places' }}</span
+        >
+        <button
+          v-if="filtered"
+          type="button"
+          class="btn btn-link btn-sm p-0 fw-800"
+          @click="clearAll"
+        >
+          Clear
+        </button>
+      </div>
+    </div>
 
-		<template v-if="results.length">
-			<div class="grid">
-				<PlaceCard v-for="p in shown" :key="p.id" :place="p" />
-			</div>
-			<div v-if="remaining > 0" ref="sentinel" class="more">
-				<button type="button" class="btn btn-soft" @click="showMore">Show more places <span class="text-muted">({{ remaining }} left)</span></button>
-			</div>
-		</template>
-		<!-- Nothing saved at all is a different problem from filters hiding
+    <template v-if="results.length">
+      <div class="grid">
+        <PlaceCard v-for="p in shown" :key="p.id" :place="p" />
+      </div>
+      <div v-if="remaining > 0" ref="sentinel" class="more">
+        <button type="button" class="btn btn-soft" @click="showMore">
+          Show more places <span class="text-muted">({{ remaining }} left)</span>
+        </button>
+      </div>
+    </template>
+    <!-- Nothing saved at all is a different problem from filters hiding
 		     everything, so it gets its own way out. -->
-		<div v-else-if="savedOnly && !savedIds.length" class="empty zt-card p-4 text-center">
-			<i class="bi bi-bookmark fs-2"></i>
-			<p class="fw-800 mb-1 mt-2">No saved places yet</p>
-			<p class="small text-muted mb-3">Open any place and tap Save to keep it here.</p>
-			<button type="button" class="btn btn-primary btn-sm" @click="savedOnly = false">Browse all places</button>
-		</div>
-		<div v-else class="empty zt-card p-4 text-center">
-			<i class="bi bi-binoculars fs-2"></i>
-			<p class="fw-800 mb-1 mt-2">No places match</p>
-			<p class="small text-muted mb-3">Try fewer filters or a different word.</p>
-			<button type="button" class="btn btn-primary btn-sm" @click="clearAll">Clear filters</button>
-		</div>
-	</main>
+    <div v-else-if="savedOnly && !savedIds.length" class="empty zt-card p-4 text-center">
+      <i class="bi bi-bookmark fs-2"></i>
+      <p class="fw-800 mb-1 mt-2">No saved places yet</p>
+      <p class="small text-muted mb-3">Open any place and tap Save to keep it here.</p>
+      <button type="button" class="btn btn-primary btn-sm" @click="savedOnly = false">
+        Browse all places
+      </button>
+    </div>
+    <div v-else class="empty zt-card p-4 text-center">
+      <i class="bi bi-binoculars fs-2"></i>
+      <p class="fw-800 mb-1 mt-2">No places match</p>
+      <p class="small text-muted mb-3">Try fewer filters or a different word.</p>
+      <button type="button" class="btn btn-primary btn-sm" @click="clearAll">Clear filters</button>
+    </div>
+  </main>
 </template>
 
 <style scoped>

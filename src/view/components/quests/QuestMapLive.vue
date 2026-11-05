@@ -32,31 +32,49 @@ onMounted(async () => {
   if (store.mission) party.loadHosted(store.mission).catch(() => {}) // guest mode / offline: nothing to host
   // Co-op stamps can land while I'm elsewhere (my partner stamps after me): show any I missed, then listen.
   party.checkCoop()
-  try { unwatchCoop = await social.watchMyCoop(() => party.checkCoop()) } catch { /* guest mode */ }
+  try {
+    unwatchCoop = await social.watchMyCoop(() => party.checkCoop())
+  } catch {
+    /* guest mode */
+  }
 })
 onUnmounted(() => unwatchCoop?.())
 
-
 // My joined stops are over > back to my own plan
 // immediate: also when the map opens after they already ended.
-watch(() => joined.value && tick.value >= joined.value.endMs, (over) => { if (over) store.finishEndedQuests() }, { immediate: true })
+watch(
+  () => joined.value && tick.value >= joined.value.endMs,
+  (over) => {
+    if (over) store.finishEndedQuests()
+  },
+  { immediate: true }
+)
 
 // Other members as pins (QuestLiveHost keeps party.liveOthers up to date). Not a deep watch:
 // the map is a huge object, and walking it every second freezes the page.
 const markers = new Map()
-watch([() => party.liveOthers, () => props.getMap()], ([others, map]) => {
-  if (map) syncMemberMarkers(map, markers, others)
-}, { immediate: true })
+watch(
+  [() => party.liveOthers, () => props.getMap()],
+  ([others, map]) => {
+    if (map) syncMemberMarkers(map, markers, others)
+  },
+  { immediate: true }
+)
 onUnmounted(() => clearMemberMarkers(markers))
 
 // Meeting point pin (the map view flies there itself)
 let meetPin = null
-watch([() => props.getMap(), () => route?.query.meet], ([map]) => {
-  meetPin?.remove()
-  meetPin = null
-  const { lat, lng, meet } = route?.query || {}
-  if (map && lat && lng && meet) meetPin = meetingMarker(map, { lat: Number(lat), lng: Number(lng), label: meet })
-}, { immediate: true })
+watch(
+  [() => props.getMap(), () => route?.query.meet],
+  ([map]) => {
+    meetPin?.remove()
+    meetPin = null
+    const { lat, lng, meet } = route?.query || {}
+    if (map && lat && lng && meet)
+      meetPin = meetingMarker(map, { lat: Number(lat), lng: Number(lng), label: meet })
+  },
+  { immediate: true }
+)
 onUnmounted(() => meetPin?.remove())
 </script>
 

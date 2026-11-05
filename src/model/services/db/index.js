@@ -7,20 +7,20 @@ import { localDb } from "./local.js";
 let remoteDb = null;
 
 export function isGuestMode() {
-    try  {
-        return !HAS_SUPABASE || localStorage.getItem('zoot.guest') === '1'
-    } catch (err) {
-        console.error(err);
-        return true;
-    }
+  try {
+    return !HAS_SUPABASE || localStorage.getItem('zoot.guest') === '1'
+  } catch (err) {
+    console.error(err);
+    return true;
+  }
 }
 
 export function setGuestMode(on) {
-    try {
-        on ? localStorage.setItem('zoot.guest', '1') : localStorage.removeItem('zoot.guest');
-    } catch (err) {
-        console.error(err);
-    }
+  try {
+    on ? localStorage.setItem('zoot.guest', '1') : localStorage.removeItem('zoot.guest');
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 /*
@@ -41,37 +41,37 @@ export function setGuestMode(on) {
     up again.
 */
 export function hasLinkedAccount() {
-    try {
-        if (localStorage.getItem('zoot.account') === '1') return true;
-        if (localStorage.getItem('zoot.session')) return true;
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            // supabase-js persists as `sb-<project-ref>-auth-token` (remote.js).
-            if (key && /^sb-.+-auth-token$/.test(key)) return true;
-        }
-        return false;
-    } catch (err) {
-        console.error(err);
-        return false;
+  try {
+    if (localStorage.getItem('zoot.account') === '1') return true;
+    if (localStorage.getItem('zoot.session')) return true;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      // supabase-js persists as `sb-<project-ref>-auth-token` (remote.js).
+      if (key && /^sb-.+-auth-token$/.test(key)) return true;
     }
+    return false;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
 }
 
 export function rememberLinkedAccount() {
-    try {
-        localStorage.setItem('zoot.account', '1');
-    } catch (err) {
-        console.error(err);
-    }
+  try {
+    localStorage.setItem('zoot.account', '1');
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 export async function getDb() {
-    if (isGuestMode()) {
-        return localDb
-    }
-    if (!remoteDb) {
-        const {createRemoteDb} = await import('./remote.js');
-        remoteDb = createRemoteDb();
-    }
+  if (isGuestMode()) {
+    return localDb
+  }
+  if (!remoteDb) {
+    const { createRemoteDb } = await import('./remote.js');
+    remoteDb = createRemoteDb();
+  }
 
-    return remoteDb;
+  return remoteDb;
 }

@@ -17,7 +17,12 @@ import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 setWorkerUrl(maplibreWorkerUrl)
 import destination from '@turf/destination'
 import { point } from '@turf/helpers'
-import { PinLayer, syncStopPins, updatePinProximity, LANDMARK_BADGE } from '../components/map/pinPoint.js'
+import {
+  PinLayer,
+  syncStopPins,
+  updatePinProximity,
+  LANDMARK_BADGE
+} from '../components/map/pinPoint.js'
 import { TravellerLayer, bearingBetween } from '../components/character/travellerLayer.js'
 import MissionInfoCard from '../components/map/MissionInfoCard.vue'
 import AirportHelp from '../components/map/AirportHelp.vue'
@@ -26,6 +31,7 @@ import MapMenuButton from '../components/map/MapMenuButton.vue'
 import QuestMapLive from '../components/quests/QuestMapLive.vue'
 import { useMissionNav } from '../components/map/useMissionNav.js'
 import { useWeatherRefresh } from '../common/weather/useWeatherRefresh.js'
+import { useCooldown } from '../common/useCooldown.js'
 import { useMissionStore } from '../../model/stores/mission.js'
 import { useUiStore } from '../../model/stores/ui.js'
 import { usePartyStore } from '../../model/stores/party.js'
@@ -42,14 +48,28 @@ import {
   stopHeading
 } from '../../model/services/geo.js'
 import { distanceM } from '../../model/services/travel.js'
-import { addQuestLayers, createPlayerMarker, setFence, setPlayerFacing, syncStopMarkers } from '../components/map/questLayers.js'
+import {
+  addQuestLayers,
+  createPlayerMarker,
+  setFence,
+  setPlayerFacing,
+  syncStopMarkers
+} from '../components/map/questLayers.js'
 import { applyMapLabelStyle } from '../components/map/mapLabels.js'
 import { applyBuildingLayers, BUILDING_LAYERS } from '../components/map/mapBuildings.js'
 import { loadCatalog } from '../../model/services/catalog.js'
 import { formatTime } from '../../model/services/hours.js'
 import { getWalkRoute, getDriveRoute } from '../../model/services/routing.js'
-import { getTransitRoute, currentPartIndex, transferPoints } from '../../model/services/transit/index.js'
-import { setTransitTheme, setTransferPoints, routeFeatures } from '../components/map/transit/layers.js'
+import {
+  getTransitRoute,
+  currentPartIndex,
+  transferPoints
+} from '../../model/services/transit/index.js'
+import {
+  setTransitTheme,
+  setTransferPoints,
+  routeFeatures
+} from '../components/map/transit/layers.js'
 import { useTransit } from '../components/map/transit/useTransit.js'
 import TransitStopSheet from '../components/map/transit/TransitStopSheet.vue'
 import { trimRouteAtPosition } from '../../model/services/routeGeometry.js'
@@ -63,7 +83,7 @@ const LIVE_ROUTE_COLOR = '#ff1dce' // brighter than the planned-route pink; the 
 const LIVE_ROUTE_CASING_COLOR = '#111111'
 const LIVE_ROUTE_LAYOUT = { 'line-join': 'round', 'line-cap': 'round' }
 
-const MBS_DEMO_PIN = { id: 'mbs-pin', lng: 103.8607, lat: 1.2830, label: LANDMARK_BADGE }
+const MBS_DEMO_PIN = { id: 'mbs-pin', lng: 103.8607, lat: 1.283, label: LANDMARK_BADGE }
 
 const OTTER_VIEW = {
   pitch: 62,
@@ -75,7 +95,12 @@ const FLAT_VIEW = { pitch: 32 }
 const HEADING_SMOOTH_MS = 160
 const FLAT_BEARING_SMOOTH_MS = 420
 const getBusRoute = async (from, to) => (await getTransitRoute(from, to)) || getDriveRoute(from, to)
-const ROUTE_BY_MODE = { walk: getWalkRoute, taxi: getDriveRoute, bus: getBusRoute, mrt: getTransitRoute }
+const ROUTE_BY_MODE = {
+  walk: getWalkRoute,
+  taxi: getDriveRoute,
+  bus: getBusRoute,
+  mrt: getTransitRoute
+}
 
 const ROUTE_CHECK_AFTER_MS = 250
 const ROUTE_REFRESH_MS = 800
@@ -85,10 +110,14 @@ const TRANSIT_DEVIATION_M = 150
 const TRANSIT_REFRESH_MS = 30000
 
 const KEY_DIRECTIONS = {
-  w: 0, arrowup: 0,
-  s: 180, arrowdown: 180,
-  a: -90, arrowleft: -90,
-  d: 90, arrowright: 90
+  w: 0,
+  arrowup: 0,
+  s: 180,
+  arrowdown: 180,
+  a: -90,
+  arrowleft: -90,
+  d: 90,
+  arrowright: 90
 }
 
 const navItemsBefore = [
@@ -123,10 +152,14 @@ const MAP_PALETTE = {
     building: '#e4dbc8',
     road: '#ffffff', // fallback for any road_ layer roadClasses doesn't name
     roadClasses: {
-      motorway: '#f8a24d', motorwayCasing: '#e8923e',
-      primary: '#fcd9a6', primaryCasing: '#f0bb7c',
-      secondary: '#ffffff', secondaryCasing: '#e6e3da',
-      minor: '#ffffff', minorCasing: '#e9e6de',
+      motorway: '#f8a24d',
+      motorwayCasing: '#e8923e',
+      primary: '#fcd9a6',
+      primaryCasing: '#f0bb7c',
+      secondary: '#ffffff',
+      secondaryCasing: '#e6e3da',
+      minor: '#ffffff',
+      minorCasing: '#e9e6de',
       path: '#ddcfb3',
       rail: '#b6b2a8'
     },
@@ -141,37 +174,37 @@ const MAP_PALETTE = {
   }
 }
 
-const mapContainer = ref(null)          // the <div> MapLibre renders into
-const mapReady = ref(false)             // style loaded + quest layers added
-const following = ref(true)             // camera tracks the traveller right now
+const mapContainer = ref(null) // the <div> MapLibre renders into
+const mapReady = ref(false) // style loaded + quest layers added
+const following = ref(true) // camera tracks the traveller right now
 // Whether the user *wants* to be followed. `following` is the live state and a drag
 // pauses it; this is the intent, so an explicit "off" survives the next gesture.
 const followEnabled = ref(true)
 // What the lock button shows, and so what a tap must reverse: a drag pauses
 // `following` while the intent is still on, and then a tap must switch it *on*.
 const cameraFollowing = computed(() => followEnabled.value && following.value)
-const stamping = ref(false)             // a stamp request is in flight
-const helpOpen = ref(false)             // "Need help?" replan dialog
-const airportOpen = ref(false)          // "Get to the airport" dialog
+const stamping = ref(false) // a stamp request is in flight
+const helpOpen = ref(false) // "Need help?" replan dialog
+const airportOpen = ref(false) // "Get to the airport" dialog
 const showMissionCard = ref(readMissionCardFlag())
 
-const flatMode = ref(false)             // true = top-down free-roam (pan enabled, no 3D)
-const mapToolsOpen = ref(false)         // right-hand map tools drawer
-const mapStyleOpen = ref(false)         // map appearance dialog
-const buildingsVisible = ref(false)     // show map buildings at all; off gives the cleanest map
-const buildings3D = ref(false)          // true = extruded 3D buildings, false = flat 2D footprints
-const mapTheme = ref('theme')           // 'theme' | 'simple'
-const colorblindMode = ref(false)       // high-contrast map palette
-const showTraveller3D = ref(true)       // 3D character vs flat dot
-const showStopPins3D = ref(true)        // 3D tower pins vs flat numbered dots
-const otterView = ref(false)            // third-person camera locked behind the traveller
+const flatMode = ref(false) // true = top-down free-roam (pan enabled, no 3D)
+const mapToolsOpen = ref(false) // right-hand map tools drawer
+const mapStyleOpen = ref(false) // map appearance dialog
+const buildingsVisible = ref(false) // show map buildings at all; off gives the cleanest map
+const buildings3D = ref(false) // true = extruded 3D buildings, false = flat 2D footprints
+const mapTheme = ref('theme') // 'theme' | 'simple'
+const colorblindMode = ref(false) // high-contrast map palette
+const showTraveller3D = ref(true) // 3D character vs flat dot
+const showStopPins3D = ref(true) // 3D tower pins vs flat numbered dots
+const otterView = ref(false) // third-person camera locked behind the traveller
 
-const demoSpeed = ref(20)               // Demo-Walk multiplier (1×, 6×, 20×)
-const wasdEnabled = ref(true)           // keyboard movement during Demo-Walk
-const demoPanelOpen = ref(false)        // the panel can be tucked away while Demo-Walk keeps running
+const demoSpeed = ref(20) // Demo-Walk multiplier (1×, 6×, 20×)
+const wasdEnabled = ref(true) // keyboard movement during Demo-Walk
+const demoPanelOpen = ref(false) // the panel can be tucked away while Demo-Walk keeps running
 
-const liveRoute = ref(null)             // { coords, parts?, from, to }
-const plannedSegments = ref([])         // [{ coords, mode, parts?, active }]
+const liveRoute = ref(null) // { coords, parts?, from, to }
+const plannedSegments = ref([]) // [{ coords, mode, parts?, active }]
 
 const router = useRouter()
 const currentRoute = useRoute()
@@ -182,40 +215,53 @@ const character = useCharacterStore()
 useWeatherRefresh(1.2897, 103.8501) // weather is decorative; a failure never blocks the map
 
 const {
-  HOME_RADIUS_M, modeIcon,
-  demo, mission, next, here, check, lateBy, liveTravel, distance, stopNumber, guidance,
-  countdown, leaveBy, isTimeCritical, isTimeWarning,
+  HOME_RADIUS_M,
+  modeIcon,
+  demo,
+  mission,
+  next,
+  here,
+  check,
+  lateBy,
+  liveTravel,
+  distance,
+  stopNumber,
+  guidance,
+  countdown,
+  leaveBy,
+  isTimeCritical,
+  isTimeWarning,
   formatDistance
 } = useMissionNav()
 
-let map = null                          // MapLibre map instance
-let player = null                       // flat "you are here" DOM marker
-let traveller3D = null                  // 3D character layer (null while using the dot)
-let lastTravellerAt = null              // previous fix, used to work out facing
-let travellerHeading = null             // last direction of travel (degrees), for otter view
-let travellerHeadingAt = 0              // when that direction was recorded
-let travellerStopTimer = 0              // drops the walk cycle after the fixes stop
-let displayHeading = null               // smoothed bearing used by the character + camera
-let otterCamera = null                  // { lng, lat } smoothed otter-view focus point
-let movementFrameBearing = null         // frozen WASD reference while no compass is available
+let map = null // MapLibre map instance
+let player = null // flat "you are here" DOM marker
+let traveller3D = null // 3D character layer (null while using the dot)
+let lastTravellerAt = null // previous fix, used to work out facing
+let travellerHeading = null // last direction of travel (degrees), for otter view
+let travellerHeadingAt = 0 // when that direction was recorded
+let travellerStopTimer = 0 // drops the walk cycle after the fixes stop
+let displayHeading = null // smoothed bearing used by the character + camera
+let otterCamera = null // { lng, lat } smoothed otter-view focus point
+let movementFrameBearing = null // frozen WASD reference while no compass is available
 
 // Keys come from seq + place_id so a leg keeps identity across replans.
-const markers = new Map()               // flat stop markers  → MapLibre Marker
-const pins = new Map()                  // 3D stop towers     → PinLayer
+const markers = new Map() // flat stop markers  → MapLibre Marker
+const pins = new Map() // 3D stop towers     → PinLayer
 // Stale-while-revalidate: a segment that resolved once keeps rendering until a
 // fresh geometry replaces it.
-const plannedRouteCache = new Map()     // legKey → { coords, mode }
+const plannedRouteCache = new Map() // legKey → { coords, mode }
 
 let raf = 0
 let lastFrame = 0
 let noFixTimer = 0
 let retryTimer = 0
 let lastRouteAt = 0
-let routeInFlight = false               // one live-route request at a time
-let refreshAfterFlight = false          // a forced refresh arrived while a request was out
-let liveDeviationM = Infinity           // how far the traveller is from the resolved live route
-const keys = new Set()                  // pressed Demo-Walk keys (w/a/s/d + arrows)
-let orbit = null                        // active drag-to-orbit gesture, or null
+let routeInFlight = false // one live-route request at a time
+let refreshAfterFlight = false // a forced refresh arrived while a request was out
+let liveDeviationM = Infinity // how far the traveller is from the resolved live route
+const keys = new Set() // pressed Demo-Walk keys (w/a/s/d + arrows)
+let orbit = null // active drag-to-orbit gesture, or null
 
 onMounted(async () => {
   createMap()
@@ -224,7 +270,7 @@ onMounted(async () => {
   await missionStore.loadActive()
   if (!geo.fake) startGps()
   // On iOS this first attempt is outside a gesture, so it quietly fails and is
-    // retried from a tap below.
+  // retried from a tap below.
   startHeading().catch(() => {})
 
   noFixTimer = window.setTimeout(() => {
@@ -239,6 +285,7 @@ onMounted(async () => {
 
   window.addEventListener('keydown', onDemoKeyDown)
   window.addEventListener('keyup', onDemoKeyUp)
+  window.addEventListener('pointerdown', onPointerDownOutsideTools)
   raf = requestAnimationFrame(demoWalkLoop)
 })
 
@@ -249,6 +296,7 @@ onUnmounted(() => {
   clearTimeout(travellerStopTimer)
   window.removeEventListener('keydown', onDemoKeyDown)
   window.removeEventListener('keyup', onDemoKeyUp)
+  window.removeEventListener('pointerdown', onPointerDownOutsideTools)
   stopHeading()
   detachOrbitListeners()
   markers.clear()
@@ -268,7 +316,7 @@ function createMap() {
     maxPitch: 72,
     minZoom: 10,
     // Panning and rotating are intentionally off, replaced by the custom orbit (3D)
-        // and free-roam (flat) modes below.
+    // and free-roam (flat) modes below.
     dragPan: false,
     dragRotate: false,
     keyboard: false,
@@ -280,17 +328,17 @@ function createMap() {
 
   map.touchZoomRotate.disableRotation()
   // Scroll zoom centres on the screen, not the cursor, so it cannot drift the
-      // view off the traveller.
+  // view off the traveller.
   map.scrollZoom.enable({ around: 'center' })
   // MapLibre's CSS would give this canvas `touch-action: pan-x pan-y` (its `none`
-      // rule never applies because dragPan is off), letting the browser claim a
-      // horizontal drag and fire `pointercancel` mid-gesture. Pinch uses touch events.
+  // rule never applies because dragPan is off), letting the browser claim a
+  // horizontal drag and fire `pointercancel` mid-gesture. Pinch uses touch events.
   map.getCanvas().style.touchAction = 'none'
 
   map.on('load', () => {
     applyBasemapStyle()
     // A glyph/sprite request can still be settling when `load` fires, making
-        // isStyleLoaded() false for that tick and silently skipping basemap styling.
+    // isStyleLoaded() false for that tick and silently skipping basemap styling.
     map.once('idle', applyBasemapStyle)
   })
   map.on('load', onMapLoad)
@@ -352,7 +400,8 @@ function roadColorFor(layerId, palette) {
   const isCasing = layerId.endsWith('_casing') || layerId.endsWith('_hatching')
   if (layerId.includes('motorway')) return isCasing ? classes.motorwayCasing : classes.motorway
   if (layerId.includes('trunk_primary')) return isCasing ? classes.primaryCasing : classes.primary
-  if (layerId.includes('secondary_tertiary')) return isCasing ? classes.secondaryCasing : classes.secondary
+  if (layerId.includes('secondary_tertiary'))
+    return isCasing ? classes.secondaryCasing : classes.secondary
   if (layerId.includes('rail')) return classes.rail
   if (layerId.includes('path_pedestrian')) return classes.path
   return isCasing ? classes.minorCasing : classes.minor
@@ -399,13 +448,13 @@ function setColorblindMode(enabled) {
     return
   }
 
-  map.setPaintProperty(BUILDING_LAYERS.flat, 'fill-color', '#E69F00')            // orange
+  map.setPaintProperty(BUILDING_LAYERS.flat, 'fill-color', '#E69F00') // orange
   map.setPaintProperty(BUILDING_LAYERS.extruded, 'fill-extrusion-color', '#E69F00')
-  map.setPaintProperty('water', 'fill-color', '#0072B2')               // blue
+  map.setPaintProperty('water', 'fill-color', '#0072B2') // blue
 
   for (const layer of map.getStyle().layers) {
     if (layer.id.startsWith('road_') && layer.type === 'line') {
-      map.setPaintProperty(layer.id, 'line-color', '#F0E442')          // yellow
+      map.setPaintProperty(layer.id, 'line-color', '#F0E442') // yellow
     }
   }
 
@@ -461,7 +510,13 @@ function setFlatMode(isFlat) {
   following.value = true
   if (!geo.fake) startGps()
   if (here.value) {
-    map.flyTo({ center: [here.value.lng, here.value.lat], zoom: 18, pitch: 56, bearing: -18, duration: 1200 })
+    map.flyTo({
+      center: [here.value.lng, here.value.lat],
+      zoom: 18,
+      pitch: 56,
+      bearing: -18,
+      duration: 1200
+    })
   } else {
     animateTo3D()
   }
@@ -538,13 +593,17 @@ function drawRoute() {
       const index = currentPartIndex(parts, here.value)
       const trimmed = trimRouteAtPosition(parts[index].coords, here.value)
       liveDeviationM = trimmed.distanceM
-      features.push(...routeFeatures([{ ...parts[index], coords: trimmed.coords }, ...parts.slice(index + 1)]))
+      features.push(
+        ...routeFeatures([{ ...parts[index], coords: trimmed.coords }, ...parts.slice(index + 1)])
+      )
       points = live.parts ? transferPoints(parts.slice(index)) : []
     }
   }
   if (!features.length) {
     for (const segment of plannedSegments.value) {
-      features.push(...routeFeatures(segment.parts || [{ mode: segment.mode, coords: segment.coords }]))
+      features.push(
+        ...routeFeatures(segment.parts || [{ mode: segment.mode, coords: segment.coords }])
+      )
     }
   }
   setTransferPoints(map, points)
@@ -579,7 +638,10 @@ function drawRoute() {
 function addLiveRouteLayer(id, paint) {
   // Below the board/change/get-off pins, so they stay readable on top of the line.
   const before = map.getLayer('mission-transit-points') ? 'mission-transit-points' : undefined
-  map.addLayer({ id, type: 'line', source: LIVE_ROUTE_SOURCE_ID, layout: LIVE_ROUTE_LAYOUT, paint }, before)
+  map.addLayer(
+    { id, type: 'line', source: LIVE_ROUTE_SOURCE_ID, layout: LIVE_ROUTE_LAYOUT, paint },
+    before
+  )
 }
 
 function previousPoint(leg) {
@@ -599,7 +661,9 @@ function nextLegPair() {
 
 function syncPlannedSegments(pair) {
   const segment = pair && plannedRouteCache.get(legKey(...pair))
-  plannedSegments.value = segment ? [{ coords: segment.coords, mode: segment.mode, parts: segment.parts, active: false }] : []
+  plannedSegments.value = segment
+    ? [{ coords: segment.coords, mode: segment.mode, parts: segment.parts, active: false }]
+    : []
   drawRoute()
 }
 
@@ -621,7 +685,11 @@ async function refreshPlannedRoutes() {
   const route = await resolveRoute(previous, leg)
   if (!route) return // keep the cached geometry, if any
 
-  plannedRouteCache.set(activeKey, { coords: route.coords, mode: leg.travel_mode, parts: route.parts })
+  plannedRouteCache.set(activeKey, {
+    coords: route.coords,
+    mode: leg.travel_mode,
+    parts: route.parts
+  })
   if (nextLegPair()?.[1] === leg) syncPlannedSegments(pair)
 }
 
@@ -801,12 +869,16 @@ function showMembers(userId) {
   const view = mapContainer.value.getBoundingClientRect()
   const bottom = card?.height ? Math.max(60, view.bottom - card.top + 30) : 60
   const padding = { top: 110, bottom, left: 60, right: 60 }
-  if (people.length === 1) return map.flyTo({ center: [people[0].lng, people[0].lat], zoom: 16, padding, duration: 1200 })
+  if (people.length === 1)
+    return map.flyTo({ center: [people[0].lng, people[0].lat], zoom: 16, padding, duration: 1200 })
   const bounds = new LngLatBounds()
   for (const p of here.value ? [...people, here.value] : people) bounds.extend([p.lng, p.lat])
   map.fitBounds(bounds, { padding, maxZoom: 16, duration: 1200 })
 }
-watch(() => party.liveFocus, (focus) => focus && showMembers(focus.userId))
+watch(
+  () => party.liveFocus,
+  (focus) => focus && showMembers(focus.userId)
+)
 
 function centerOnMe(notifyOnFail = true) {
   followEnabled.value = true // asking to be centred is asking to be followed
@@ -818,7 +890,8 @@ function centerOnMe(notifyOnFail = true) {
   }
 
   if (!here.value) {
-    if (notifyOnFail) ui.toast('Waiting for GPS… Allow location access, or turn on Demo-Walk.', 'dark')
+    if (notifyOnFail)
+      ui.toast('Waiting for GPS… Allow location access, or turn on Demo-Walk.', 'dark')
     return
   }
 
@@ -838,9 +911,21 @@ function zoomOut() {
   map.zoomTo(12, { duration: 1500 })
 }
 
+/**
+ * Tapping anywhere off the drawer closes it, so the hamburger isn't the only way out.
+ * pointerdown rather than click, so dragging the map dismisses it as the drag starts
+ * instead of waiting for the gesture to end. The drawer and the hamburger are excluded:
+ * the tools inside stay tappable, and the hamburger's own toggle still works.
+ */
+function onPointerDownOutsideTools(event) {
+  if (!mapToolsOpen.value) return
+  if (event.target instanceof Element && event.target.closest('.map-tools, .menu-btn')) return
+  mapToolsOpen.value = false
+}
+
 function animateToFlat() {
   // Arrive already pointed the right way, so the lock does not have to swing the
-    // whole world when the transition lands.
+  // whole world when the transition lands.
   const facing = headingIsKnown() && displayHeading != null ? displayHeading : 0
   const camera = { pitch: FLAT_VIEW.pitch, bearing: facing, duration: 600 }
   if (here.value) camera.center = [here.value.lng, here.value.lat]
@@ -984,7 +1069,8 @@ function toggleOtterView() {
 async function stampNextStop() {
   const target = next.value
   if (!target || stamping.value) return
-  if (!check.value?.ok) return ui.toast(check.value?.message || 'Not in range yet.', 'warning', 3500)
+  if (!check.value?.ok)
+    return ui.toast(check.value?.message || 'Not in range yet.', 'warning', 3500)
 
   stamping.value = true
   try {
@@ -1003,11 +1089,15 @@ async function replan(mode) {
   await missionStore.replan(mode)
 }
 
-async function skipNextStop() {
+const { cooling: skipping, run: runSkip } = useCooldown()
+function skipNextStop() {
   helpOpen.value = false
   if (next.value?.kind !== 'visit') return
-  await missionStore.skip(next.value)
-  ui.toast('Stop skipped. On to the next one.', 'dark')
+  // Without the cooldown a fast double-tap skips two stops and toasts twice.
+  return runSkip(async () => {
+    await missionStore.skip(next.value)
+    ui.toast('Stop skipped. On to the next one.', 'dark')
+  })
 }
 
 function openAirportHelp() {
@@ -1062,8 +1152,10 @@ function toggleDemoWalk() {
 }
 
 // Demo-Walk can also be left from elsewhere (DevView, a reload), so never leave
-  // this flag behind.
-watch(demo, (on) => { if (!on) demoPanelOpen.value = false })
+// this flag behind.
+watch(demo, (on) => {
+  if (!on) demoPanelOpen.value = false
+})
 
 const cameraLockLabel = computed(() =>
   cameraFollowing.value ? 'Stop following me' : 'Follow me, facing where I face'
@@ -1084,7 +1176,10 @@ function toggleCameraFollow() {
 function jumpNearNextStop(meters) {
   const place = pointNearNextStop(meters)
   if (!place) return
-  if (!geo.fake) { setFake(true); demoPanelOpen.value = true }
+  if (!geo.fake) {
+    setFake(true)
+    demoPanelOpen.value = true
+  }
   teleport(place)
   following.value = true
 }
@@ -1141,10 +1236,14 @@ function demoWalkLoop(timestamp) {
 }
 
 watch(showMissionCard, (open) => writeMissionCardFlag(open))
-watch(mapReady, (ready) => {
-  const { lat, lng } = currentRoute.query
-  if (ready && lat && lng) flyTo({ lat: Number(lat), lng: Number(lng) }, 17.5)
-}, { immediate: true })
+watch(
+  mapReady,
+  (ready) => {
+    const { lat, lng } = currentRoute.query
+    if (ready && lat && lng) flyTo({ lat: Number(lat), lng: Number(lng) }, 17.5)
+  },
+  { immediate: true }
+)
 
 watch(() => [here.value?.lat, here.value?.lng], onHereChanged)
 
@@ -1153,7 +1252,9 @@ watch(
     mapReady.value,
     mission.value?.id,
     mission.value?.prefs?.transport,
-    missionStore.legs.map((leg) => `${leg.seq}${leg.status}${leg.place_id}${leg.travel_mode}`).join()
+    missionStore.legs
+      .map((leg) => `${leg.seq}${leg.status}${leg.place_id}${leg.travel_mode}`)
+      .join()
   ],
   onMissionLegsChanged
 )
@@ -1161,9 +1262,12 @@ watch(
 // The leg being travelled now: a new next stop (any plan change saves new leg objects) or a new
 // way of getting there (public ↔ car) must fetch its route straight away. Otherwise the old line is
 // dropped and nothing redraws it until the traveller moves.
-watch(() => [next.value, liveTravel.value?.mode], ([leg, mode], [prevLeg, prevMode] = []) => {
-  if (mapReady.value && (leg !== prevLeg || mode !== prevMode)) refreshLiveRoute(true)
-})
+watch(
+  () => [next.value, liveTravel.value?.mode],
+  ([leg, mode], [prevLeg, prevMode] = []) => {
+    if (mapReady.value && (leg !== prevLeg || mode !== prevMode)) refreshLiveRoute(true)
+  }
+)
 
 watch(check, drawFence)
 watch(showTraveller3D, (visible) => {
@@ -1193,7 +1297,7 @@ function onHereChanged() {
   syncPlayerAvatar()
 
   // Otter view is followed every frame in updateOtterCamera; a normal follow would
-    // fight it.
+  // fight it.
   if (!otterView.value && following.value) {
     const zoom = map.getZoom() < 15.5 ? 16.8 : undefined
     if (geo.fake && !zoom) map.jumpTo({ center: [here.value.lng, here.value.lat] })
@@ -1248,10 +1352,16 @@ function writeMissionCardFlag(open) {
       role="timer"
     >
       <span class="bi-airplane-fill"> &nbsp; Time to Travel</span>
-      <br>
+      <br />
       <div class="time_left_from_trip mono">{{ countdown || '--:--:--' }}</div>
       <div class="time_back_from_trip">
-        {{ leaveBy ? `Head back by ${formatTime(leaveBy)}` : mission ? 'Quest complete' : 'No active quest' }}
+        {{
+          leaveBy
+            ? `Head back by ${formatTime(leaveBy)}`
+            : mission
+              ? 'Quest complete'
+              : 'No active quest'
+        }}
       </div>
     </div>
 
@@ -1292,9 +1402,11 @@ function writeMissionCardFlag(open) {
         :class="{ active: otterView }"
         :aria-pressed="otterView"
         :disabled="!showTraveller3D"
-        :aria-label="showTraveller3D
-          ? 'Otter view: third-person camera behind the traveller'
-          : 'Otter view needs the 3D traveller switched on'"
+        :aria-label="
+          showTraveller3D
+            ? 'Otter view: third-person camera behind the traveller'
+            : 'Otter view needs the 3D traveller switched on'
+        "
         :title="showTraveller3D ? 'Otter view' : 'Turn the 3D traveller on to use otter view'"
         @click="toggleOtterView()"
       >
@@ -1321,7 +1433,7 @@ function writeMissionCardFlag(open) {
       :guidance="guidance"
       :steps="liveSteps"
       :step-index="liveStepIndex"
-      :bus-alt="busAlt"
+      :bus-alternative="busAlt"
       :check="check"
       :stamping="stamping"
       :stamped-count="missionStore.stampedCount"
@@ -1343,19 +1455,61 @@ function writeMissionCardFlag(open) {
     <div v-if="demo && demoPanelOpen" id="demo-controls" class="rounded-4">
       <div class="demo-row">
         <span class="demo-label">Speed</span>
-        <button class="btn rounded-pill btn-sm" :class="demoSpeed === 1 ? 'btn-warning' : 'btn-outline-warning'" @click="demoSpeed = 1">1x</button>
-        <button class="btn rounded-pill btn-sm" :class="demoSpeed === 6 ? 'btn-warning' : 'btn-outline-warning'" @click="demoSpeed = 6">6x</button>
-        <button class="btn rounded-pill btn-sm" :class="demoSpeed === 20 ? 'btn-warning' : 'btn-outline-warning'" @click="demoSpeed = 20">20x</button>
+        <button
+          class="btn rounded-pill btn-sm"
+          :class="demoSpeed === 1 ? 'btn-warning' : 'btn-outline-warning'"
+          @click="demoSpeed = 1"
+        >
+          1x
+        </button>
+        <button
+          class="btn rounded-pill btn-sm"
+          :class="demoSpeed === 6 ? 'btn-warning' : 'btn-outline-warning'"
+          @click="demoSpeed = 6"
+        >
+          6x
+        </button>
+        <button
+          class="btn rounded-pill btn-sm"
+          :class="demoSpeed === 20 ? 'btn-warning' : 'btn-outline-warning'"
+          @click="demoSpeed = 20"
+        >
+          20x
+        </button>
       </div>
       <div class="demo-row">
         <span class="demo-label">WASD movement</span>
-        <button class="btn rounded-pill btn-sm" :class="wasdEnabled === true ? 'btn-warning' : 'btn-outline-warning'" @click="wasdEnabled = true">Yes</button>
-        <button class="btn rounded-pill btn-sm" :class="wasdEnabled === false ? 'btn-warning' : 'btn-outline-warning'" @click="wasdEnabled = false">No</button>
+        <button
+          class="btn rounded-pill btn-sm"
+          :class="wasdEnabled === true ? 'btn-warning' : 'btn-outline-warning'"
+          @click="wasdEnabled = true"
+        >
+          Yes
+        </button>
+        <button
+          class="btn rounded-pill btn-sm"
+          :class="wasdEnabled === false ? 'btn-warning' : 'btn-outline-warning'"
+          @click="wasdEnabled = false"
+        >
+          No
+        </button>
       </div>
       <div class="demo-row">
         <span class="demo-label">CheckPoint</span>
-        <button class="btn rounded-pill btn-sm btn-outline-warning" :disabled="!next" @click="jumpNearNextStop(200)">Near</button>
-        <button class="btn rounded-pill btn-sm btn-outline-warning" :disabled="!next" @click="jumpNearNextStop(25)">At stop</button>
+        <button
+          class="btn rounded-pill btn-sm btn-outline-warning"
+          :disabled="!next"
+          @click="jumpNearNextStop(200)"
+        >
+          Near
+        </button>
+        <button
+          class="btn rounded-pill btn-sm btn-outline-warning"
+          :disabled="!next"
+          @click="jumpNearNextStop(25)"
+        >
+          At stop
+        </button>
       </div>
       <div class="demo-hint">Tap the map to walk there.</div>
     </div>
@@ -1370,14 +1524,53 @@ function writeMissionCardFlag(open) {
       <p class="help-note">Quickest way from where you are, with MRT or Grab steps.</p>
 
       <div class="demo-label mb-2">Change the plan</div>
-      <p class="help-note">Stamped stops stay. Only the stops ahead get rewritten from where you are now.</p>
-      <button class="btn btn-warning btn-sm w-100 mb-2" :disabled="missionStore.status === 'planning'" @click="replan('behind')"><i class="bi bi-hourglass-split"></i> I'm behind schedule</button>
-      <button class="btn btn-warning btn-sm w-100 mb-2" :disabled="missionStore.status === 'planning'" @click="replan('less-walking')"><i class="bi bi-person-walking"></i> Less walking</button>
-      <button class="btn btn-warning btn-sm w-100 mb-2" :disabled="missionStore.status === 'planning' || next?.kind !== 'visit'" @click="replan('swap')"><i class="bi bi-shuffle"></i> Swap this stop</button>
-      <button class="btn btn-warning btn-sm w-100 mb-2" :disabled="missionStore.status === 'planning'" @click="replan('rain')"><i class="bi bi-cloud-rain-heavy-fill"></i> It's raining</button>
-      <button class="btn btn-outline-warning btn-sm w-100 mb-2" :disabled="next?.kind !== 'visit'" @click="skipNextStop"><i class="bi bi-skip-forward-fill"></i> Skip this stop</button>
-      <button class="btn btn-outline-warning btn-sm w-100" @click="router.push(mission ? `/mission/${mission.id}` : '/plan')"><i class="bi bi-list-ol"></i> See full itinerary</button>
-      <div v-if="missionStore.status === 'planning'" class="help-note mt-2">{{ missionStore.statusText || 'Replanning…' }}</div>
+      <p class="help-note">
+        Stamped stops stay. Only the stops ahead get rewritten from where you are now.
+      </p>
+      <button
+        class="btn btn-warning btn-sm w-100 mb-2"
+        :disabled="missionStore.status === 'planning'"
+        @click="replan('behind')"
+      >
+        <i class="bi bi-hourglass-split"></i> I'm behind schedule
+      </button>
+      <button
+        class="btn btn-warning btn-sm w-100 mb-2"
+        :disabled="missionStore.status === 'planning'"
+        @click="replan('less-walking')"
+      >
+        <i class="bi bi-person-walking"></i> Less walking
+      </button>
+      <button
+        class="btn btn-warning btn-sm w-100 mb-2"
+        :disabled="missionStore.status === 'planning' || next?.kind !== 'visit'"
+        @click="replan('swap')"
+      >
+        <i class="bi bi-shuffle"></i> Swap this stop
+      </button>
+      <button
+        class="btn btn-warning btn-sm w-100 mb-2"
+        :disabled="missionStore.status === 'planning'"
+        @click="replan('rain')"
+      >
+        <i class="bi bi-cloud-rain-heavy-fill"></i> It's raining
+      </button>
+      <button
+        class="btn btn-outline-warning btn-sm w-100 mb-2"
+        :disabled="skipping || next?.kind !== 'visit'"
+        @click="skipNextStop"
+      >
+        <i class="bi bi-skip-forward-fill"></i> Skip this stop
+      </button>
+      <button
+        class="btn btn-outline-warning btn-sm w-100"
+        @click="router.push(mission ? `/mission/${mission.id}` : '/plan')"
+      >
+        <i class="bi bi-list-ol"></i> See full itinerary
+      </button>
+      <div v-if="missionStore.status === 'planning'" class="help-note mt-2">
+        {{ missionStore.statusText || 'Replanning…' }}
+      </div>
     </div>
   </template>
 
@@ -1393,33 +1586,105 @@ function writeMissionCardFlag(open) {
   <div id="MapPop" class="rounded-4" v-if="mapStyleOpen">
     <div class="demo-row">
       <span class="demo-label">Buildings</span>
-      <button class="btn rounded-pill btn-sm" :class="buildingsVisible === true ? 'btn-warning' : 'btn-outline-warning'" @click="setBuildingsVisible(true)">On</button>
-      <button class="btn rounded-pill btn-sm" :class="buildingsVisible === false ? 'btn-warning' : 'btn-outline-warning'" @click="setBuildingsVisible(false)">Off</button>
+      <button
+        class="btn rounded-pill btn-sm"
+        :class="buildingsVisible === true ? 'btn-warning' : 'btn-outline-warning'"
+        @click="setBuildingsVisible(true)"
+      >
+        On
+      </button>
+      <button
+        class="btn rounded-pill btn-sm"
+        :class="buildingsVisible === false ? 'btn-warning' : 'btn-outline-warning'"
+        @click="setBuildingsVisible(false)"
+      >
+        Off
+      </button>
     </div>
     <div class="demo-row">
       <span class="demo-label">3D Buildings</span>
-      <button class="btn rounded-pill btn-sm" :class="buildings3D === true ? 'btn-warning' : 'btn-outline-warning'" @click="setBuildings3D(true)">On</button>
-      <button class="btn rounded-pill btn-sm" :class="buildings3D === false ? 'btn-warning' : 'btn-outline-warning'" @click="setBuildings3D(false)">Off</button>
+      <button
+        class="btn rounded-pill btn-sm"
+        :class="buildings3D === true ? 'btn-warning' : 'btn-outline-warning'"
+        @click="setBuildings3D(true)"
+      >
+        On
+      </button>
+      <button
+        class="btn rounded-pill btn-sm"
+        :class="buildings3D === false ? 'btn-warning' : 'btn-outline-warning'"
+        @click="setBuildings3D(false)"
+      >
+        Off
+      </button>
     </div>
     <div class="demo-row">
       <span class="demo-label">MRT &amp; Bus</span>
-      <button class="btn rounded-pill btn-sm" :class="transitVisible === true ? 'btn-warning' : 'btn-outline-warning'" @click="transitVisible = true">On</button>
-      <button class="btn rounded-pill btn-sm" :class="transitVisible === false ? 'btn-warning' : 'btn-outline-warning'" @click="transitVisible = false">Off</button>
+      <button
+        class="btn rounded-pill btn-sm"
+        :class="transitVisible === true ? 'btn-warning' : 'btn-outline-warning'"
+        @click="transitVisible = true"
+      >
+        On
+      </button>
+      <button
+        class="btn rounded-pill btn-sm"
+        :class="transitVisible === false ? 'btn-warning' : 'btn-outline-warning'"
+        @click="transitVisible = false"
+      >
+        Off
+      </button>
     </div>
     <div class="demo-row">
       <span class="demo-label">Color Theme</span>
-      <button class="btn rounded-pill btn-sm" :class="mapTheme === 'theme' ? 'btn-warning' : 'btn-outline-warning'" @click="mapTheme = 'theme'">Zoot</button>
-      <button class="btn rounded-pill btn-sm" :class="mapTheme === 'simple' ? 'btn-warning' : 'btn-outline-warning'" @click="mapTheme = 'simple'">Simple</button>
+      <button
+        class="btn rounded-pill btn-sm"
+        :class="mapTheme === 'theme' ? 'btn-warning' : 'btn-outline-warning'"
+        @click="mapTheme = 'theme'"
+      >
+        Zoot
+      </button>
+      <button
+        class="btn rounded-pill btn-sm"
+        :class="mapTheme === 'simple' ? 'btn-warning' : 'btn-outline-warning'"
+        @click="mapTheme = 'simple'"
+      >
+        Simple
+      </button>
     </div>
     <div class="demo-row">
       <span class="demo-label">3D Traveller</span>
-      <button class="btn rounded-pill btn-sm" :class="showTraveller3D === true ? 'btn-warning' : 'btn-outline-warning'" @click="showTraveller3D = true">On</button>
-      <button class="btn rounded-pill btn-sm" :class="showTraveller3D === false ? 'btn-warning' : 'btn-outline-warning'" @click="showTraveller3D = false">Off</button>
+      <button
+        class="btn rounded-pill btn-sm"
+        :class="showTraveller3D === true ? 'btn-warning' : 'btn-outline-warning'"
+        @click="showTraveller3D = true"
+      >
+        On
+      </button>
+      <button
+        class="btn rounded-pill btn-sm"
+        :class="showTraveller3D === false ? 'btn-warning' : 'btn-outline-warning'"
+        @click="showTraveller3D = false"
+      >
+        Off
+      </button>
     </div>
     <div class="demo-row">
       <span class="demo-label">Colorblind Mode</span>
-      <button class="btn rounded-pill btn-sm" :class="colorblindMode === true ? 'btn-warning' : 'btn-outline-warning'" @click="setColorblindMode(true)">On</button>
-      <button class="btn rounded-pill btn-sm" :class="colorblindMode === false ? 'btn-warning' : 'btn-outline-warning'" @click="setColorblindMode(false)">Off</button>
+      <button
+        class="btn rounded-pill btn-sm"
+        :class="colorblindMode === true ? 'btn-warning' : 'btn-outline-warning'"
+        @click="setColorblindMode(true)"
+      >
+        On
+      </button>
+      <button
+        class="btn rounded-pill btn-sm"
+        :class="colorblindMode === false ? 'btn-warning' : 'btn-outline-warning'"
+        @click="setColorblindMode(false)"
+      >
+        Off
+      </button>
     </div>
   </div>
 
@@ -1449,11 +1714,11 @@ function writeMissionCardFlag(open) {
 
 <style scoped>
 .quest-map {
-	position: absolute;
-	inset: 0;
-	/* Without an explicit z-index this element does not form its own stacking
+  position: absolute;
+  inset: 0;
+  /* Without an explicit z-index this element does not form its own stacking
 	   context, and the overlays below escape it. */
-	z-index: 0;
+  z-index: 0;
 }
 
 #right-stack {
@@ -1506,13 +1771,15 @@ function writeMissionCardFlag(open) {
   opacity: 0;
   transform: translateY(-12px);
   pointer-events: none;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
 }
 
 .map-tools.open {
-	opacity: 1;
-	transform: translateY(0);
-	pointer-events: auto;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 /* Landscape / very short screens: let the drawer scroll instead of overflowing. */
@@ -1532,13 +1799,13 @@ function writeMissionCardFlag(open) {
 }
 
 .demo-row {
-	display: flex;
-	align-items: center;
-	gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.demo-row+.demo-row {
-	margin-top: 8px;
+.demo-row + .demo-row {
+  margin-top: 8px;
 }
 
 .demo-label {
@@ -1552,12 +1819,12 @@ function writeMissionCardFlag(open) {
 }
 
 .map-backdrop {
-	position: fixed;
-	inset: 0;
-	z-index: 1;
-	backdrop-filter: blur(6px);
-	-webkit-backdrop-filter: blur(6px);
-	background: rgba(0, 0, 0, 0.3);
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.3);
 }
 
 #MapPop {
@@ -1573,41 +1840,46 @@ function writeMissionCardFlag(open) {
 }
 
 .map-btn.active {
-	color: var(--zt-black);
-	background: var(--zt-yellow);
+  color: var(--zt-black);
+  background: var(--zt-yellow);
 }
 
 .map-btn:disabled {
-	opacity: 0.45;
-	cursor: default;
+  opacity: 0.45;
+  cursor: default;
 }
 
 #top-right.amber {
-	background: var(--zt-orange) !important;
+  background: var(--zt-orange) !important;
 }
 
 #top-right.red {
-	background: #e5243b !important;
-	color: #fff !important;
-	animation: ttg-alarm 1.2s infinite;
+  background: #e5243b !important;
+  color: #fff !important;
+  animation: ttg-alarm 1.2s infinite;
 }
 
 @keyframes ttg-alarm {
-	0% {
-		box-shadow: 0 0 0 0 rgba(229, 36, 59, 0.7);
-	}
+  0% {
+    box-shadow: 0 0 0 0 rgba(229, 36, 59, 0.7);
+  }
 
-	70%,
-	100% {
-		box-shadow: 0 0 0 16px rgba(229, 36, 59, 0);
-	}
+  70%,
+  100% {
+    box-shadow: 0 0 0 16px rgba(229, 36, 59, 0);
+  }
 }
 
 .time_back_from_trip {
-	font-size: clamp(0.7rem, 2.6vw, 0.8rem);
+  font-size: clamp(0.7rem, 2.6vw, 0.8rem);
 }
 
-.demo-hint { color: var(--zt-yellow-pale); opacity: 0.7; font-size: clamp(0.62rem, 2.2vw, 0.7rem); margin-top: 8px; }
+.demo-hint {
+  color: var(--zt-yellow-pale);
+  opacity: 0.7;
+  font-size: clamp(0.62rem, 2.2vw, 0.7rem);
+  margin-top: 8px;
+}
 
 #HelpPop {
   position: absolute;
@@ -1623,10 +1895,24 @@ function writeMissionCardFlag(open) {
   box-shadow: var(--zt-shadow);
   padding: clamp(10px, 4vw, 16px);
 }
-#HelpPop .btn-warning { color: var(--zt-black); font-weight: 700; text-align: left; }
-#HelpPop .btn-outline-warning { text-align: left; }
-#HelpPop .airport-cta { font-weight: 800; text-align: left; }
-.help-note { color: var(--zt-yellow-pale); opacity: 0.75; font-size: clamp(0.65rem, 2.4vw, 0.75rem); margin-bottom: 10px; }
+#HelpPop .btn-warning {
+  color: var(--zt-black);
+  font-weight: 700;
+  text-align: left;
+}
+#HelpPop .btn-outline-warning {
+  text-align: left;
+}
+#HelpPop .airport-cta {
+  font-weight: 800;
+  text-align: left;
+}
+.help-note {
+  color: var(--zt-yellow-pale);
+  opacity: 0.75;
+  font-size: clamp(0.65rem, 2.4vw, 0.75rem);
+  margin-bottom: 10px;
+}
 
 .map-nav {
   position: fixed;
@@ -1661,12 +1947,25 @@ function writeMissionCardFlag(open) {
   padding: 0;
   cursor: pointer;
 }
-.map-nav a i { font-size: 1.3rem; line-height: 1; }
-@media (max-width: 440px) {
-  .map-nav a { margin: 6px 2px; font-size: 0.58rem; letter-spacing: 0.01em; }
-  .map-nav a i { font-size: 1.15rem; }
+.map-nav a i {
+  font-size: 1.3rem;
+  line-height: 1;
 }
-.map-nav a.router-link-active { color: #111; background: var(--zt-yellow); border-color: var(--zt-line); }
+@media (max-width: 440px) {
+  .map-nav a {
+    margin: 6px 2px;
+    font-size: 0.58rem;
+    letter-spacing: 0.01em;
+  }
+  .map-nav a i {
+    font-size: 1.15rem;
+  }
+}
+.map-nav a.router-link-active {
+  color: #111;
+  background: var(--zt-yellow);
+  border-color: var(--zt-line);
+}
 
 .map-nav-fab {
   position: fixed;
@@ -1688,18 +1987,38 @@ function writeMissionCardFlag(open) {
   z-index: 1031;
 }
 
-.mission-pop-enter-active { animation: mission-pop-bounce 0.42s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.mission-pop-leave-active { animation: mission-pop-bounce 0.2s ease reverse forwards; }
+.mission-pop-enter-active {
+  animation: mission-pop-bounce 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.mission-pop-leave-active {
+  animation: mission-pop-bounce 0.2s ease reverse forwards;
+}
 @keyframes mission-pop-bounce {
-  from { opacity: 0; transform: translate(-50%, 28px) scale(0.9); }
-  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translate(-50%, 28px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
 }
 
-.fab-pop-enter-active { animation: fab-pop-bounce 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.fab-pop-leave-active { animation: fab-pop-bounce 0.18s ease reverse forwards; }
+.fab-pop-enter-active {
+  animation: fab-pop-bounce 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.fab-pop-leave-active {
+  animation: fab-pop-bounce 0.18s ease reverse forwards;
+}
 @keyframes fab-pop-bounce {
-  from { opacity: 0; transform: translate(-50%, 10px) scale(0.6); }
-  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
 }
 </style>
 
@@ -1721,11 +2040,41 @@ function writeMissionCardFlag(open) {
   cursor: pointer;
   padding: 0;
 }
-.zt-stop-marker.next { background: #f83878; color: #fff; width: clamp(32px, 10vw, 42px); height: clamp(32px, 10vw, 42px); font-size: clamp(0.92rem, 3.2vw, 1.1rem); z-index: 2; animation: zt-marker-pulse 1.4s infinite; }
-.zt-stop-marker.done { background: #111; color: #ffcc00; border-color: #ffcc00; box-shadow: none; }
-@keyframes zt-marker-pulse { 0% { box-shadow: 3px 3px 0 #111, 0 0 0 0 rgba(248, 56, 120, 0.7); } 70%, 100% { box-shadow: 3px 3px 0 #111, 0 0 0 16px rgba(248, 56, 120, 0); } }
+.zt-stop-marker.next {
+  background: #f83878;
+  color: #fff;
+  width: clamp(32px, 10vw, 42px);
+  height: clamp(32px, 10vw, 42px);
+  font-size: clamp(0.92rem, 3.2vw, 1.1rem);
+  z-index: 2;
+  animation: zt-marker-pulse 1.4s infinite;
+}
+.zt-stop-marker.done {
+  background: #111;
+  color: #ffcc00;
+  border-color: #ffcc00;
+  box-shadow: none;
+}
+@keyframes zt-marker-pulse {
+  0% {
+    box-shadow:
+      3px 3px 0 #111,
+      0 0 0 0 rgba(248, 56, 120, 0.7);
+  }
+  70%,
+  100% {
+    box-shadow:
+      3px 3px 0 #111,
+      0 0 0 16px rgba(248, 56, 120, 0);
+  }
+}
 
-.zt-player-marker { position: relative; width: clamp(30px, 10vw, 40px); height: clamp(30px, 10vw, 40px); pointer-events: none; }
+.zt-player-marker {
+  position: relative;
+  width: clamp(30px, 10vw, 40px);
+  height: clamp(30px, 10vw, 40px);
+  pointer-events: none;
+}
 .zt-player-marker .core {
   position: absolute;
   inset: 4px;
@@ -1739,57 +2088,85 @@ function writeMissionCardFlag(open) {
 }
 
 .zt-player-marker .pulse {
-	position: absolute;
-	inset: 0;
-	border-radius: 50%;
-	background: rgba(255, 204, 0, 0.45);
-	animation: zt-player-pulse 1.8s ease-out infinite;
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(255, 204, 0, 0.45);
+  animation: zt-player-pulse 1.8s ease-out infinite;
 }
 
 /* `from -35deg` centres the 70deg slice on straight up, so setPlayerFacing can
    rotate it by the heading directly. */
 .zt-player-marker .cone {
-	position: absolute;
-	left: 50%;
-	top: 50%;
-	width: clamp(88px, 28vw, 132px);
-	height: clamp(88px, 28vw, 132px);
-	transform: translate(-50%, -50%) rotate(0deg);
-	border-radius: 50%;
-	background: conic-gradient(
-		from -35deg,
-		rgba(217, 119, 6, 0.88) 0deg,
-		rgba(234, 140, 10, 0.66) 42deg,
-		rgba(245, 158, 11, 0.3) 62deg,
-		transparent 70deg
-	);
-	-webkit-mask-image: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 1) 32%, rgba(0, 0, 0, 0.8) 58%, transparent 84%);
-	mask-image: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 1) 32%, rgba(0, 0, 0, 0.8) 58%, transparent 84%);
-	opacity: 0; /* no heading yet; setPlayerFacing fades it in */
-	pointer-events: none;
-	transition: opacity 0.25s ease;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: clamp(88px, 28vw, 132px);
+  height: clamp(88px, 28vw, 132px);
+  transform: translate(-50%, -50%) rotate(0deg);
+  border-radius: 50%;
+  background: conic-gradient(
+    from -35deg,
+    rgba(217, 119, 6, 0.88) 0deg,
+    rgba(234, 140, 10, 0.66) 42deg,
+    rgba(245, 158, 11, 0.3) 62deg,
+    transparent 70deg
+  );
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 50%,
+    rgba(0, 0, 0, 1) 32%,
+    rgba(0, 0, 0, 0.8) 58%,
+    transparent 84%
+  );
+  mask-image: radial-gradient(
+    circle at 50% 50%,
+    rgba(0, 0, 0, 1) 32%,
+    rgba(0, 0, 0, 0.8) 58%,
+    transparent 84%
+  );
+  opacity: 0; /* no heading yet; setPlayerFacing fades it in */
+  pointer-events: none;
+  transition: opacity 0.25s ease;
 }
 
 /* The cone is decoration, and a 60 fps rotation is what this asks to stop. */
 @media (prefers-reduced-motion: reduce) {
-	.zt-player-marker .cone { transition: none; }
+  .zt-player-marker .cone {
+    transition: none;
+  }
 }
 
-.psi-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid #111; margin-left: 2px; }
-.psi-good { background: #2e9e5b; }
-.psi-moderate { background: #f5f5f5; }   /* white dot with a dark ring reads on yellow */
-.psi-unhealthy { background: #e07a1f; }
-.psi-very-unhealthy, .psi-hazardous { background: #d6322e; }
+.psi-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid #111;
+  margin-left: 2px;
+}
+.psi-good {
+  background: #2e9e5b;
+}
+.psi-moderate {
+  background: #f5f5f5;
+} /* white dot with a dark ring reads on yellow */
+.psi-unhealthy {
+  background: #e07a1f;
+}
+.psi-very-unhealthy,
+.psi-hazardous {
+  background: #d6322e;
+}
 
 @keyframes zt-player-pulse {
-	from {
-		transform: scale(0.8);
-		opacity: 1;
-	}
+  from {
+    transform: scale(0.8);
+    opacity: 1;
+  }
 
-	to {
-		transform: scale(2.2);
-		opacity: 0;
-	}
+  to {
+    transform: scale(2.2);
+    opacity: 0;
+  }
 }
 </style>

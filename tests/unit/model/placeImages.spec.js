@@ -1,10 +1,6 @@
 // EDITOR: STEVEN
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-  jsonResponse,
-  stubFetch,
-  useCleanSlate,
-} from '../../support/unit/index.js'
+import { jsonResponse, stubFetch, useCleanSlate, } from '../../support/unit/index.js'
 
 useCleanSlate()
 
@@ -52,16 +48,20 @@ describe('place images service', () => {
 
   it('returns at most three Commons images with cleaned credits and caches them', async () => {
     const fetchMock = stubFetch([
-      ['commons.wikimedia.org', () => jsonResponse({
-        query: {
-          pages: {
-            one: commonsPage('one.jpg', 1),
-            two: commonsPage('two.jpg', 2),
-            three: commonsPage('three.jpg', 3),
-            four: commonsPage('four.jpg', 4),
-          },
-        },
-      })],
+      [
+        'commons.wikimedia.org',
+        () =>
+          jsonResponse({
+            query: {
+              pages: {
+                one: commonsPage('one.jpg', 1),
+                two: commonsPage('two.jpg', 2),
+                three: commonsPage('three.jpg', 3),
+                four: commonsPage('four.jpg', 4),
+              },
+            },
+          })
+      ],
     ])
 
     const images = await getPlaceImages(place)
@@ -83,17 +83,22 @@ describe('place images service', () => {
   })
 
   it('returns a fresh cached result without fetching Wikimedia', async () => {
-    const cachedImages = [{
-      src: 'https://example.test/cached.jpg',
-      full: 'https://example.test/cached-full.jpg',
-      alt: 'Cached image',
-      credit: 'Cached author',
-      license: 'CC BY',
-      page: 'https://example.test/page',
-    }]
-    localStorage.setItem('zoot.placeImages.v2', JSON.stringify({
-      'test-place': { at: Date.now(), images: cachedImages },
-    }))
+    const cachedImages = [
+      {
+        src: 'https://example.test/cached.jpg',
+        full: 'https://example.test/cached-full.jpg',
+        alt: 'Cached image',
+        credit: 'Cached author',
+        license: 'CC BY',
+        page: 'https://example.test/page',
+      }
+    ]
+    localStorage.setItem(
+      'zoot.placeImages.v2',
+      JSON.stringify({
+        'test-place': { at: Date.now(), images: cachedImages },
+      })
+    )
     const fetchMock = stubFetch()
 
     await expect(getPlaceImages(place)).resolves.toEqual(cachedImages)
@@ -103,9 +108,12 @@ describe('place images service', () => {
 
   it('returns no images and leaves the cache empty when Commons fails', async () => {
     const fetchMock = stubFetch([
-      ['commons.wikimedia.org', async () => {
-        throw new Error('Commons unavailable')
-      }],
+      [
+        'commons.wikimedia.org',
+        async () => {
+          throw new Error('Commons unavailable')
+        }
+      ],
     ])
 
     await expect(getPlaceImages(place)).resolves.toEqual([])
@@ -116,28 +124,35 @@ describe('place images service', () => {
 
   it('uses a nearby Wikipedia lead image when Commons returns fewer than three images', async () => {
     const fetchMock = stubFetch([
-      ['en.wikipedia.org', () => jsonResponse({
-        query: {
-          pages: {
-            lead: {
-              index: 1,
-              pageimage: 'WikipediaLead.jpg',
-              coordinates: [{ lat: place.lat, lon: place.lng }],
+      [
+        'en.wikipedia.org',
+        () =>
+          jsonResponse({
+            query: {
+              pages: {
+                lead: {
+                  index: 1,
+                  pageimage: 'WikipediaLead.jpg',
+                  coordinates: [{ lat: place.lat, lon: place.lng }],
+                },
+              },
             },
-          },
-        },
-      })],
-      ['commons.wikimedia.org', (url) => {
-        const params = new URL(url).searchParams
-        if (params.has('generator')) {
+          })
+      ],
+      [
+        'commons.wikimedia.org',
+        (url) => {
+          const params = new URL(url).searchParams
+          if (params.has('generator')) {
+            return jsonResponse({
+              query: { pages: { commons: commonsPage('commons.jpg', 1) } },
+            })
+          }
           return jsonResponse({
-            query: { pages: { commons: commonsPage('commons.jpg', 1) } },
+            query: { pages: { lead: { imageinfo: [imageInfo('WikipediaLead.jpg')] } } },
           })
         }
-        return jsonResponse({
-          query: { pages: { lead: { imageinfo: [imageInfo('WikipediaLead.jpg')] } } },
-        })
-      }],
+      ],
     ])
 
     const images = await getPlaceImages(place)

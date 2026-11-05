@@ -65,14 +65,14 @@ const TRACK_VH = 10
  * where the crop is gentle enough for the drift not to matter.
  */
 const SCENES = [
-	// Changi T3
-	{ id: 'changi', startsAt: 0.0, skyColour: '#dcc49f', groundColour: '#968c87', focusX: '77%' },
-	// the grey — the vanishing point down the shophouse street
-	{ id: 'rain', startsAt: 2.9, skyColour: '#5f656d', groundColour: '#4f545b', focusX: '50%' },
-	// the domes — the centre supertree
-	{ id: 'domes', startsAt: 7.1, skyColour: '#ddbf87', groundColour: '#444935', focusX: '48%' },
-	// Gate B14 — the traveller at the window
-	{ id: 'gate', startsAt: 12.3, skyColour: '#5d5959', groundColour: '#746355', focusX: '37%' }
+  // Changi T3
+  { id: 'changi', startsAt: 0.0, skyColour: '#dcc49f', groundColour: '#968c87', focusX: '77%' },
+  // the grey — the vanishing point down the shophouse street
+  { id: 'rain', startsAt: 2.9, skyColour: '#5f656d', groundColour: '#4f545b', focusX: '50%' },
+  // the domes — the centre supertree
+  { id: 'domes', startsAt: 7.1, skyColour: '#ddbf87', groundColour: '#444935', focusX: '48%' },
+  // Gate B14 — the traveller at the window
+  { id: 'gate', startsAt: 12.3, skyColour: '#5d5959', groundColour: '#746355', focusX: '37%' }
 ]
 
 /** Where a scene begins as a fraction of the scroll track (0 to 1). */
@@ -86,11 +86,11 @@ const sceneProgress = (i) => SCENES[i].startsAt / CLIP_SECONDS
  * adding one means editing a single place.
  */
 function paintScene(index) {
-	const scene = SCENES[index]
-	const { style } = dom.stage
-	style.setProperty('--zt-sky', scene.skyColour)
-	style.setProperty('--zt-ground', scene.groundColour)
-	style.setProperty('--zt-focus', scene.focusX)
+  const scene = SCENES[index]
+  const { style } = dom.stage
+  style.setProperty('--zt-sky', scene.skyColour)
+  style.setProperty('--zt-ground', scene.groundColour)
+  style.setProperty('--zt-focus', scene.focusX)
 }
 
 // the beats
@@ -112,28 +112,41 @@ function paintScene(index) {
  * top to bottom), and a soft plate for the close.
  */
 const BEATS = [
-	{ id: 'hero', anchor: 'lead', ground: 'light', scrim: 'column', window: '0 0.1 0 0.35' },
-	{ id: 'terminal', anchor: 'trail', ground: 'light', scrim: 'corner', window: '0.118 0.182 0.3 0.22' },
-	{ id: 'rain', anchor: 'lead', ground: 'dark', scrim: 'corner', window: '0.205 0.44 0.2 0.22' },
-	{ id: 'clears', anchor: 'lead', ground: 'dark', scrim: 'corner', window: '0.485 0.78 0.2 0.2' },
-	{ id: 'finale', anchor: 'center', ground: 'light', scrim: 'plate', window: '0.825 1 0.16 0', raised: true }
+  { id: 'hero', anchor: 'lead', ground: 'light', scrim: 'column', window: '0 0.1 0 0.35' },
+  {
+    id: 'terminal',
+    anchor: 'trail',
+    ground: 'light',
+    scrim: 'corner',
+    window: '0.118 0.182 0.3 0.22'
+  },
+  { id: 'rain', anchor: 'lead', ground: 'dark', scrim: 'corner', window: '0.205 0.44 0.2 0.22' },
+  { id: 'clears', anchor: 'lead', ground: 'dark', scrim: 'corner', window: '0.485 0.78 0.2 0.2' },
+  {
+    id: 'finale',
+    anchor: 'center',
+    ground: 'light',
+    scrim: 'plate',
+    window: '0.825 1 0.16 0',
+    raised: true
+  }
 ]
 
 /** Attributes for a copy block, so a beat is only described in one place. */
 function beatAttrs(id) {
-	const beat = BEATS.find((b) => b.id === id)
-	return {
-		class: [
-			'sc-copy',
-			`sc-copy--${beat.anchor}`,
-			'zt-copy',
-			beat.ground === 'light' && 'zt-copy--onlight',
-			beat.raised && 'zt-copy--raised'
-		],
-		'data-sc-copy': '',
-		'data-sc-window': beat.window,
-		'data-zt-copy': id
-	}
+  const beat = BEATS.find((b) => b.id === id)
+  return {
+    class: [
+      'sc-copy',
+      `sc-copy--${beat.anchor}`,
+      'zt-copy',
+      beat.ground === 'light' && 'zt-copy--onlight',
+      beat.raised && 'zt-copy--raised'
+    ],
+    'data-sc-copy': '',
+    'data-sc-window': beat.window,
+    'data-zt-copy': id
+  }
 }
 
 // the action
@@ -198,8 +211,8 @@ const clamp01 = (n) => Math.min(Math.max(n, 0), 1)
 
 /** 0 at or below `from`, 1 at or above `to`, eased in between. */
 function smoothstep(value, from, to) {
-	const t = clamp01((value - from) / (to - from))
-	return t * t * (3 - 2 * t)
+  const t = clamp01((value - from) / (to - from))
+  return t * t * (3 - 2 * t)
 }
 
 // the debrief
@@ -220,25 +233,29 @@ function smoothstep(value, from, to) {
  */
 
 /** The three claims under "What is Zoot?". */
-const DEBRIEF_TAGS = ['On-the-go trip planner', 'Designed for short layovers', 'Interactive planning']
+const DEBRIEF_TAGS = [
+  'On-the-go trip planner',
+  'Designed for short layovers',
+  'Interactive planning'
+]
 
 /** What the app actually does, one card each. `icon` is a Bootstrap Icons name. */
 const DEBRIEF_FEATURES = [
-	{
-		icon: 'bi-geo-alt-fill',
-		title: '3D quest map',
-		text: 'A tilted toy-city Singapore with your route, the weather and a live countdown to your gate, all on one screen.'
-	},
-	{
-		icon: 'bi-stars',
-		title: 'AI place picker',
-		text: 'Tell it your hours and interests. It picks the stops, the app times every leg, and it refuses plans that risk your flight.'
-	},
-	{
-		icon: 'bi-patch-check-fill',
-		title: 'Check-ins and XP',
-		text: 'Walk into a stop’s ring, slam a chop into your 3D passport and level up as the trip goes on.'
-	}
+  {
+    icon: 'bi-geo-alt-fill',
+    title: '3D quest map',
+    text: 'A tilted toy-city Singapore with your route, the weather and a live countdown to your gate, all on one screen.'
+  },
+  {
+    icon: 'bi-stars',
+    title: 'AI place picker',
+    text: 'Tell it your hours and interests. It picks the stops, the app times every leg, and it refuses plans that risk your flight.'
+  },
+  {
+    icon: 'bi-patch-check-fill',
+    title: 'Check-ins and XP',
+    text: 'Walk into a stop’s ring, slam a chop into your 3D passport and level up as the trip goes on.'
+  }
 ]
 
 /**
@@ -250,17 +267,17 @@ const DEBRIEF_FEATURES = [
  * trails the line so one row of markup can draw every stop.
  */
 const DEBRIEF_TIMELINE = [
-	{ time: '10:00', text: 'Lands at T3, 30 min to clear immigration' },
-	{ time: '10:30', text: 'Into town, every leg timed', tag: 'MRT', tone: 'ink' },
-	{ time: '13:00', text: 'Hawker lunch, then Gardens by the Bay (domes if it rains)' },
-	{ time: '16:30', text: 'Back at T3', tag: '90 min buffer', tone: 'pink' }
+  { time: '10:00', text: 'Lands at T3, 30 min to clear immigration' },
+  { time: '10:30', text: 'Into town, every leg timed', tag: 'MRT', tone: 'ink' },
+  { time: '13:00', text: 'Hawker lunch, then Gardens by the Bay (domes if it rains)' },
+  { time: '16:30', text: 'Back at T3', tag: '90 min buffer', tone: 'pink' }
 ]
 
 /** Why the day needs planning at all. Numbered by the template, not here. */
 const DEBRIEF_PROBLEMS = [
-	'Static lists leave travellers to figure out routing, timing and weather.',
-	'Layover passengers fear immigration delays, transit confusion and missing their flight.',
-	'Guided tours can’t personalise the day for one traveller.'
+  'Static lists leave travellers to figure out routing, timing and weather.',
+  'Layover passengers fear immigration delays, transit confusion and missing their flight.',
+  'Guided tours can’t personalise the day for one traveller.'
 ]
 
 // the view
@@ -270,9 +287,12 @@ const currentScene = ref(0)
 
 /** Elements cached at mount and then written to every frame. */
 const dom = {
-	stage: null, stills: [],        // the film
-	copy: [], scrims: [],           // the fixed copy layer
-	handoff: null, debrief: null    // the handoff into the debrief
+  stage: null,
+  stills: [], // the film
+  copy: [],
+  scrims: [], // the fixed copy layer
+  handoff: null,
+  debrief: null // the handoff into the debrief
 }
 
 let engine = null
@@ -287,12 +307,12 @@ let prefersReducedMotion = false
  * it, and measuring them separately is how two things meant to meet drift.
  */
 function scrolledVh() {
-	return (window.scrollY - (root.value?.offsetTop ?? 0)) / (window.innerHeight || 1)
+  return (window.scrollY - (root.value?.offsetTop ?? 0)) / (window.innerHeight || 1)
 }
 
 /** How far through the flight we are, 0 to 1. */
 function trackProgress() {
-	return clamp01(scrolledVh() / TRACK_VH)
+  return clamp01(scrolledVh() / TRACK_VH)
 }
 
 /**
@@ -300,7 +320,7 @@ function trackProgress() {
  * where the film ends and finishes with the debrief filling the screen.
  */
 function handoffProgress() {
-	return clamp01(scrolledVh() - TRACK_VH)
+  return clamp01(scrolledVh() - TRACK_VH)
 }
 
 /**
@@ -317,9 +337,9 @@ function handoffProgress() {
  * full opacity under the panel is a rendering bug in any motion setting.
  */
 function syncHandoff(handoff, fade) {
-	const lift = prefersReducedMotion ? 0 : handoff * HANDOFF_LIFT * (window.innerHeight || 1)
-	dom.handoff.style.opacity = fade.toFixed(3)
-	dom.handoff.style.transform = lift ? `translate3d(0, ${(-lift).toFixed(1)}px, 0)` : 'none'
+  const lift = prefersReducedMotion ? 0 : handoff * HANDOFF_LIFT * (window.innerHeight || 1)
+  dom.handoff.style.opacity = fade.toFixed(3)
+  dom.handoff.style.transform = lift ? `translate3d(0, ${(-lift).toFixed(1)}px, 0)` : 'none'
 }
 
 /**
@@ -329,8 +349,8 @@ function syncHandoff(handoff, fade) {
  * opacity, or the closing copy stays "visible" to it long after it has gone.
  */
 function opacityOf(block, fade) {
-	const own = parseFloat(block.style.opacity || '0')
-	return block.dataset.ztCopy === HANDOFF_BEAT ? own * fade : own
+  const own = parseFloat(block.style.opacity || '0')
+  return block.dataset.ztCopy === HANDOFF_BEAT ? own * fade : own
 }
 
 /**
@@ -343,15 +363,15 @@ function opacityOf(block, fade) {
  * also means reloading halfway down restores the right fill.
  */
 function syncScene(progress) {
-	let scene = 0
-	for (let i = 0; i < SCENES.length; i++) {
-		if (progress >= sceneProgress(i)) scene = i
-	}
+  let scene = 0
+  for (let i = 0; i < SCENES.length; i++) {
+    if (progress >= sceneProgress(i)) scene = i
+  }
 
-	if (scene !== currentScene.value) {
-		currentScene.value = scene
-		paintScene(scene)
-	}
+  if (scene !== currentScene.value) {
+    currentScene.value = scene
+    paintScene(scene)
+  }
 }
 
 /**
@@ -384,11 +404,11 @@ function syncScene(progress) {
  * already makes about the root's own offset.)
  */
 function syncStage() {
-	const viewport = window.innerHeight || 0
-	const top = (root.value?.offsetTop ?? 0) + dom.debrief.offsetTop - window.scrollY
-	const covered = top <= COVER_SLACK && top + dom.debrief.offsetHeight >= viewport - COVER_SLACK
-	const visibility = covered ? 'hidden' : ''
-	if (dom.stage.style.visibility !== visibility) dom.stage.style.visibility = visibility
+  const viewport = window.innerHeight || 0
+  const top = (root.value?.offsetTop ?? 0) + dom.debrief.offsetTop - window.scrollY
+  const covered = top <= COVER_SLACK && top + dom.debrief.offsetHeight >= viewport - COVER_SLACK
+  const visibility = covered ? 'hidden' : ''
+  if (dom.stage.style.visibility !== visibility) dom.stage.style.visibility = visibility
 }
 
 /**
@@ -402,9 +422,9 @@ function syncStage() {
  * rather than sitting lit behind copy that has already gone.
  */
 function syncScrims(fade) {
-	for (const { scrim, copy } of dom.scrims) {
-		scrim.style.opacity = opacityOf(copy, fade).toFixed(3)
-	}
+  for (const { scrim, copy } of dom.scrims) {
+    scrim.style.opacity = opacityOf(copy, fade).toFixed(3)
+  }
 }
 
 /**
@@ -416,10 +436,10 @@ function syncScrims(fade) {
  * first screen of the debrief.
  */
 function syncFocusability(fade) {
-	for (const block of dom.copy) {
-		const hidden = opacityOf(block, fade) <= 0.5
-		if (block.inert !== hidden) block.inert = hidden
-	}
+  for (const block of dom.copy) {
+    const hidden = opacityOf(block, fade) <= 0.5
+    if (block.inert !== hidden) block.inert = hidden
+  }
 }
 
 /**
@@ -428,31 +448,31 @@ function syncFocusability(fade) {
  * film cuts at, so the story still reads with no motion at all.
  */
 function crossfadeStills(progress) {
-	dom.stills.forEach((still, i) => {
-		const scene = i + 1 // stills cover scenes 2..4; scene 1 is the base poster
-		const from = sceneProgress(scene)
-		const until = scene + 1 < SCENES.length ? sceneProgress(scene + 1) : 1
-		const fadeOver = Math.max((until - from) * 0.12, 0.001)
-		still.style.opacity = clamp01((progress - from) / fadeOver).toFixed(3)
-	})
+  dom.stills.forEach((still, i) => {
+    const scene = i + 1 // stills cover scenes 2..4; scene 1 is the base poster
+    const from = sceneProgress(scene)
+    const until = scene + 1 < SCENES.length ? sceneProgress(scene + 1) : 1
+    const fadeOver = Math.max((until - from) * 0.12, 0.001)
+    still.style.opacity = clamp01((progress - from) / fadeOver).toFixed(3)
+  })
 }
 
 function render() {
-	pendingFrame = 0
-	const progress = trackProgress()
-	const handoff = handoffProgress()
-	const fade = 1 - smoothstep(handoff, HANDOFF_FADE.from, HANDOFF_FADE.to)
+  pendingFrame = 0
+  const progress = trackProgress()
+  const handoff = handoffProgress()
+  const fade = 1 - smoothstep(handoff, HANDOFF_FADE.from, HANDOFF_FADE.to)
 
-	syncScene(progress)
-	syncHandoff(handoff, fade)
-	syncScrims(fade)
-	syncFocusability(fade)
-	syncStage()
-	if (prefersReducedMotion) crossfadeStills(progress)
+  syncScene(progress)
+  syncHandoff(handoff, fade)
+  syncScrims(fade)
+  syncFocusability(fade)
+  syncStage()
+  if (prefersReducedMotion) crossfadeStills(progress)
 }
 
 function onScroll() {
-	if (!pendingFrame) pendingFrame = requestAnimationFrame(render)
+  if (!pendingFrame) pendingFrame = requestAnimationFrame(render)
 }
 
 /**
@@ -462,26 +482,29 @@ function onScroll() {
  * `position: fixed`, and the engine measures the stage as it mounts.
  */
 function loadEngineStyles() {
-	return new Promise((resolve) => {
-		engineStyles = document.createElement('link')
-		engineStyles.rel = 'stylesheet'
-		engineStyles.href = '/story/scrollcraft.css'
-		engineStyles.onload = resolve
-		engineStyles.onerror = resolve
-		document.head.appendChild(engineStyles)
-	})
+  return new Promise((resolve) => {
+    engineStyles = document.createElement('link')
+    engineStyles.rel = 'stylesheet'
+    engineStyles.href = '/story/scrollcraft.css'
+    engineStyles.onload = resolve
+    engineStyles.onerror = resolve
+    document.head.appendChild(engineStyles)
+  })
 }
 
 function cacheElements() {
-	const el = root.value
-	dom.stage = el.querySelector('[data-sc-world]')
-	dom.copy = Array.from(el.querySelectorAll('[data-sc-copy]'))
-	dom.stills = Array.from(el.querySelectorAll('[data-zt-still]'))
-	dom.scrims = Array.from(el.querySelectorAll('[data-zt-scrim]'))
-		.map((scrim) => ({ scrim, copy: el.querySelector(`[data-zt-copy="${scrim.dataset.ztScrim}"]`) }))
-		.filter(({ copy }) => copy)
-	dom.handoff = el.querySelector('[data-zt-handoff]')
-	dom.debrief = el.querySelector('.zt-debrief')
+  const el = root.value
+  dom.stage = el.querySelector('[data-sc-world]')
+  dom.copy = Array.from(el.querySelectorAll('[data-sc-copy]'))
+  dom.stills = Array.from(el.querySelectorAll('[data-zt-still]'))
+  dom.scrims = Array.from(el.querySelectorAll('[data-zt-scrim]'))
+    .map((scrim) => ({
+      scrim,
+      copy: el.querySelector(`[data-zt-copy="${scrim.dataset.ztScrim}"]`)
+    }))
+    .filter(({ copy }) => copy)
+  dom.handoff = el.querySelector('[data-zt-handoff]')
+  dom.debrief = el.querySelector('.zt-debrief')
 }
 
 /**
@@ -491,197 +514,240 @@ function cacheElements() {
  * and webfonts have settled.
  */
 function forceRelayout() {
-	dispatchEvent(new Event('resize'))
+  dispatchEvent(new Event('resize'))
 }
 
 onMounted(async () => {
-	prefersReducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
-	document.documentElement.classList.add('zt-story-route')
+  prefersReducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
+  document.documentElement.classList.add('zt-story-route')
 
-	await loadEngineStyles()
-	// Attaches window.ScrollCraft as a side effect; it exports nothing.
-	await import('../components/story/engine/scrollcraft.js')
+  await loadEngineStyles()
+  // Attaches window.ScrollCraft as a side effect; it exports nothing.
+  await import('../components/story/engine/scrollcraft.js')
 
-	cacheElements()
-	paintScene(0)
+  cacheElements()
+  paintScene(0)
 
-	// Mounted on `document`, not on the mode root: the engine looks for the mode
-	// root among its argument's DESCENDANTS, so handing it the element that
-	// carries the attribute finds nothing and fails silently.
-	engine = window.ScrollCraft.mount(document)
+  // Mounted on `document`, not on the mode root: the engine looks for the mode
+  // root among its argument's DESCENDANTS, so handing it the element that
+  // carries the attribute finds nothing and fails silently.
+  engine = window.ScrollCraft.mount(document)
 
-	addEventListener('scroll', onScroll, { passive: true })
-	addEventListener('resize', onScroll, { passive: true })
-	addEventListener('load', forceRelayout)
-	document.fonts?.ready.then(forceRelayout)
-	requestAnimationFrame(forceRelayout)
-	render()
+  addEventListener('scroll', onScroll, { passive: true })
+  addEventListener('resize', onScroll, { passive: true })
+  addEventListener('load', forceRelayout)
+  document.fonts?.ready.then(forceRelayout)
+  requestAnimationFrame(forceRelayout)
+  render()
 })
 
 onBeforeUnmount(() => {
-	document.documentElement.classList.remove('zt-story-route')
-	if (pendingFrame) cancelAnimationFrame(pendingFrame)
-	removeEventListener('scroll', onScroll)
-	removeEventListener('resize', onScroll)
-	removeEventListener('load', forceRelayout)
-	engine?.destroy()
-	engineStyles?.remove()
+  document.documentElement.classList.remove('zt-story-route')
+  if (pendingFrame) cancelAnimationFrame(pendingFrame)
+  removeEventListener('scroll', onScroll)
+  removeEventListener('resize', onScroll)
+  removeEventListener('load', forceRelayout)
+  engine?.destroy()
+  engineStyles?.remove()
 })
 </script>
 
 <template>
-	<Teleport to="body">
-		<main class="zt-story" ref="root" data-sc-mode="worldflight" data-sc-lerp="0.12">
-			<div data-sc-world>
-				<div data-sc-segment :data-sc-w="TRACK_VH">
-					<img
-						class="sc-world__poster"
-						src="/story/flight-changi.webp"
-						alt=""
-						width="1280"
-						height="720"
-						decoding="async"
-					/>
-					<img
-						v-for="scene in SCENES.slice(1)"
-						:key="scene.id"
-						data-zt-still
-						:src="`/story/flight-${scene.id}.webp`"
-						alt=""
-						width="1280"
-						height="720"
-						decoding="async"
-						style="opacity: 0"
-					/>
-					<video data-sc-src="/story/flight.mp4"></video>
-				</div>
-			</div>
+  <Teleport to="body">
+    <main class="zt-story" ref="root" data-sc-mode="worldflight" data-sc-lerp="0.12">
+      <div data-sc-world>
+        <div data-sc-segment :data-sc-w="TRACK_VH">
+          <img
+            class="sc-world__poster"
+            src="/story/flight-changi.webp"
+            alt=""
+            width="1280"
+            height="720"
+            decoding="async"
+          />
+          <img
+            v-for="scene in SCENES.slice(1)"
+            :key="scene.id"
+            data-zt-still
+            :src="`/story/flight-${scene.id}.webp`"
+            alt=""
+            width="1280"
+            height="720"
+            decoding="async"
+            style="opacity: 0"
+          />
+          <video data-sc-src="/story/flight.mp4"></video>
+        </div>
+      </div>
 
-			<div data-sc-world-copy>
-				<div
-					v-for="beat in BEATS"
-					:key="beat.id"
-					class="zt-scrim"
-					:class="[`zt-scrim--${beat.scrim}`, `zt-scrim--${beat.anchor}`, `zt-scrim--on${beat.ground}`]"
-					:data-zt-scrim="beat.id"
-					aria-hidden="true"
-				></div>
+      <div data-sc-world-copy>
+        <div
+          v-for="beat in BEATS"
+          :key="beat.id"
+          class="zt-scrim"
+          :class="[
+            `zt-scrim--${beat.scrim}`,
+            `zt-scrim--${beat.anchor}`,
+            `zt-scrim--on${beat.ground}`
+          ]"
+          :data-zt-scrim="beat.id"
+          aria-hidden="true"
+        ></div>
 
-				<div v-bind="beatAttrs('hero')">
-					<img class="zt-wordmark" src="/brand/zoot-wordmark.png" alt="Zoot" width="581" height="282" />
-					<h1 class="zt-h1">Eight hours in Singapore,<br />why waste time?</h1>
-					<p class="zt-lede">Zoot helps you plan the day backwards from your boarding time, then walks you through it stop by stop, ensuring you reach back on time.</p>
-					<button class="zt-cta" type="button" @click="router.push(CTA.to)">{{ CTA.label }}</button>
-				</div>
+        <div v-bind="beatAttrs('hero')">
+          <img
+            class="zt-wordmark"
+            src="/brand/zoot-wordmark.png"
+            alt="Zoot"
+            width="581"
+            height="282"
+          />
+          <h1 class="zt-h1">Eight hours in Singapore,<br />why waste time?</h1>
+          <p class="zt-lede">
+            Zoot helps you plan the day backwards from your boarding time, then walks you through it
+            stop by stop, ensuring you reach back on time.
+          </p>
+          <button class="zt-cta" type="button" @click="router.push(CTA.to)">{{ CTA.label }}</button>
+        </div>
 
-				<div v-bind="beatAttrs('terminal')">
-					<h2 class="zt-h2">Most people spend it in the terminal.</h2>
-					<p class="zt-lede">Not because there’s nothing out there to explore, but because they’re too afraid of missing their flight.</p>
-				</div>
+        <div v-bind="beatAttrs('terminal')">
+          <h2 class="zt-h2">Most people spend it in the terminal.</h2>
+          <p class="zt-lede">
+            Not because there’s nothing out there to explore, but because they’re too afraid of
+            missing their flight.
+          </p>
+        </div>
 
-				<div v-bind="beatAttrs('rain')">
-					<h2 class="zt-h2">What if it rains suddenly?</h2>
-					<p class="zt-lede">Zoot got you all covered, the plan moves indoors instead of falling apart and delaying you.</p>
-				</div>
+        <div v-bind="beatAttrs('rain')">
+          <h2 class="zt-h2">What if it rains suddenly?</h2>
+          <p class="zt-lede">
+            Zoot got you all covered, the plan moves indoors instead of falling apart and delaying
+            you.
+          </p>
+        </div>
 
-				<div v-bind="beatAttrs('clears')">
-					<h2 class="zt-h2 zt-h2--big">And then it clears.</h2>
-					<p class="zt-lede">You walk into the ring around a stop, and then chop lands stamps and achievements in your passport.</p>
-				</div>
+        <div v-bind="beatAttrs('clears')">
+          <h2 class="zt-h2 zt-h2--big">And then it clears.</h2>
+          <p class="zt-lede">
+            You walk into the ring around a stop, and then chop lands stamps and achievements in
+            your passport.
+          </p>
+        </div>
 
-				<!-- The closing beat is the one the debrief has to take over from, so
+        <!-- The closing beat is the one the debrief has to take over from, so
 				     its contents sit on a wrapper this file can lift and dissolve
 				     without touching the opacity and transform the engine owns. -->
-				<div v-bind="beatAttrs(HANDOFF_BEAT)">
-					<div class="zt-handoff" data-zt-handoff>
-						<h2 class="zt-h2">Back at the gate with 90 minutes to spare.</h2>
-						<p class="zt-lede">Zoot refuses a plan that cuts it closer. That is the only promise it makes.</p>
-						<div class="zt-pass">
-							<div class="zt-pass__stub">
-								<span class="zt-pass__key">Boarding</span>
-								<b class="zt-pass__value">18:00</b>
-							</div>
-							<div class="zt-pass__main">
-								<span class="zt-pass__key">Layover</span>
-								<b class="zt-pass__value">Singapore · 8h</b>
-							</div>
-							<button class="zt-cta zt-cta--pass" type="button" @click="router.push(CTA.to)">{{ CTA.label }}</button>
-						</div>
-					</div>
-				</div>
-			</div>
+        <div v-bind="beatAttrs(HANDOFF_BEAT)">
+          <div class="zt-handoff" data-zt-handoff>
+            <h2 class="zt-h2">Back at the gate with 90 minutes to spare.</h2>
+            <p class="zt-lede">
+              Zoot refuses a plan that cuts it closer. That is the only promise it makes.
+            </p>
+            <div class="zt-pass">
+              <div class="zt-pass__stub">
+                <span class="zt-pass__key">Boarding</span>
+                <b class="zt-pass__value">18:00</b>
+              </div>
+              <div class="zt-pass__main">
+                <span class="zt-pass__key">Layover</span>
+                <b class="zt-pass__value">Singapore · 8h</b>
+              </div>
+              <button class="zt-cta zt-cta--pass" type="button" @click="router.push(CTA.to)">
+                {{ CTA.label }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-			<div data-sc-spacer aria-hidden="true"></div>
+      <div data-sc-spacer aria-hidden="true"></div>
 
-			<!-- The last thing on the page, and the only part of it with a height of
+      <!-- The last thing on the page, and the only part of it with a height of
 			     its own: it slides up over the frozen final frame once the film ends. -->
-			<section class="zt-debrief">
-				<div class="zt-debrief__inner">
-					<section class="zt-debrief__panel">
-						<div class="zt-debrief__header">
-							<h2 class="zt-display zt-debrief__title">What is Zoot?</h2>
-							<button class="zt-cta" type="button" @click="router.push(CTA.to)">{{ CTA.label }}</button>
-						</div>
+      <section class="zt-debrief">
+        <div class="zt-debrief__inner">
+          <section class="zt-debrief__panel">
+            <div class="zt-debrief__header">
+              <h2 class="zt-display zt-debrief__title">What is Zoot?</h2>
+              <button class="zt-cta" type="button" @click="router.push(CTA.to)">
+                {{ CTA.label }}
+              </button>
+            </div>
 
-						<ul class="zt-debrief__tags">
-							<li v-for="tag in DEBRIEF_TAGS" :key="tag" class="zt-pill zt-debrief__tag">{{ tag }}</li>
-						</ul>
+            <ul class="zt-debrief__tags">
+              <li v-for="tag in DEBRIEF_TAGS" :key="tag" class="zt-pill zt-debrief__tag">
+                {{ tag }}
+              </li>
+            </ul>
 
-						<ul class="zt-debrief__features">
-							<li
-								v-for="(feature, i) in DEBRIEF_FEATURES"
-								:key="feature.title"
-								class="zt-card zt-debrief__feature"
-							>
-								<span class="zt-pill zt-debrief__label">Feature {{ i + 1 }}</span>
-								<span class="zt-debrief__icon" aria-hidden="true"><i class="bi" :class="feature.icon"></i></span>
-								<h3 class="zt-debrief__feature-title">{{ feature.title }}</h3>
-								<p class="zt-debrief__feature-text">{{ feature.text }}</p>
-							</li>
-						</ul>
-					</section>
+            <ul class="zt-debrief__features">
+              <li
+                v-for="(feature, i) in DEBRIEF_FEATURES"
+                :key="feature.title"
+                class="zt-card zt-debrief__feature"
+              >
+                <span class="zt-pill zt-debrief__label">Feature {{ i + 1 }}</span>
+                <span class="zt-debrief__icon" aria-hidden="true"
+                  ><i class="bi" :class="feature.icon"></i
+                ></span>
+                <h3 class="zt-debrief__feature-title">{{ feature.title }}</h3>
+                <p class="zt-debrief__feature-text">{{ feature.text }}</p>
+              </li>
+            </ul>
+          </section>
 
-					<section class="zt-debrief__panel">
-						<div class="zt-debrief__persona">
-							<div class="zt-debrief__brief">
-								<span class="zt-pill ink zt-debrief__label">Meet Sam, 21</span>
-								<h2 class="zt-display zt-debrief__title zt-debrief__title--persona">
-									He has an 8 hour layover in Singapore. What does he do?
-								</h2>
-								<p class="zt-debrief__text">He stays in the terminal. Not because there’s nothing to do, but because he doesn’t know what’s safe to try. With Zoot he gets this instead:</p>
-							</div>
+          <section class="zt-debrief__panel">
+            <div class="zt-debrief__persona">
+              <div class="zt-debrief__brief">
+                <span class="zt-pill ink zt-debrief__label">Meet Sam, 21</span>
+                <h2 class="zt-display zt-debrief__title zt-debrief__title--persona">
+                  He has an 8 hour layover in Singapore. What does he do?
+                </h2>
+                <p class="zt-debrief__text">
+                  He stays in the terminal. Not because there’s nothing to do, but because he
+                  doesn’t know what’s safe to try. With Zoot he gets this instead:
+                </p>
+              </div>
 
-							<ol class="zt-debrief__timeline">
-								<li v-for="stop in DEBRIEF_TIMELINE" :key="stop.time" class="zt-debrief__stop">
-									<b class="zt-debrief__time">{{ stop.time }}</b>
-									<span>{{ stop.text }}</span>
-									<span v-if="stop.tag" class="zt-pill zt-debrief__chip" :class="stop.tone">{{ stop.tag }}</span>
-								</li>
-							</ol>
-						</div>
-					</section>
+              <ol class="zt-debrief__timeline">
+                <li v-for="stop in DEBRIEF_TIMELINE" :key="stop.time" class="zt-debrief__stop">
+                  <b class="zt-debrief__time">{{ stop.time }}</b>
+                  <span>{{ stop.text }}</span>
+                  <span v-if="stop.tag" class="zt-pill zt-debrief__chip" :class="stop.tone">{{
+                    stop.tag
+                  }}</span>
+                </li>
+              </ol>
+            </div>
+          </section>
 
-					<section class="zt-debrief__panel">
-						<h2 class="zt-display zt-debrief__title">Endless options, ticking clock</h2>
-						<ol class="zt-debrief__problems">
-							<li
-								v-for="(problem, i) in DEBRIEF_PROBLEMS"
-								:key="problem"
-								class="zt-band zt-debrief__problem"
-							>
-								<b class="zt-display zt-debrief__problem-no">{{ i + 1 }}</b>
-								<span>{{ problem }}</span>
-							</li>
-						</ol>
-					</section>
+          <section class="zt-debrief__panel">
+            <h2 class="zt-display zt-debrief__title">Endless options, ticking clock</h2>
+            <ol class="zt-debrief__problems">
+              <li
+                v-for="(problem, i) in DEBRIEF_PROBLEMS"
+                :key="problem"
+                class="zt-band zt-debrief__problem"
+              >
+                <b class="zt-display zt-debrief__problem-no">{{ i + 1 }}</b>
+                <span>{{ problem }}</span>
+              </li>
+            </ol>
+          </section>
 
-					<div class="zt-debrief__close">
-						<img class="zt-debrief__mark" src="/brand/zoot-badge-192.png" alt="" width="44" height="44" />
-					</div>
-				</div>
-			</section>
-		</main>
-	</Teleport>
+          <div class="zt-debrief__close">
+            <img
+              class="zt-debrief__mark"
+              src="/brand/zoot-badge-192.png"
+              alt=""
+              width="44"
+              height="44"
+            />
+          </div>
+        </div>
+      </section>
+    </main>
+  </Teleport>
 </template>
 
 <style>
@@ -700,7 +766,7 @@ onBeforeUnmount(() => {
    that a bounce is supposed to hint at. */
 html.zt-story-route,
 html.zt-story-route body {
-	overscroll-behavior-y: none;
+  overscroll-behavior-y: none;
 }
 </style>
 
@@ -710,7 +776,7 @@ html.zt-story-route body {
    can go on owning opacity and transform on the block outside it. Only the
    pre-paint state is here; syncHandoff() writes the rest every frame. */
 .zt-handoff {
-	will-change: transform, opacity;
+  will-change: transform, opacity;
 }
 
 /* the debrief
@@ -732,41 +798,41 @@ html.zt-story-route body {
    later, higher layer from flashing over the hero and intercepting its CTA
    during that startup window. */
 html:not(.sc-ready) .zt-debrief {
-	visibility: hidden;
-	pointer-events: none;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .zt-debrief {
-	/* The yellow surfaces below are brand colours that stay put in dark mode, so
+  /* The yellow surfaces below are brand colours that stay put in dark mode, so
 	   the ink on them must too. app.css exposes --zt-on-yellow for exactly this. */
-	--zt-ink-fixed: var(--zt-on-yellow, #111111);
-	position: relative;
-	/* --sc-z-copy is the fixed copy layer. One above it, named rather than 21. */
-	z-index: calc(var(--sc-z-copy, 20) + 1);
-	background: var(--zt-bg);
-	color: var(--zt-ink);
-	font-family: var(--bs-body-font-family);
-	font-size: 0.95rem;
-	line-height: 1.5;
-	border-top: var(--zt-bw) solid var(--zt-line);
+  --zt-ink-fixed: var(--zt-on-yellow, #111111);
+  position: relative;
+  /* --sc-z-copy is the fixed copy layer. One above it, named rather than 21. */
+  z-index: calc(var(--sc-z-copy, 20) + 1);
+  background: var(--zt-bg);
+  color: var(--zt-ink);
+  font-family: var(--bs-body-font-family);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  border-top: var(--zt-bw) solid var(--zt-line);
 }
 
 .zt-debrief__inner {
-	max-width: 68rem;
-	margin-inline: auto;
-	padding: clamp(2.5rem, 7vw, 4.5rem) clamp(1.25rem, 5vw, 3rem) clamp(3rem, 8vw, 5rem);
+  max-width: 68rem;
+  margin-inline: auto;
+  padding: clamp(2.5rem, 7vw, 4.5rem) clamp(1.25rem, 5vw, 3rem) clamp(3rem, 8vw, 5rem);
 }
 
 .zt-debrief__panel + .zt-debrief__panel {
-	margin-top: clamp(2.5rem, 7vw, 4rem);
+  margin-top: clamp(2.5rem, 7vw, 4rem);
 }
 
 /* type */
 
 .zt-debrief__title {
-	margin: 0 0 1rem;
-	font-size: clamp(2.2rem, 6vw, 3.4rem);
-	text-wrap: balance;
+  margin: 0 0 1rem;
+  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  text-wrap: balance;
 }
 
 /* The panel's one action, set level with the first heading rather than after
@@ -774,190 +840,190 @@ html:not(.sc-ready) .zt-debrief {
    length of the argument to act on it. It wraps below the heading on a narrow
    screen, which keeps it above every word of that argument either way. */
 .zt-debrief__header {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	justify-content: space-between;
-	gap: 1rem;
-	/* Enough that the wrapped button does not read as a fourth tag pill below. */
-	margin-bottom: 1.35rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  /* Enough that the wrapped button does not read as a fourth tag pill below. */
+  margin-bottom: 1.35rem;
 }
 
 /* The pair's spacing belongs to the row now, not to the heading inside it. */
 .zt-debrief__header .zt-debrief__title {
-	margin: 0;
+  margin: 0;
 }
 
 .zt-debrief__text {
-	margin: 0;
-	font-weight: 500;
-	text-wrap: pretty;
+  margin: 0;
+  font-weight: 500;
+  text-wrap: pretty;
 }
 
 /* The pills come styled; these only place them. `__tag` is the oversized
    variant used as a claim, `__label` captions a block, `__chip` sits inline. */
 .zt-debrief__tag {
-	padding: 6px 16px;
-	font-size: 0.82rem;
-	border-width: var(--zt-bw);
+  padding: 6px 16px;
+  font-size: 0.82rem;
+  border-width: var(--zt-bw);
 }
 
 .zt-debrief__label {
-	margin-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
 }
 
 .zt-debrief__chip {
-	margin-left: 0.5rem;
-	vertical-align: middle;
+  margin-left: 0.5rem;
+  vertical-align: middle;
 }
 
 /* what is zoot */
 
 .zt-debrief__tags {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.5rem;
-	margin: 0 0 1.5rem;
-	padding: 0;
-	list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
 }
 
 .zt-debrief__features {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-	gap: 1rem;
-	margin: 0;
-	padding: 0;
-	list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .zt-debrief__feature {
-	padding: 1.5rem;
+  padding: 1.5rem;
 }
 
 .zt-debrief__icon {
-	display: grid;
-	place-items: center;
-	width: 56px;
-	height: 56px;
-	font-size: 1.5rem;
-	color: var(--zt-ink-fixed);
-	background: var(--zt-yellow);
-	border: var(--zt-bw) solid var(--zt-line);
-	border-radius: 50%;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  font-size: 1.5rem;
+  color: var(--zt-ink-fixed);
+  background: var(--zt-yellow);
+  border: var(--zt-bw) solid var(--zt-line);
+  border-radius: 50%;
 }
 
 .zt-debrief__feature-title {
-	margin: 0.85rem 0 0.4rem;
-	font-size: 1.05rem;
+  margin: 0.85rem 0 0.4rem;
+  font-size: 1.05rem;
 }
 
 .zt-debrief__feature-text {
-	margin: 0;
-	color: var(--zt-muted);
+  margin: 0;
+  color: var(--zt-muted);
 }
 
 /* sam */
 
 .zt-debrief__persona {
-	display: grid;
-	grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-	gap: 1.5rem;
-	align-items: center;
-	padding: 1.75rem;
-	/* Stated, not inherited: the card is yellow in both app themes, so its ink
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 1.5rem;
+  align-items: center;
+  padding: 1.75rem;
+  /* Stated, not inherited: the card is yellow in both app themes, so its ink
 	   is the one colour on this page that never flips. */
-	color: var(--zt-ink-fixed);
-	background: var(--zt-yellow-soft);
-	border: var(--zt-bw) solid var(--zt-ink-fixed);
-	border-radius: 26px;
-	box-shadow: 6px 6px 0 var(--zt-shadow-color);
+  color: var(--zt-ink-fixed);
+  background: var(--zt-yellow-soft);
+  border: var(--zt-bw) solid var(--zt-ink-fixed);
+  border-radius: 26px;
+  box-shadow: 6px 6px 0 var(--zt-shadow-color);
 }
 
 .zt-debrief__title--persona {
-	margin: 0.25rem 0 0.5rem;
-	font-size: clamp(1.8rem, 4.4vw, 2.6rem);
+  margin: 0.25rem 0 0.5rem;
+  font-size: clamp(1.8rem, 4.4vw, 2.6rem);
 }
 
 .zt-debrief__timeline {
-	margin: 0;
-	padding: 0;
-	list-style: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .zt-debrief__stop {
-	position: relative;
-	padding: 0.65rem 0 0.65rem 1.25rem;
-	font-weight: 500;
-	border-left: 3px solid var(--zt-ink-fixed);
+  position: relative;
+  padding: 0.65rem 0 0.65rem 1.25rem;
+  font-weight: 500;
+  border-left: 3px solid var(--zt-ink-fixed);
 }
 
 .zt-debrief__stop::before {
-	content: '';
-	position: absolute;
-	top: 0.9rem;
-	left: -9px;
-	width: 15px;
-	height: 15px;
-	background: var(--zt-yellow);
-	border: 3px solid var(--zt-ink-fixed);
-	border-radius: 50%;
+  content: '';
+  position: absolute;
+  top: 0.9rem;
+  left: -9px;
+  width: 15px;
+  height: 15px;
+  background: var(--zt-yellow);
+  border: 3px solid var(--zt-ink-fixed);
+  border-radius: 50%;
 }
 
 .zt-debrief__time {
-	margin-right: 0.5rem;
-	font-weight: 800;
-	font-variant-numeric: tabular-nums;
+  margin-right: 0.5rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
 /* the problems */
 
 .zt-debrief__problems {
-	display: grid;
-	gap: 0.75rem;
-	margin: 0;
-	padding: 0;
-	list-style: none;
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .zt-debrief__problem {
-	display: flex;
-	align-items: center;
-	gap: 1rem;
-	padding: 0.9rem 1.15rem;
-	font-family: var(--zt-font-head);
-	font-weight: 600;
-	line-height: 1.25;
-	text-transform: uppercase;
-	box-shadow: 4px 4px 0 var(--zt-shadow-color);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.15rem;
+  font-family: var(--zt-font-head);
+  font-weight: 600;
+  line-height: 1.25;
+  text-transform: uppercase;
+  box-shadow: 4px 4px 0 var(--zt-shadow-color);
 }
 
 .zt-debrief__problem-no {
-	min-width: 26px;
-	font-size: 2.4rem;
-	line-height: 1;
+  min-width: 26px;
+  font-size: 2.4rem;
+  line-height: 1;
 }
 
 /* the close */
 
 .zt-debrief__close {
-	display: grid;
-	justify-items: center;
-	margin-top: clamp(2rem, 5vw, 3rem);
-	text-align: center;
+  display: grid;
+  justify-items: center;
+  margin-top: clamp(2rem, 5vw, 3rem);
+  text-align: center;
 }
 
 .zt-debrief__mark {
-	width: 44px;
-	height: 44px;
+  width: 44px;
+  height: 44px;
 }
 
 /* phones */
 
 @media (max-width: 767px) {
-	.zt-debrief__persona {
-		grid-template-columns: 1fr;
-		padding: 1.25rem;
-	}
+  .zt-debrief__persona {
+    grid-template-columns: 1fr;
+    padding: 1.25rem;
+  }
 }
 </style>

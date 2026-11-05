@@ -7,7 +7,14 @@ const at = (hhmm) => `2026-10-21T${hhmm}:00+08:00`
 const T = (hhmm) => Date.parse(at(hhmm))
 
 const visit = (place_id, name, from, to, extra = {}) => ({
-  kind: 'visit', status: 'pending', place_id, name, arrive_iso: at(from), depart_iso: at(to), stay_min: (T(to) - T(from)) / 60000, ...extra
+  kind: 'visit',
+  status: 'pending',
+  place_id,
+  name,
+  arrive_iso: at(from),
+  depart_iso: at(to),
+  stay_min: (T(to) - T(from)) / 60000,
+  ...extra
 })
 
 /** The guest's plan from the spec's worked example. Airport 23:15 = strict back-at-airport time. */
@@ -17,13 +24,33 @@ function guestPlan() {
     visit('superpark', 'Superpark', '17:00', '19:00'),
     visit('esplanade-dinner', 'Dinner Esplanade', '19:20', '20:00'),
     visit('paya-lebar-drinks', 'Drinks Paya Lebar', '20:40', '22:00'),
-    { kind: 'return', status: 'pending', name: 'Changi Airport T3', arrive_iso: at('23:15'), arrive_by: at('23:15') }
+    {
+      kind: 'return',
+      status: 'pending',
+      name: 'Changi Airport T3',
+      arrive_iso: at('23:15'),
+      arrive_by: at('23:15')
+    }
   ]
 }
-const hostStop = (place_id, name, from, to) => ({ kind: 'visit', place_id, name, arrive_iso: at(from), depart_iso: at(to), xp: 60 })
+const hostStop = (place_id, name, from, to) => ({
+  kind: 'visit',
+  place_id,
+  name,
+  arrive_iso: at(from),
+  depart_iso: at(to),
+  xp: 60
+})
 
 function join(joinStops, { backMin = 45, airport = '23:15', legs = guestPlan() } = {}) {
-  return resolveJoin({ legs, joinStops, hostName: 'Mei', partyId: 'p1', airportByMs: T(airport), backMin })
+  return resolveJoin({
+    legs,
+    joinStops,
+    hostName: 'Mei',
+    partyId: 'p1',
+    airportByMs: T(airport),
+    backMin
+  })
 }
 const names = (list) => list.map((x) => (x.leg || x).name)
 
@@ -45,7 +72,10 @@ describe('resolveJoin: worked examples from the spec', () => {
   })
 
   it('Join 18:20–20:30 → Superpark, Dinner Esplanade and Drinks (10 min gap) removed', () => {
-    const r = join([hostStop('a', 'Dinner with Mei', '18:20', '19:30'), hostStop('b', 'Walk with Mei', '19:40', '20:30')])
+    const r = join([
+      hostStop('a', 'Dinner with Mei', '18:20', '19:30'),
+      hostStop('b', 'Walk with Mei', '19:40', '20:30')
+    ])
     expect(names(r.removed)).toEqual(['Superpark', 'Dinner Esplanade', 'Drinks Paya Lebar'])
     expect(r.removed.map((x) => x.why)).toEqual(['overlap', 'overlap', 'gap'])
     expect(names(r.kept)).toEqual(['GBTB'])
@@ -62,8 +92,20 @@ describe('resolveJoin: rules', () => {
   it('rule 1: joined stops become fixed blocks tagged with the host, in time order', () => {
     const r = join([hostStop('mbs', 'MBS', '20:45', '21:45')])
     const block = r.legs.find((l) => l.fixed)
-    expect(block).toMatchObject({ fixed: true, with_host: 'Mei', party_id: 'p1', status: 'pending', name: 'MBS' })
-    expect(r.legs.map((l) => l.name)).toEqual(['GBTB', 'Superpark', 'Dinner Esplanade', 'MBS', 'Changi Airport T3'])
+    expect(block).toMatchObject({
+      fixed: true,
+      with_host: 'Mei',
+      party_id: 'p1',
+      status: 'pending',
+      name: 'MBS'
+    })
+    expect(r.legs.map((l) => l.name)).toEqual([
+      'GBTB',
+      'Superpark',
+      'Dinner Esplanade',
+      'MBS',
+      'Changi Airport T3'
+    ])
     expect(r.legs.map((l) => l.seq)).toEqual([1, 2, 3, 4, 5])
   })
 
@@ -130,16 +172,35 @@ describe('resolveJoin: rules', () => {
 describe('restoreOnLeave (rule 7)', () => {
   it('leaving early brings back removed stops that still fit', () => {
     const r = join([hostStop('x', 'Dinner with Mei', '18:20', '19:10')]) // removes Superpark + Dinner Esplanade
-    const back = restoreOnLeave({ legs: r.legs, removed: r.removed, partyId: 'p1', nowMs: T('16:00') })
+    const back = restoreOnLeave({
+      legs: r.legs,
+      removed: r.removed,
+      partyId: 'p1',
+      nowMs: T('16:00')
+    })
     expect(back.legs.some((l) => l.fixed)).toBe(false)
     expect(names(back.restored)).toEqual(['Superpark', 'Dinner Esplanade'])
-    expect(back.legs.map((l) => l.name)).toEqual(['GBTB', 'Superpark', 'Dinner Esplanade', 'Drinks Paya Lebar', 'Changi Airport T3'])
+    expect(back.legs.map((l) => l.name)).toEqual([
+      'GBTB',
+      'Superpark',
+      'Dinner Esplanade',
+      'Drinks Paya Lebar',
+      'Changi Airport T3'
+    ])
   })
 
   it('stops that already started, or start within 15 min, do not come back', () => {
     const r = join([hostStop('x', 'Dinner with Mei', '18:20', '19:10')])
-    const back = restoreOnLeave({ legs: r.legs, removed: r.removed, partyId: 'p1', nowMs: T('19:10') })
-    expect(back.dropped.map((d) => [d.leg.name, d.why])).toEqual([['Superpark', 'past'], ['Dinner Esplanade', 'too_soon']])
+    const back = restoreOnLeave({
+      legs: r.legs,
+      removed: r.removed,
+      partyId: 'p1',
+      nowMs: T('19:10')
+    })
+    expect(back.dropped.map((d) => [d.leg.name, d.why])).toEqual([
+      ['Superpark', 'past'],
+      ['Dinner Esplanade', 'too_soon']
+    ])
     expect(names(back.restored)).toEqual([])
   })
 
@@ -152,7 +213,10 @@ describe('restoreOnLeave (rule 7)', () => {
 
   it('only the left party\'s blocks are dropped', () => {
     const r = join([hostStop('mbs', 'MBS', '20:45', '21:45')])
-    const legs = [...r.legs, { ...hostStop('y', 'Other group', '14:00', '14:30'), fixed: true, party_id: 'p2' }]
+    const legs = [
+      ...r.legs,
+      { ...hostStop('y', 'Other group', '14:00', '14:30'), fixed: true, party_id: 'p2' }
+    ]
     const back = restoreOnLeave({ legs, removed: [], partyId: 'p1', nowMs: T('12:00') })
     expect(back.legs.filter((l) => l.fixed).map((l) => l.party_id)).toEqual(['p2'])
   })

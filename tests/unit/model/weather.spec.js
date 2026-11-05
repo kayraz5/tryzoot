@@ -1,12 +1,6 @@
 // EDITOR: STEVEN
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-  jsonResponse,
-  setNow,
-  stubFetch,
-  T,
-  useCleanSlate,
-} from '../../support/unit/index.js'
+import { jsonResponse, setNow, stubFetch, T, useCleanSlate, } from '../../support/unit/index.js'
 
 useCleanSlate()
 
@@ -33,13 +27,15 @@ const forecastJson = {
 
 const psiJson = {
   data: {
-    items: [{
-      updatedTimestamp: '2030-01-15T04:00:00Z',
-      readings: {
-        psi_twenty_four_hourly: { central: 75, north: 40, east: 90 },
-        pm25_twenty_four_hourly: { central: 25, north: 12, east: 30 },
-      },
-    }],
+    items: [
+      {
+        updatedTimestamp: '2030-01-15T04:00:00Z',
+        readings: {
+          psi_twenty_four_hourly: { central: 75, north: 40, east: 90 },
+          pm25_twenty_four_hourly: { central: 25, north: 12, east: 30 },
+        },
+      }
+    ],
     regionMetadata: [
       { name: 'north', labelLocation: { latitude: 1.42, longitude: 103.82 } },
       { name: 'central', labelLocation: { latitude: 1.29, longitude: 103.85 } },
@@ -113,9 +109,7 @@ describe('rain forecast lookup', () => {
 describe('Open-Meteo forecast fetching', () => {
   it('rejects when Open-Meteo responds with HTTP 500', async () => {
     const weather = await loadWeather()
-    const fetchMock = stubFetch([
-      ['api.open-meteo.com', () => jsonResponse({}, 500)],
-    ])
+    const fetchMock = stubFetch([['api.open-meteo.com', () => jsonResponse({}, 500)],])
 
     await expect(weather.fetchForecast(1.2903, 103.8519)).rejects.toThrow('Open-Meteo 500')
     expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -125,9 +119,7 @@ describe('Open-Meteo forecast fetching', () => {
   // This case is now a regression test.
   it('builds the forecast from the Open-Meteo response', async () => {
     const weather = await loadWeather()
-    stubFetch([
-      ['api.open-meteo.com', () => jsonResponse(forecastJson)],
-    ])
+    stubFetch([['api.open-meteo.com', () => jsonResponse(forecastJson)],])
 
     const forecast = await weather.fetchForecast(1.2903, 103.8519)
 
@@ -188,9 +180,13 @@ describe('lightning fetching', () => {
   it('returns an empty result when the response has no readings', async () => {
     const weather = await loadWeather()
     const fetchMock = stubFetch([
-      ['api-open.data.gov.sg/v2/real-time/api/weather?api=lightning', () => jsonResponse({
-        data: { records: [{ item: { readings: [] } }] },
-      })],
+      [
+        'api-open.data.gov.sg/v2/real-time/api/weather?api=lightning',
+        () =>
+          jsonResponse({
+            data: { records: [{ item: { readings: [] } }] },
+          })
+      ],
     ])
 
     await expect(weather.fetchLightning()).resolves.toEqual({
@@ -204,15 +200,21 @@ describe('lightning fetching', () => {
   it('marks a strike within fifteen kilometres as nearby', async () => {
     const weather = await loadWeather()
     const fetchMock = stubFetch([
-      ['api-open.data.gov.sg/v2/real-time/api/weather?api=lightning', () => jsonResponse({
-        data: {
-          records: [{
-            item: {
-              readings: [{ location: { latitude: '1.2903', longitude: '103.8519' } }],
+      [
+        'api-open.data.gov.sg/v2/real-time/api/weather?api=lightning',
+        () =>
+          jsonResponse({
+            data: {
+              records: [
+                {
+                  item: {
+                    readings: [{ location: { latitude: '1.2903', longitude: '103.8519' } }],
+                  },
+                }
+              ],
             },
-          }],
-        },
-      })],
+          })
+      ],
     ])
 
     await expect(weather.fetchLightning(1.2903, 103.8519)).resolves.toEqual({
@@ -226,9 +228,13 @@ describe('lightning fetching', () => {
   it('uses the lightning result for two minutes before fetching again', async () => {
     const weather = await loadWeather()
     const fetchMock = stubFetch([
-      ['api-open.data.gov.sg/v2/real-time/api/weather?api=lightning', () => jsonResponse({
-        data: { records: [{ item: { readings: [] } }] },
-      })],
+      [
+        'api-open.data.gov.sg/v2/real-time/api/weather?api=lightning',
+        () =>
+          jsonResponse({
+            data: { records: [{ item: { readings: [] } }] },
+          })
+      ],
     ])
     setNow(T('10:00'))
 

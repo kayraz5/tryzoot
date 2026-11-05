@@ -2,7 +2,11 @@
 import { describe, expect, it } from 'vitest'
 import { catalog } from '../../../src/model/services/catalog.js'
 import { planDeterministic } from '../../../src/model/services/planner.js'
-import { CHOICE_SCHEMA, validateChoice, validateMission } from '../../../src/model/services/itinerarySchema.js'
+import {
+  CHOICE_SCHEMA,
+  validateChoice,
+  validateMission
+} from '../../../src/model/services/itinerarySchema.js'
 import { ctx } from '../../support/unit/fixtures.js'
 import { useCleanSlate } from '../../support/unit/index.js'
 
@@ -11,7 +15,9 @@ useCleanSlate()
 const allowedIds = new Set(catalog.value.map((place) => place.id))
 const catalogIds = [...allowedIds]
 
-const validChoice = (picks = [{ place_id: catalogIds[0], why: 'A useful stop for this layover.' }]) => ({
+const validChoice = (
+  picks = [{ place_id: catalogIds[0], why: 'A useful stop for this layover.' }]
+) => ({
   schema: CHOICE_SCHEMA,
   title: 'A useful layover quest',
   picks,
@@ -60,7 +66,10 @@ describe('validateChoice: validates planner choice responses', () => {
   })
 
   it('rejects a pick whose catalog id was not allowed', () => {
-    const result = validateChoice(validChoice([{ place_id: 'not-in-the-catalog', why: 'A useful stop.' }]), allowedIds)
+    const result = validateChoice(
+      validChoice([{ place_id: 'not-in-the-catalog', why: 'A useful stop.' }]),
+      allowedIds
+    )
 
     expect(result.ok).toBe(false)
     expect(result.errors).toContain('picks[0].place_id "not-in-the-catalog" is not in the catalog')
@@ -78,10 +87,15 @@ describe('validateChoice: validates planner choice responses', () => {
   })
 
   it('rejects picks that include app-owned latitude data', () => {
-    const result = validateChoice(validChoice([{ place_id: catalogIds[0], why: 'A useful stop.', lat: 1.3 }]), allowedIds)
+    const result = validateChoice(
+      validChoice([{ place_id: catalogIds[0], why: 'A useful stop.', lat: 1.3 }]),
+      allowedIds
+    )
 
     expect(result.ok).toBe(false)
-    expect(result.errors).toContain('picks[0] must not include lat (the app owns geometry and time)')
+    expect(result.errors).toContain(
+      'picks[0] must not include lat (the app owns geometry and time)'
+    )
   })
 })
 
@@ -100,7 +114,11 @@ describe('validateMission: validates deterministic planner missions', () => {
     const result = validateMission(mission, allowedIds)
 
     expect(result.ok).toBe(false)
-    expect(result.errors.some((error) => error.includes('only the last leg may be (and must be) "return"'))).toBe(true)
+    expect(
+      result.errors.some((error) =>
+        error.includes('only the last leg may be (and must be) "return"')
+      )
+    ).toBe(true)
   })
 
   it('rejects a leg that departs before it arrives', () => {

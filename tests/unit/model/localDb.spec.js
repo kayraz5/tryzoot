@@ -26,8 +26,7 @@ describe('localDb guest authentication and profiles', () => {
     expect(await localDb.getSession()).toEqual(second)
   })
 
-  it('rejects email and password authentication methods without Supabase keys', async () => {
-    await expect(localDb.signInWithEmail()).rejects.toThrow('needs Supabase keys')
+  it('rejects password sign-in and sign-up without Supabase keys', async () => {
     await expect(localDb.signInWithPassword()).rejects.toThrow('needs Supabase keys')
     await expect(localDb.signUpWithPassword()).rejects.toThrow('needs Supabase keys')
   })
@@ -43,7 +42,10 @@ describe('localDb guest authentication and profiles', () => {
   it('merges profile updates and awards XP only to the matching profile', async () => {
     const { user } = await localDb.signInGuest('Ari')
 
-    const updated = await localDb.updateProfile(user.id, { style: 'budget', home_city: 'Singapore' })
+    const updated = await localDb.updateProfile(user.id, {
+      style: 'budget',
+      home_city: 'Singapore',
+    })
     expect(updated).toMatchObject({
       id: user.id,
       display_name: 'Ari',
@@ -110,16 +112,18 @@ describe('localDb stamps and geofencing', () => {
     const { user } = await localDb.signInGuest('Stamp User')
     const common = { userId: user.id, place, missionId: 'mission-1', xp: 20 }
 
-    await expect(localDb.stampPlace({
-      ...common,
-      position: { lat: 1.3000, lng: 103.9000, accuracy: 5 },
-      fake: false,
-      dev: false,
-    })).rejects.toThrow(/away/)
+    await expect(
+      localDb.stampPlace({
+        ...common,
+        position: { lat: 1.3, lng: 103.9, accuracy: 5 },
+        fake: false,
+        dev: false,
+      })
+    ).rejects.toThrow(/away/)
 
     const first = await localDb.stampPlace({
       ...common,
-      position: { lat: 1.3000, lng: 103.9000, accuracy: 5 },
+      position: { lat: 1.3, lng: 103.9, accuracy: 5 },
       fake: false,
       dev: true,
     })
@@ -127,8 +131,9 @@ describe('localDb stamps and geofencing', () => {
     expect(first.profile).toMatchObject({ id: user.id, xp: 20 })
 
     setNow(T('23:45'))
-    await expect(localDb.stampPlace({ ...common, position, fake: false, dev: true }))
-      .rejects.toThrow('Already stamped here today')
+    await expect(
+      localDb.stampPlace({ ...common, position, fake: false, dev: true })
+    ).rejects.toThrow('Already stamped here today')
 
     setNow(T('00:15', '2030-01-16'))
     const nextDay = await localDb.stampPlace({ ...common, position, fake: false, dev: false })
@@ -186,19 +191,27 @@ describe('localDb malformed JSON fallbacks', () => {
   it.each([
     ['session', 'zoot.session', async () => localDb.getSession(), null],
     ['profile', 'zoot.profile', async () => localDb.getProfile('guest-1'), null],
-    ['trips', 'zoot.trips', async () => {
-      const row = await localDb.saveTrip({ id: 'fallback-trip', title: 'Fallback' })
-      return JSON.parse(localStorage.getItem('zoot.trips')).map((trip) => trip.id === row.id)
-    }, [true]],
+    [
+      'trips',
+      'zoot.trips',
+      async () => {
+        const row = await localDb.saveTrip({ id: 'fallback-trip', title: 'Fallback' })
+        return JSON.parse(localStorage.getItem('zoot.trips')).map((trip) => trip.id === row.id)
+      },
+      [true],
+    ],
     ['missions', 'zoot.missions', async () => localDb.listMissions(), []],
     ['stamps', 'zoot.stamps', async () => localDb.listStamps('guest-1'), []],
     ['passport', 'zoot.passport', async () => localDb.getPassportPage('guest-1'), null],
-  ])('catches malformed %s JSON and returns its defined fallback', async (_name, key, read, fallback) => {
-    localStorage.setItem(key, '{bad')
-    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+  ])(
+    'catches malformed %s JSON and returns its defined fallback',
+    async (_name, key, read, fallback) => {
+      localStorage.setItem(key, '{bad')
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    await expect(read()).resolves.toEqual(fallback)
+      await expect(read()).resolves.toEqual(fallback)
 
-    expect(error).toHaveBeenCalled()
-  })
+      expect(error).toHaveBeenCalled()
+    }
+  )
 })

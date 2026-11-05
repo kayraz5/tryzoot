@@ -34,7 +34,11 @@ export const usePassportStore = defineStore('passport', {
       if (!code) return null
       const live = state.liveEntry?.code === code ? state.liveEntry.status : null
       const status = withTransitVisa(
-        live || entryStatus(code, { icaSlugs: entrySnapshot.ica.slugs, indexRule: entrySnapshot.index.rules[code] }),
+        live ||
+          entryStatus(code, {
+            icaSlugs: entrySnapshot.ica.slugs,
+            indexRule: entrySnapshot.index.rules[code]
+          }),
         state.transitVisa
       )
       if (status === 'ask') return 'ask'
@@ -49,7 +53,9 @@ export const usePassportStore = defineStore('passport', {
     byArea(state) {
       const groups = {}
       const counted = new Set()
-      for (const stamp of [...state.stamps].sort((a, b) => String(a.stamped_at).localeCompare(String(b.stamped_at)))) {
+      for (const stamp of [...state.stamps].sort((a, b) =>
+        String(a.stamped_at).localeCompare(String(b.stamped_at))
+      )) {
         if (!stamp.area || counted.has(stamp.place_id)) continue
         counted.add(stamp.place_id)
         if (!groups[stamp.area]) groups[stamp.area] = []
@@ -62,7 +68,9 @@ export const usePassportStore = defineStore('passport', {
     choppedAreas() {
       return Object.entries(this.byArea)
         .filter(([, stamps]) => stamps.length >= CHOP_TARGET)
-        .sort(([, a], [, b]) => String(a[CHOP_TARGET - 1].stamped_at).localeCompare(String(b[CHOP_TARGET - 1].stamped_at)))
+        .sort(([, a], [, b]) =>
+          String(a[CHOP_TARGET - 1].stamped_at).localeCompare(String(b[CHOP_TARGET - 1].stamped_at))
+        )
         .map(([area]) => area)
     },
 
@@ -79,7 +87,9 @@ export const usePassportStore = defineStore('passport', {
   actions: {
     // Called whenever the signed-in user changes (null on sign-out)
     load(userId) {
-      loading = this.fetch(userId).catch((err) => console.warn('[passport] could not load:', err.message))
+      loading = this.fetch(userId).catch((err) =>
+        console.warn('[passport] could not load:', err.message)
+      )
       return loading
     },
 
@@ -118,7 +128,9 @@ export const usePassportStore = defineStore('passport', {
         // Drop areas whose chop isn't earned (e.g. slammed under the old one-stamp rule), so they slam at 6
         const chopped = new Set(this.choppedAreas)
         this.slammed = new Set(page.slammed_areas.filter((area) => chopped.has(area)))
-        const changed = this.slammed.size !== page.slammed_areas.length || this.seen.size !== (page.seen_places || []).length
+        const changed =
+          this.slammed.size !== page.slammed_areas.length ||
+          this.seen.size !== (page.seen_places || []).length
         if (changed) this.save()
       } else {
         // No saved progress yet: chops already earned count as slammed, so they don't all replay
@@ -171,14 +183,20 @@ export const usePassportStore = defineStore('passport', {
     save() {
       const userId = this.userId
       if (!userId) return saving
-      saving = saving.then(async () => {
-        if (this.userId !== userId) return
-        const db = await getDb()
-        const progress = { slammed_areas: [...this.slammed], seen_places: [...this.seen] }
-        // Only sent once set, so passport saves keep working before passport_pages.sql adds these columns
-        if (this.nationality) Object.assign(progress, { nationality: this.nationality, transit_visa: this.transitVisa })
-        await db.savePassportPage(userId, progress)
-      }).catch((err) => console.warn('[passport] could not save progress:', err.message))
+      saving = saving
+        .then(async () => {
+          if (this.userId !== userId) return
+          const db = await getDb()
+          const progress = { slammed_areas: [...this.slammed], seen_places: [...this.seen] }
+          // Only sent once set, so passport saves keep working before passport_pages.sql adds these columns
+          if (this.nationality)
+            Object.assign(progress, {
+              nationality: this.nationality,
+              transit_visa: this.transitVisa
+            })
+          await db.savePassportPage(userId, progress)
+        })
+        .catch((err) => console.warn('[passport] could not save progress:', err.message))
       return saving
     }
   }

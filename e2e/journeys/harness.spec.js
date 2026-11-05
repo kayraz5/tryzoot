@@ -29,21 +29,32 @@ test.describe('guest harness network boundary', () => {
 
   test('keeps every request on localhost except fulfilled fixtures', async ({ page }) => {
     test.slow() // a three-page journey: plan, map, quests
-    const external = []          // Request objects for every non-localhost http(s) request
+    const external = [] // Request objects for every non-localhost http(s) request
     const intercepted = new Set() // Requests the harness routing saw
     const finished = new Set()
     const failed = new Set()
     let externalSockets = 0
 
     // Registered after installHarness(), so it runs first; fallback() hands over to the harness.
-    await page.route((url) => isExternal(url.href), (route) => {
-      intercepted.add(route.request())
-      return route.fallback()
+    await page.route(
+      (url) => isExternal(url.href),
+      (route) => {
+        intercepted.add(route.request())
+        return route.fallback()
+      }
+    )
+    page.on('request', (request) => {
+      if (isExternal(request.url())) external.push(request)
     })
-    page.on('request', (request) => { if (isExternal(request.url())) external.push(request) })
-    page.on('requestfinished', (request) => { if (isExternal(request.url())) finished.add(request) })
-    page.on('requestfailed', (request) => { if (isExternal(request.url())) failed.add(request) })
-    page.on('websocket', (socket) => { if (isExternal(socket.url())) externalSockets += 1 })
+    page.on('requestfinished', (request) => {
+      if (isExternal(request.url())) finished.add(request)
+    })
+    page.on('requestfailed', (request) => {
+      if (isExternal(request.url())) failed.add(request)
+    })
+    page.on('websocket', (socket) => {
+      if (isExternal(socket.url())) externalSockets += 1
+    })
 
     // A journey that touches weather, the catalog, the plan API, map tiles and the quests pages.
     await page.clock.install({ time: FIXED_NOW })
@@ -64,31 +75,47 @@ test.describe('guest harness network boundary', () => {
 
     // Wait until every external request that bypassed the harness route has settled. Intercepted
     // requests may remain pending while MapLibre tears down a view, but cannot reach the network.
-    const unsettled = () => external.filter((r) => !intercepted.has(r) && !finished.has(r) && !failed.has(r)).length
-    await expect.poll(unsettled, { timeout: 15_000, message: 'external requests still in flight' }).toBe(0)
+    const unsettled = () =>
+      external.filter((r) => !intercepted.has(r) && !finished.has(r) && !failed.has(r)).length
+    await expect
+      .poll(unsettled, { timeout: 15_000, message: 'external requests still in flight' })
+      .toBe(0)
 
     const notRouted = external.filter((r) => !intercepted.has(r))
     // Split unrouted requests: browser-aborted with no response is settled, not a bypass.
-    const notRoutedResponses = await Promise.all(notRouted.map((r) => r.response().catch(() => null)))
-    const isBrowserAborted = (r, i) => failed.has(r) && !finished.has(r) && notRoutedResponses[i] === null
+    const notRoutedResponses = await Promise.all(
+      notRouted.map((r) => r.response().catch(() => null))
+    )
+    const isBrowserAborted = (r, i) =>
+      failed.has(r) && !finished.has(r) && notRoutedResponses[i] === null
     const bypassedRequests = notRouted.filter((r, i) => !isBrowserAborted(r, i))
     const abortedBeforeRouting = notRouted.length - bypassedRequests.length
     const bypassed = bypassedRequests.length
     const finishedNonFixture = [...finished].filter((r) => !isFixture(r.url())).length
     const supabaseAnswered = [...finished].filter((r) => isSupabase(r.url())).length
 
-    expect(external.length, 'the journey made no external request, so the check is vacuous').toBeGreaterThan(0)
+    expect(
+      external.length,
+      'the journey made no external request, so the check is vacuous'
+    ).toBeGreaterThan(0)
     // URL-free summary of any bypass: resource type and outcome only.
     const bypassSummary = bypassedRequests
-      .map((r) => `${r.resourceType()}:${finished.has(r) ? 'answered' : r.failure()?.errorText ?? 'pending'}`)
+      .map(
+        (r) =>
+          `${r.resourceType()}:${finished.has(r) ? 'answered' : r.failure()?.errorText ?? 'pending'}`
+      )
       .join(', ')
     // Count only, never URLs: recorded so a browser abort stays visible without failing the test.
     test.info().annotations.push({
       type: 'aborted by the browser before routing',
       description: String(abortedBeforeRouting),
     })
-    expect(bypassed, `external requests that bypassed the harness routing (${bypassSummary})`).toBe(0)
-    expect(finishedNonFixture, 'external requests answered by something other than a fixture').toBe(0)
+    expect(bypassed, `external requests that bypassed the harness routing (${bypassSummary})`).toBe(
+      0
+    )
+    expect(finishedNonFixture, 'external requests answered by something other than a fixture').toBe(
+      0
+    )
     expect(supabaseAnswered, 'Supabase requests that received a response').toBe(0)
     expect(externalSockets, 'websockets opened to a non-localhost host').toBe(0)
   })
