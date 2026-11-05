@@ -43,11 +43,11 @@ onMounted(async () => {
 onUnmounted(() => unwatchCoop?.())
 
 
-// ── My joined stops are over → back to my own plan ──
+// My joined stops are over → back to my own plan
 // immediate: also when the map opens after they already ended.
 watch(() => joined.value && tick.value >= joined.value.endMs, (over) => { if (over) store.finishEndedQuests() }, { immediate: true })
 
-// ── Live locations ──
+// Live locations
 const roster = ref([])
 const locations = ref([])
 const markers = new Map()
@@ -118,7 +118,7 @@ watch([locations, roster, tick, () => props.getMap()], ([list, people, , map]) =
   if (map) syncMemberMarkers(map, markers, others)
 })
 
-// ── Meeting point pin (the map view flies there itself) ──
+// Meeting point pin (the map view flies there itself)
 let meetPin = null
 watch([() => props.getMap(), () => route?.query.meet], ([map]) => {
   meetPin?.remove()

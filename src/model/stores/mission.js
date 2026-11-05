@@ -444,7 +444,7 @@ export const useMissionStore = defineStore('mission', {
       useUiStore().celebrate({ returned: true, onTime, xp: onTime ? ret.xp : 0 })
     },
 
-    // ── Social quests: joining part of someone's open window (docs/social-quests-spec.md) ──
+    // Social quests: joining part of someone's open window
 
     /**
      * Join stops from..to of a quest. Server first (capacity, range, airport time), then my plan

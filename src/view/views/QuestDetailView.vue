@@ -52,7 +52,7 @@ const spots = computed(() => (q.value ? q.value.capacity - q.value.roster.length
 /** Who's at each stop: roster members whose joined range covers it. */
 const goingAt = (seq) => q.value.roster.filter((m) => seq >= m.from_seq && seq <= m.to_seq)
 
-// ── Meeting point: photos, and a jump to it on the map ──
+// Meeting point: photos, and a jump to it on the map
 const meetPlace = computed(() => placeById.value.get(q.value?.meeting_place_id) || null)
 function showMeetOnMap() {
   const p = meetPlace.value || q.value.stops[0]
@@ -80,7 +80,7 @@ function deleteQuest() {
 }
 const demoJoin = () => act(() => party.simulate(q.value.id, 'guest_joins'), (m) => `Demo: ${m}.`)
 
-// ── Guest: pick stops → confirm → join ──
+// Guest: pick stops → confirm → join
 const plan = computed(() => mission.mission)
 const hasPlan = computed(() => fit.value && fit.value.code !== 'no_mission')
 const range = computed(() => (q.value && hasPlan.value ? joinableRange(q.value.stops, plan.value) : { minFrom: 1, maxTo: 0 }))

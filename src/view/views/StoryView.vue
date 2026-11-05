@@ -32,7 +32,7 @@ import '../components/story/story.css'
 
 const router = useRouter()
 
-// ---------------------------------------------------------------- the film
+// the film
 
 /** Length of public/story/flight.mp4, in seconds. */
 const CLIP_SECONDS = 15.104
@@ -92,7 +92,7 @@ function paintScene(index) {
 	style.setProperty('--zt-focus', scene.focusX)
 }
 
-// --------------------------------------------------------------- the beats
+// the beats
 
 /**
  * The copy blocks, and the scrim that protects each one.
@@ -135,7 +135,7 @@ function beatAttrs(id) {
 	}
 }
 
-// --------------------------------------------------------------- the action
+// the action
 
 /**
  * The page's one button, and it has exactly one job: open the sign-up screen.
@@ -153,7 +153,7 @@ function beatAttrs(id) {
  */
 const CTA = { label: 'Sign up', to: { path: '/auth', query: { mode: 'signup', next: '/plan' } } }
 
-// ------------------------------------------------------------- the handoff
+// the handoff
 
 /**
  * The one seam this page has left. The film ends, the written pitch below it
@@ -201,7 +201,7 @@ function smoothstep(value, from, to) {
 	return t * t * (3 - 2 * t)
 }
 
-// ------------------------------------------------------------- the debrief
+// the debrief
 
 /**
  * The pitch, carried over from the previous landing page and parked below the
@@ -262,7 +262,7 @@ const DEBRIEF_PROBLEMS = [
 	'Guided tours can’t personalise the day for one traveller.'
 ]
 
-// ---------------------------------------------------------------- the view
+// the view
 
 const root = ref(null)
 const currentScene = ref(0)
@@ -684,7 +684,7 @@ onBeforeUnmount(() => {
 </template>
 
 <style>
-/* ------------------------------------------------------------ the overscroll
+/* the overscroll
    Not scoped, because this rule belongs on <html> and no component style can
    reach it: the scoped attribute is only written onto elements this template
    renders. It is still route-local — `zt-story-route` is added and removed with
@@ -704,7 +704,7 @@ html.zt-story-route body {
 </style>
 
 <style scoped>
-/* -------------------------------------------------------------- the handoff
+/* the handoff
    The wrapper the closing copy is lifted and dissolved on, so that the engine
    can go on owning opacity and transform on the block outside it. Only the
    pre-paint state is here; syncHandoff() writes the rest every frame. */
@@ -712,7 +712,7 @@ html.zt-story-route body {
 	will-change: transform, opacity;
 }
 
-/* -------------------------------------------------------------- the debrief
+/* the debrief
    Everything above this block is fixed to the viewport and the engine's spacer
    is empty, so the debrief is the only element on the page with a height of its
    own. It therefore travels: it slides up over the last frame of the film.
@@ -752,7 +752,7 @@ html.zt-story-route body {
 	margin-top: clamp(2.5rem, 7vw, 4rem);
 }
 
-/* ----------------------------------------------------------------- type */
+/* type */
 
 .zt-debrief__title {
 	margin: 0 0 1rem;
@@ -802,7 +802,7 @@ html.zt-story-route body {
 	vertical-align: middle;
 }
 
-/* --------------------------------------------------------- what is zoot */
+/* what is zoot */
 
 .zt-debrief__tags {
 	display: flex;
@@ -848,7 +848,7 @@ html.zt-story-route body {
 	color: var(--zt-muted);
 }
 
-/* ---------------------------------------------------------------- sam */
+/* sam */
 
 .zt-debrief__persona {
 	display: grid;
@@ -901,7 +901,7 @@ html.zt-story-route body {
 	font-variant-numeric: tabular-nums;
 }
 
-/* ----------------------------------------------------------- the problems */
+/* the problems */
 
 .zt-debrief__problems {
 	display: grid;
@@ -929,7 +929,7 @@ html.zt-story-route body {
 	line-height: 1;
 }
 
-/* ---------------------------------------------------------------- the close */
+/* the close */
 
 .zt-debrief__close {
 	display: grid;
@@ -943,7 +943,7 @@ html.zt-story-route body {
 	height: 44px;
 }
 
-/* ---------------------------------------------------------------- phones */
+/* phones */
 
 @media (max-width: 767px) {
 	.zt-debrief__persona {
