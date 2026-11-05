@@ -11,7 +11,7 @@ const router = useRouter()
 
 function newLayover() {
   trip.startNewLayover()
-  router.push('/plan')
+  router.push({ name: 'plan', query: { fresh: '1' } })
 }
 </script>
 
