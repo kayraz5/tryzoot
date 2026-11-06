@@ -26,14 +26,7 @@ import {
   test
 } from '../fixtures/supabase.js'
 import {
-  layoverTimes,
-  msUntil,
-  openMapCard,
-  openToCompany,
-  planLayover,
-  questChip,
-  SOCIAL_TIMEOUT_MS,
-  TIMEZONE
+  layoverTimes, openMapCard, openToCompany, planLayover, questChip, SOCIAL_TIMEOUT_MS, TIMEZONE
 } from '../fixtures/social.js'
 
 test.describe('live member locations', () => {
@@ -62,14 +55,19 @@ test.describe('live member locations', () => {
     await simulate(testAccount.client, quest.id, 'locate')
 
     await openMapCard(page)
-    await page.clock.fastForward(msUntil(quest.starts_at))
+    const offset = Date.parse(quest.starts_at) - Date.now() + 1_000
+    await page.evaluate((value) => localStorage.setItem('zoot.clockOffset', String(value)), offset)
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await openMapCard(page)
+    await page.clock.runFor(1_000)
 
-    const pins = page.getByTitle(/ \(live\)$/)
-    await expect(pins).toHaveCount(1, { timeout: 20_000 })
+    const livePeople = page.getByLabel('People on the map')
+    await expect(livePeople.getByRole('button')).toHaveCount(1, { timeout: 20_000 })
     await expect(questChip(page)).toContainText(' · 1 live')
 
     await simulate(testAccount.client, quest.id, 'guest_leaves')
-    await page.clock.fastForward(21_000) // QuestMapLive polls locations every 20 s
-    await expect(pins).toHaveCount(0, { timeout: 20_000 })
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await openMapCard(page)
+    await expect(page.getByLabel('People on the map').getByRole('button')).toHaveCount(0, { timeout: 20_000 })
   })
 })

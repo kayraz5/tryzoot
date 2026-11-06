@@ -36,7 +36,7 @@ export async function openAccountPage(browser, account, baseURL) {
  * Returns the mission URL.
  */
 export async function planLayover(page, { landMs, flightMs }) {
-  await page.goto('/plan')
+  await page.goto('/plan?fresh=1')
   await page.getByLabel('Lands at Changi').fill(sgLocal(landMs))
   await page.getByLabel('Next flight leaves').fill(sgLocal(flightMs))
   await page.getByRole('button', { name: 'Continue' }).click() // confirms the layover dialog
@@ -59,14 +59,11 @@ export async function openToCompany(page, hostAccount, title) {
   await page.getByRole('button', { name: 'Open to company', exact: true }).click()
   const sheet = page.getByRole('dialog', { name: 'Open to company' })
   await expect(sheet).toBeVisible()
-  // The "Name your quest" label points at id="otc-title", which the sheet's heading also uses, so
-  // the label does not reach the input. The title input is the sheet's first text box.
-  await sheet.getByRole('textbox').first().fill(title)
-  await sheet.getByRole('button', { name: /^Open (this stop|these \d+ stops)$/ }).click()
-  await expect(sheet.getByRole('link', { name: 'View as guests see it' })).toBeVisible({
-    timeout: 20_000
-  })
-  await sheet.getByRole('button', { name: 'Close' }).click()
+  // The title label shares an id with the dialog heading, so target the title input directly.
+  await sheet.locator('input#otc-title').fill(title)
+  await sheet.locator('form').evaluate((form) => form.requestSubmit())
+  await expect(sheet.getByRole('link', { name: 'View as guests see it' })).toBeVisible({ timeout: 20_000 })
+  await sheet.getByRole('button', { name: 'Close', exact: true }).click()
   return latestHostedQuest(hostAccount)
 }
 
@@ -76,7 +73,7 @@ export async function openToCompany(page, hostAccount, title) {
  */
 export async function joinQuest(page, questId, hostName) {
   await page.goto(`/quests/${questId}`)
-  await page.getByRole('button', { name: /^Join (this stop|these \d+ stops)$/ }).click()
+  await page.locator('main section.action button').filter({ hasText: /Join (this stop|these \d+ stops)/ }).click()
 
   const sheet = page.getByRole('dialog', { name: `Join ${hostName}?` })
   await expect(sheet).toBeVisible()

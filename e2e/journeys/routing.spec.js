@@ -22,5 +22,5 @@ test.describe('guest route guards', () => {
 test('redirects an unknown path to the landing page', async ({ page }) => {
   await page.goto('/not-a-real-zoot-route')
   await expect(page).toHaveURL(/\/$/)
-  await expect(page.getByRole('button', { name: 'Sign up' }).first()).toBeVisible()
+  await expect(page.locator('[data-zt-copy="hero"]').getByRole('button', { name: 'Sign up' })).toBeVisible()
 })

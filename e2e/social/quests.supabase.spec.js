@@ -21,8 +21,8 @@ test.describe('signed-in open quests', () => {
   test('renders the open quests list', async ({ page }) => {
     await page.goto('/quests')
 
-    await expect(page.getByRole('heading', { name: 'Open quests' })).toBeVisible()
-    await expect(page.getByText('Join someone for a stop or two.')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Open quests', exact: true })).toBeVisible()
+    await expect(page.locator('p.subtitle')).toHaveText('Join a stop or two — your return-by comes first.')
     // Signed in, so the feed loads instead of the guest-mode notice.
     await expect(page.getByRole('heading', { name: 'Sign in to quest with others' })).toHaveCount(0)
   })
