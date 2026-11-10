@@ -191,10 +191,11 @@ const showMissionCard = ref(readMissionCardFlag())
 const flatMode = ref(false) // true = top-down free-roam (pan enabled, no 3D)
 const mapToolsOpen = ref(false) // right-hand map tools drawer
 const mapStyleOpen = ref(false) // map appearance dialog
-const buildingsVisible = ref(false) // show map buildings at all; off gives the cleanest map
-const buildings3D = ref(false) // true = extruded 3D buildings, false = flat 2D footprints
-const mapTheme = ref('theme') // 'theme' | 'simple'
-const colorblindMode = ref(false) // high-contrast map palette
+const savedStyle = readMapStyle() // map appearance choices from last time
+const buildingsVisible = ref(savedStyle.buildings ?? false) // show map buildings at all; off gives the cleanest map
+const buildings3D = ref(savedStyle.buildings3D ?? false) // true = extruded 3D buildings, false = flat 2D footprints
+const mapTheme = ref(savedStyle.theme ?? 'theme') // 'theme' | 'simple'
+const colorblindMode = ref(savedStyle.colorblind ?? false) // high-contrast map palette
 const showTraveller3D = ref(true) // 3D character vs flat dot
 const showStopPins3D = ref(true) // 3D tower pins vs flat numbered dots
 const otterView = ref(false) // third-person camera locked behind the traveller
@@ -339,7 +340,10 @@ function createMap() {
     applyBasemapStyle()
     // A glyph/sprite request can still be settling when `load` fires, making
     // isStyleLoaded() false for that tick and silently skipping basemap styling.
-    map.once('idle', applyBasemapStyle)
+    map.once('idle', () => {
+      applyBasemapStyle()
+      if (colorblindMode.value) setColorblindMode(true)
+    })
   })
   map.on('load', onMapLoad)
   map.on('load', () => centerOnMe(false))
@@ -1107,6 +1111,17 @@ function openAirportHelp() {
 
 const { transitVisible, selectedStop, busAlt, liveSteps, liveStepIndex, attachTransit } =
   useTransit({ getMap: () => map, liveRoute, next, here, liveTravel })
+transitVisible.value = savedStyle.transit ?? true
+
+watch([buildingsVisible, buildings3D, transitVisible, mapTheme, colorblindMode], () =>
+  writeMapStyle({
+    buildings: buildingsVisible.value,
+    buildings3D: buildings3D.value,
+    transit: transitVisible.value,
+    theme: mapTheme.value,
+    colorblind: colorblindMode.value
+  })
+)
 
 function bearingDegrees(a, b) {
   const rad = (degrees) => (degrees * Math.PI) / 180
@@ -1330,6 +1345,22 @@ function readMissionCardFlag() {
     return localStorage.getItem('zoot.mapMissionCard') === '1'
   } catch {
     return false
+  }
+}
+
+function readMapStyle() {
+  try {
+    return JSON.parse(localStorage.getItem('zoot.mapStyle')) || {}
+  } catch {
+    return {}
+  }
+}
+
+function writeMapStyle(style) {
+  try {
+    localStorage.setItem('zoot.mapStyle', JSON.stringify(style))
+  } catch {
+    // Ignore: the map style just will not persist.
   }
 }
 
