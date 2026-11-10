@@ -63,6 +63,7 @@ export function useTransit({ getMap, liveRoute, next, here, liveTravel }) {
 
   function attachTransit(map, isDark) {
     addTransitLayers(map, isDark)
+    if (!transitVisible.value) setTransitVisible(map, false) // saved as off last time
     map.on('click', onTap)
     map.on('moveend', loadBusStopsInView)
   }
