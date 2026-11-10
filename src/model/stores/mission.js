@@ -141,7 +141,8 @@ export const useMissionStore = defineStore('mission', {
       return r.mission
     },
 
-    async persist(mission) {
+    // syncWindow: false after a stamp, so re-timing from a check-in doesn't drop the quest's guests
+    async persist(mission, { syncWindow = true } = {}) {
       const db = await getDb()
       await db.saveMission(mission)
       this.mission = mission
@@ -152,7 +153,7 @@ export const useMissionStore = defineStore('mission', {
         mission.legs.filter((l) => l.kind === 'visit').map((l) => l.place_id)
       )
       // If I've opened part of this mission to company, keep what guests see in step (no-op otherwise).
-      usePartyStore().syncHostedWindow(mission)
+      if (syncWindow) usePartyStore().syncHostedWindow(mission)
     },
 
     /** Another account signed in (or this one signed out): forget everything about the last one's plan. */
@@ -322,7 +323,7 @@ export const useMissionStore = defineStore('mission', {
      * then re-timed from where the traveller is (or from the start, if they have not left yet).
      * Edits that would land at a closed place or miss arrive_by are refused, never saved.
      */
-    async editLegs(mutate, message) {
+    async editLegs(mutate, message, { syncWindow = true } = {}) {
       const m = this.mission
       if (!m) return false
       await loadCatalog()
@@ -341,7 +342,7 @@ export const useMissionStore = defineStore('mission', {
         return false
       }
       mission.edits = (m.edits || 0) + 1
-      await this.persist(mission)
+      await this.persist(mission, { syncWindow })
       if (message) useUiStore().toast(message, 'success')
       return true
     },
@@ -461,10 +462,16 @@ export const useMissionStore = defineStore('mission', {
      * refused and the original order is left exactly as it was — this can never produce a broken plan.
      */
     reorderByProximity() {
+      // Stops I've opened to company keep their place, so guests stay with me
+      const party = usePartyStore()
+      const shared = new Set(
+        party.hostedFor === this.mission?.id ? (party.hosted?.stops || []).map((s) => s.place_id) : []
+      )
       return this.editLegs((legs) => {
         const slots = []
         legs.forEach((l, i) => {
-          if (l.kind === 'visit' && l.status === 'pending' && !l.fixed) slots.push(i)
+          if (l.kind === 'visit' && l.status === 'pending' && !l.fixed && !shared.has(l.place_id))
+            slots.push(i)
         })
         if (slots.length < 2) return null // nothing to reorder
 
@@ -479,7 +486,7 @@ export const useMissionStore = defineStore('mission', {
         slots.forEach((i, k) => {
           legs[i] = ordered[k]
         })
-      })
+      }, undefined, { syncWindow: false })
     },
 
     changeStay(leg, deltaMin) {
@@ -521,7 +528,7 @@ export const useMissionStore = defineStore('mission', {
           l.status = 'stamped'
           l.stamped_at = stamp.stamped_at
         }
-        await this.persist(this.mission)
+        await this.persist(this.mission, { syncWindow: false })
         // Now that you're at `place`, the rest of the plan may no longer be the shortest way
         // round — send whichever remaining stop is closest from here next.
         // Skipped when they arranged the order themselves.
